@@ -5,13 +5,33 @@ import { getText } from '../../utils/helpers';
 
 const RudrakshaTab = ({ report }) => {
     // Assuming 'language' prop will be passed, defaulting to 'en' for now
-    const language = 'en'; 
-    const uniqueNumbers = [...new Set([report.basicNumber, report.destinyNumber])];
+    const language = 'en';
+
+    if (!report) {
+        return <Card><p className="text-red-400">Report data is not available.</p></Card>;
+    }
+
+    if (!report.basicNumber || !report.destinyNumber) {
+        return <Card><p className="text-red-400">Basic number or destiny number is missing.</p></Card>;
+    }
+
+    const uniqueNumbers = [...new Set([report.basicNumber, report.destinyNumber])].filter(Boolean);
+
+    if (uniqueNumbers.length === 0) {
+        return <Card><p className="text-red-400">No valid numbers found.</p></Card>;
+    }
 
     const RudrakshaCard = ({ number }) => {
-        const rudrakshaData = DATA.rudrakshaRemedies[number];
-        const advancedData = DATA.advancedRudrakshaRemedies[number];
-        if (!rudrakshaData) return null;
+        const rudrakshaData = DATA.rudrakshaRemedies?.[number];
+        const advancedData = DATA.advancedRudrakshaRemedies?.[number];
+
+        if (!rudrakshaData || !advancedData) {
+            return (
+                <Card>
+                    <p className="text-yellow-400">Rudraksha data not available for number {number}.</p>
+                </Card>
+            );
+        }
 
         return (
             <Card>
@@ -52,11 +72,20 @@ const RudrakshaTab = ({ report }) => {
         );
     };
 
-     return (
-        <div className="space-y-6">
-            {uniqueNumbers.map(num => <RudrakshaCard key={num} number={num} />)}
-        </div>
-    );
+    try {
+        return (
+            <div className="space-y-6">
+                {uniqueNumbers.map(num => <RudrakshaCard key={num} number={num} />)}
+            </div>
+        );
+    } catch (error) {
+        console.error('Error in RudrakshaTab:', error);
+        return (
+            <Card>
+                <p className="text-red-400">An error occurred while loading Rudraksha data: {error.message}</p>
+            </Card>
+        );
+    }
 };
 
 export default RudrakshaTab;

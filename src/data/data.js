@@ -2604,7 +2604,46 @@ mantraRemedies: {
     7: { primary: {en: "9 Mukhi", hi: "9 मुखी", "en-hi": "9 Mukhi"}, secondary: {en: "N/A", hi: "N/A", "en-hi": "N/A"}, reasoning: {en: "Ruled by Ketu", hi: "केतु द्वारा शासित", "en-hi": "Ruled by Ketu"} },
     8: { primary: {en: "7 Mukhi", hi: "7 मुखी", "en-hi": "7 Mukhi"}, secondary: {en: "14 Mukhi", hi: "14 मुखी", "en-hi": "14 Mukhi"}, reasoning: {en: "Governed by Saturn", hi: "शनि द्वारा शासित", "en-hi": "Governed by Saturn"} },
     9: { primary: {en: "3 Mukhi", hi: "3 मुखी", "en-hi": "3 Mukhi"}, secondary: {en: "N/A", hi: "N/A", "en-hi": "N/A"}, reasoning: {en: "Ruled by Mars", hi: "मंगल द्वारा शासित", "en-hi": "Ruled by Mars"} }
+    },
+
+  // W) Chakra Data
+  chakraData: {
+    "Muladhara (Root)": {
+      location: { en: "Base of spine", hi: "रीढ़ के आधार पर", "en-hi": "Base of spine / रीढ़ के आधार पर" },
+      mukhi: ["7 Mukhi"],
+      effect: { en: "Grounding, stability, security, and survival instincts", hi: "ग्राउंडिंग, स्थिरता, सुरक्षा और अस्तित्व की प्रवृत्ति", "en-hi": "Grounding, stability, security, survival instincts" }
+    },
+    "Swadhisthana (Sacral)": {
+      location: { en: "Below navel", hi: "नाभि के नीचे", "en-hi": "Below navel / नाभि के नीचे" },
+      mukhi: ["2 Mukhi", "Gauri Shankar"],
+      effect: { en: "Creativity, emotional balance, relationships, and pleasure", hi: "रचनात्मकता, भावनात्मक संतुलन, रिश्ते और आनंद", "en-hi": "Creativity, emotional balance, relationships, pleasure" }
+    },
+    "Manipura (Solar Plexus)": {
+      location: { en: "Above navel", hi: "नाभि के ऊपर", "en-hi": "Above navel / नाभि के ऊपर" },
+      mukhi: ["3 Mukhi", "9 Mukhi"],
+      effect: { en: "Personal power, confidence, will, and self-esteem", hi: "व्यक्तिगत शक्ति, आत्मविश्वास, इच्छा और आत्म-सम्मान", "en-hi": "Personal power, confidence, will, self-esteem" }
+    },
+    "Anahata (Heart)": {
+      location: { en: "Center of chest", hi: "छाती के केंद्र में", "en-hi": "Center of chest / छाती के केंद्र में" },
+      mukhi: ["4 Mukhi", "6 Mukhi", "13 Mukhi"],
+      effect: { en: "Love, compassion, forgiveness, and emotional healing", hi: "प्रेम, करुणा, क्षमा और भावनात्मक उपचार", "en-hi": "Love, compassion, forgiveness, emotional healing" }
+    },
+    "Vishuddha (Throat)": {
+      location: { en: "Throat", hi: "गला", "en-hi": "Throat / गला" },
+      mukhi: ["5 Mukhi", "10 Mukhi"],
+      effect: { en: "Communication, expression, truth, and clarity of thought", hi: "संचार, अभिव्यक्ति, सत्य और विचार की स्पष्टता", "en-hi": "Communication, expression, truth, clarity" }
+    },
+    "Ajna (Third Eye)": {
+      location: { en: "Between eyebrows", hi: "भौंहों के बीच", "en-hi": "Between eyebrows / भौंहों के बीच" },
+      mukhi: ["8 Mukhi"],
+      effect: { en: "Intuition, insight, wisdom, and spiritual awareness", hi: "अंतर्ज्ञान, अंतर्दृष्टि, बुद्धि और आध्यात्मिक जागरूकता", "en-hi": "Intuition, insight, wisdom, spiritual awareness" }
+    },
+    "Sahasrara (Crown)": {
+      location: { en: "Top of head", hi: "सिर के शीर्ष पर", "en-hi": "Top of head / सिर के शीर्ष पर" },
+      mukhi: ["1 Mukhi", "12 Mukhi", "14 Mukhi"],
+      effect: { en: "Spiritual connection, enlightenment, and cosmic consciousness", hi: "आध्यात्मिक संबंध, ज्ञान और ब्रह्मांडीय चेतना", "en-hi": "Spiritual connection, enlightenment, cosmic consciousness" }
     }
+  }
   }
 };
 
