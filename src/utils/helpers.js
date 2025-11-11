@@ -20,12 +20,8 @@ export const getText = (textObject, language) => {
  */
 export const reduceToSingleDigit = (num) => {
     let currentNumStr = String(num);
-    
+
     while (currentNumStr.length > 1) {
-        // Handle special cases for master numbers 11, 22, 33 from your original file
-        if (currentNumStr === '11' || currentNumStr === '22' || currentNumStr === '33') {
-            return parseInt(currentNumStr, 10);
-        }
         currentNumStr = String(currentNumStr.split('').reduce((acc, digit) => acc + parseInt(digit, 10), 0));
     }
     return parseInt(currentNumStr, 10);
