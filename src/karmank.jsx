@@ -38,22 +38,31 @@ export default function KarmAnkApp() {
             return;
         }
         setFormError('');
-        
-        // Use the imported calculator functions
-        const mainReport = calculateNumerology(userData.dob);
-        
-        if (mainReport) {
-            // Store the report
-            setReport({ ...mainReport, name: userData.name, dob: new Date(userData.dob + 'T00:00:00') });
-            
-            // Use the imported dashaCalculator
-            const maha = dashaCalculator.calculateMahaDasha(mainReport.dob, mainReport.basicNumber);
-            const yearly = dashaCalculator.calculateYearlyDasha(mainReport.dob, mainReport.basicNumber);
-            const monthly = dashaCalculator.calculateMonthlyDasha(yearly);
-            const daily = dashaCalculator.calculateDailyDasha(monthly);
-            setDashaReport({ mahaDashaTimeline: maha, yearlyDashaTimeline: yearly, monthlyDashaTimeline: monthly, dailyDashaTimeline: daily });
-            
-            setActiveTab('Welcome');
+
+        try {
+            // Use the imported calculator functions
+            const mainReport = calculateNumerology(userData.dob);
+            console.log('Main Report:', mainReport);
+
+            if (mainReport) {
+                // Store the report
+                setReport({ ...mainReport, name: userData.name, dob: new Date(userData.dob + 'T00:00:00') });
+
+                // Use the imported dashaCalculator
+                const maha = dashaCalculator.calculateMahaDasha(mainReport.dob, mainReport.basicNumber);
+                const yearly = dashaCalculator.calculateYearlyDasha(mainReport.dob, mainReport.basicNumber);
+                const monthly = dashaCalculator.calculateMonthlyDasha(yearly);
+                const daily = dashaCalculator.calculateDailyDasha(monthly);
+                setDashaReport({ mahaDashaTimeline: maha, yearlyDashaTimeline: yearly, monthlyDashaTimeline: monthly, dailyDashaTimeline: daily });
+
+                setActiveTab('Welcome');
+            } else {
+                console.error('Main report is null');
+                setFormError('Failed to generate report. Please check the date format.');
+            }
+        } catch (error) {
+            console.error('Error generating report:', error);
+            setFormError(`Error: ${error.message}`);
         }
     };
 

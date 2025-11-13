@@ -15,12 +15,12 @@ export const getText = (textObject, language) => {
 
 /**
  * Reduces a number to a single digit by repeatedly summing its digits.
+ * Always returns a single digit (1-9) without any master number exceptions.
  * @param {number|string} num - The number or string to reduce.
- * @returns {number} The single-digit result.
+ * @returns {number} A single-digit result (1-9).
  */
 export const reduceToSingleDigit = (num) => {
     let currentNumStr = String(num);
-
     while (currentNumStr.length > 1) {
         currentNumStr = String(currentNumStr.split('').reduce((acc, digit) => acc + parseInt(digit, 10), 0));
     }

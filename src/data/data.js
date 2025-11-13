@@ -2423,7 +2423,8 @@ mantraRemedies: {
             hi: "गोल/अंडाकार",
             "en-hi": "Round/Oval / गोल/अंडाकार"
         }
-    },
+    }
+  },
 
   // T) Destiny-based remedies (example for 4)
   destinyBasedRemedies: {
@@ -2643,7 +2644,6 @@ mantraRemedies: {
       mukhi: ["1 Mukhi", "12 Mukhi", "14 Mukhi"],
       effect: { en: "Spiritual connection, enlightenment, and cosmic consciousness", hi: "आध्यात्मिक संबंध, ज्ञान और ब्रह्मांडीय चेतना", "en-hi": "Spiritual connection, enlightenment, cosmic consciousness" }
     }
-  }
   }
 };
 

@@ -23,8 +23,11 @@ export const calculateNumerology = (dob) => {
     for (const char of kundliDigitsStr) {
         digitCounts[parseInt(char)]++;
     }
-    
+
+    // Add destiny number to kundli grid
     digitCounts[destinyNumber]++;
+
+    // Add basic number for two-digit days
     if (day > 9 && day % 10 !== 0) {
         digitCounts[basicNumber]++;
     }
@@ -91,6 +94,7 @@ export const dashaCalculator = {
         const timeline = [];
         let startDate = new Date(dob);
         let dashaNumber = basicNum;
+
         for (let i = 0; i < 3; i++) { // Calculate for a few cycles
             for (let j = 0; j < 9; j++) {
                 const spanYears = dashaNumber;
@@ -109,6 +113,7 @@ export const dashaCalculator = {
         const timeline = [];
         const birthMonth = dob.getMonth();
         const birthDate = dob.getDate();
+
         for (let i = 0; i < 100; i++) { // Calculate for 100 years
             const targetYear = dob.getFullYear() + i;
             const birthdayOfTargetYear = new Date(targetYear, birthMonth, birthDate);
@@ -117,6 +122,7 @@ export const dashaCalculator = {
             const yearForCalc = targetYear % 100;
             const total = basicNum + (birthMonth + 1) + yearForCalc + dayAllottedNumber;
             const dashaNumber = reduceToSingleDigit(total);
+
             const startDate = birthdayOfTargetYear;
             const endDate = new Date(targetYear + 1, birthMonth, birthDate - 1);
             timeline.push({ year: targetYear, dashaNumber, startDate, endDate });
@@ -153,6 +159,7 @@ export const dashaCalculator = {
                 const dayOfWeek = currentDate.getDay();
                 const dayAllottedNumber = this.weekdayNumberMap[dayOfWeek];
                 const dashaNumber = reduceToSingleDigit(pratyantarNum + dayAllottedNumber);
+
                 timeline.push({ date: new Date(currentDate), dashaNumber });
                 currentDate.setDate(currentDate.getDate() + 1);
             }
