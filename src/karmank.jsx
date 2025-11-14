@@ -3,6 +3,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 // --- Core Data & Logic ---
 import { combinationInsights, DATA } from './data/data';
 import { calculateNumerology, dashaCalculator } from './utils/calculators';
+import { useAuth } from './contexts/AuthContext';
 
 // --- UI Components ---
 import Card from './components/Card';
@@ -25,11 +26,16 @@ const PlaceholderTab = ({ name }) => (
 
 // This is your main application component
 export default function KarmAnkApp() {
+    const { user, signOut } = useAuth();
     const [userData, setUserData] = useState({ dob: '', name: '', gender: 'Male' });
     const [report, setReport] = useState(null);
     const [dashaReport, setDashaReport] = useState(null);
     const [activeTab, setActiveTab] = useState('Welcome');
     const [formError, setFormError] = useState('');
+
+    const handleSignOut = async () => {
+        await signOut();
+    };
     
     const handleGenerate = (e) => {
         if (e) e.preventDefault();
@@ -102,7 +108,16 @@ export default function KarmAnkApp() {
 
     return (
         <div className="max-w-5xl mx-auto">
-            <header className="text-center mb-8">
+            <header className="text-center mb-8 relative">
+                <div className="absolute top-0 right-0 flex items-center gap-3">
+                    <span className="text-sm text-gray-300">{user?.email}</span>
+                    <button
+                        onClick={handleSignOut}
+                        className="bg-red-500/20 hover:bg-red-500/30 text-red-300 border border-red-500/50 px-4 py-2 rounded-md text-sm font-medium transition duration-200"
+                    >
+                        Sign Out
+                    </button>
+                </div>
                 <h1 className="text-5xl font-extrabold text-yellow-400 font-serif tracking-widest">KarmAnk</h1>
                 <p className="text-yellow-200/70">Discover Your True Potential</p>
             </header>
