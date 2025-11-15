@@ -12,7 +12,7 @@ export default function ProtectedRoute({ children }) {
            }}>
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-yellow-400 mb-4"></div>
-          <p className="text-gray-300">Loading...</p>
+          <p className="text-white">Loading...</p>
         </div>
       </div>
     )

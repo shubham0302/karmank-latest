@@ -19,7 +19,7 @@ const MantrasTab = ({ report }) => {
                 </h2>
                 <div className="mb-4">
                     <p className="text-lg text-cyan-300 font-semibold">{getText(mantraData.mantra, language)}</p>
-                    {/* <p className="text-sm text-gray-400">{getText(mantraData.transliteration, language)}</p> */}
+                    {/* <p className="text-sm text-white/70">{getText(mantraData.transliteration, language)}</p> */}
                 </div>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
                     <div className="bg-gray-900/50 p-3 rounded-md"><strong>Deity:</strong> {getText(mantraData.deity, language)}</div>

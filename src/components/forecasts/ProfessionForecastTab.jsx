@@ -228,7 +228,7 @@ const ProfessionForecastTab = ({ report, dashaReport, gender, targetDate }) => {
 
             <Card>
                 <SectionTitle>Potential Career Milestone Years ("Growth in Profession/ Business")</SectionTitle>
-                <p className="text-sm text-gray-400 mb-4">The following years show a high probability for significant job opportunities or career changes based on favorable Annual Dasha periods of 3, 5, or 6. Verification with Vedic Kundli is recommended for precise timing.</p>
+                <p className="text-sm text-white/70 mb-4">The following years show a high probability for significant job opportunities or career changes based on favorable Annual Dasha periods of 3, 5, or 6. Verification with Vedic Kundli is recommended for precise timing.</p>
                 <div className="flex flex-wrap gap-4">
                     {professionAnalysis.milestones.length > 0 ?
                         professionAnalysis.milestones.map(year => (

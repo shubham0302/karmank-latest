@@ -39,12 +39,12 @@ const AdvancedRemediesTab = ({ report }) => {
                     {applicableRemedies.map(remedy => (
                         <div key={remedy.number} className="p-4 bg-indigo-900/40 border-l-4 border-indigo-400 rounded-r-lg">
                             <h3 className="text-xl font-bold text-indigo-300">For Amplified Number {remedy.number} (appears {remedy.count}x): {remedy.focus}</h3>
-                            <p className="mt-2 text-gray-300">{remedy.recommendation}</p>
+                            <p className="mt-2 text-white/90">{remedy.recommendation}</p>
                         </div>
                     ))}
                 </div>
             ) : (
-                <p className="text-center text-gray-400 p-4 bg-gray-900/50 rounded-md">No specific advanced remedies are required based on your chart. The energies of your recurring numbers are in balance.</p>
+                <p className="text-center text-white/70 p-4 bg-gray-900/50 rounded-md">No specific advanced remedies are required based on your chart. The energies of your recurring numbers are in balance.</p>
             )}
         </Card>
     );

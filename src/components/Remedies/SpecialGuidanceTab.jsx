@@ -11,7 +11,7 @@ const SpecialGuidanceTab = ({ report }) => {
         return (
             <Card>
                 <SectionTitle>Special Guidance</SectionTitle>
-                <p className="text-center text-gray-400 p-4 bg-gray-900/50 rounded-md">No special remedies are required based on the specific rules in your base chart.</p>
+                <p className="text-center text-white/70 p-4 bg-gray-900/50 rounded-md">No special remedies are required based on the specific rules in your base chart.</p>
             </Card>
         );
     }

@@ -117,13 +117,13 @@ const ChildBirthForecastTab = ({ report, dashaReport, gender, targetDate }) => {
             case 'Unfavorable': return 'bg-red-500/20 text-red-300';
             case 'Preferred': return 'bg-green-500/20 text-green-300';
             case 'Neutral': return 'bg-blue-500/20 text-blue-300';
-            default: return 'bg-gray-700 text-gray-300';
+            default: return 'bg-gray-700 text-white/90';
         }
     };
 
     const StatusBlock = ({ status, children }) => {
         const colorClass = status === 'Green' ?
-            'bg-green-500/20 text-green-300' : status === 'Yellow' ? 'bg-yellow-500/20 text-yellow-300' : status === 'Red' ? 'bg-red-500/20 text-red-300' : 'bg-gray-700/50 text-gray-300';
+            'bg-green-500/20 text-green-300' : status === 'Yellow' ? 'bg-yellow-500/20 text-yellow-300' : status === 'Red' ? 'bg-red-500/20 text-red-300' : 'bg-gray-700/50 text-white/90';
         return <div className={`p-4 rounded-lg ${colorClass}`}>{children}</div>;
     };
 
@@ -139,7 +139,7 @@ const ChildBirthForecastTab = ({ report, dashaReport, gender, targetDate }) => {
 
             <Card>
                 <SectionTitle>Pregnancy Planning Window</SectionTitle>
-                <p className="text-sm text-gray-400 mb-4">This analysis, most relevant for the female chart, determines if the current period is favorable for planning a pregnancy based on active numerological energies.</p>
+                <p className="text-sm text-white/70 mb-4">This analysis, most relevant for the female chart, determines if the current period is favorable for planning a pregnancy based on active numerological energies.</p>
                 <StatusBlock status={avoidanceAnalysis.status}>
                     <p className="font-bold text-xl text-center">{avoidanceAnalysis.text}</p>
                 </StatusBlock>
@@ -147,7 +147,7 @@ const ChildBirthForecastTab = ({ report, dashaReport, gender, targetDate }) => {
 
             <Card>
                 <SectionTitle>Planned Delivery Date Validator</SectionTitle>
-                <p className="text-sm text-gray-400 mb-4">Select a potential date for a planned delivery to receive numerological feedback.</p>
+                <p className="text-sm text-white/70 mb-4">Select a potential date for a planned delivery to receive numerological feedback.</p>
                 <div className="mb-4">
                     <label htmlFor="deliveryDate" className="block text-sm font-medium text-yellow-500 mb-1">Select a Date</label>
                     <input

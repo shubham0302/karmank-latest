@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 // --- Core Data & Logic ---
 import { combinationInsights, DATA } from './data/data';
@@ -10,6 +11,8 @@ import Card from './components/Card';
 import SectionTitle from './components/SectionTitle';
 import StaticVedicKundli from './components/StaticVedicKundli';
 import NlgSummaryComponent from './components/NlgSummaryComponent';
+import CosmicBackground from './components/CosmicBackground';
+import { ArrowLeft } from 'lucide-react';
 
 // --- Main Tabs (Imported from sub-folders) ---
 import WelcomeTab from './components/tabs/WelcomeTab';
@@ -27,6 +30,7 @@ const PlaceholderTab = ({ name }) => (
 // This is your main application component
 export default function KarmAnkApp() {
     const { user, signOut } = useAuth();
+    const navigate = useNavigate();
     const [userData, setUserData] = useState({ dob: '', name: '', gender: 'Male' });
     const [report, setReport] = useState(null);
     const [dashaReport, setDashaReport] = useState(null);
@@ -35,6 +39,10 @@ export default function KarmAnkApp() {
 
     const handleSignOut = async () => {
         await signOut();
+    };
+
+    const handleBackToHome = () => {
+        navigate('/');
     };
     
     const handleGenerate = (e) => {
@@ -107,36 +115,49 @@ export default function KarmAnkApp() {
     };
 
     return (
-        <div className="max-w-5xl mx-auto">
-            <header className="text-center mb-8 relative">
-                <div className="absolute top-0 right-0 flex items-center gap-3">
-                    <span className="text-sm text-gray-300">{user?.email}</span>
-                    <button
-                        onClick={handleSignOut}
-                        className="bg-red-500/20 hover:bg-red-500/30 text-red-300 border border-red-500/50 px-4 py-2 rounded-md text-sm font-medium transition duration-200"
-                    >
-                        Sign Out
-                    </button>
-                </div>
-                <h1 className="text-5xl font-extrabold text-yellow-400 font-serif tracking-widest">KarmAnk</h1>
-                <p className="text-yellow-200/70">Discover Your True Potential</p>
-            </header>
+        <CosmicBackground density={140} useVideo={true}>
+            <div className="min-h-screen relative px-4 md:px-6 py-6">
+                <div className="max-w-5xl mx-auto relative z-10">
+                    {/* Back to Home Button */}
+                    <div className="mb-6">
+                        <button
+                            onClick={handleBackToHome}
+                            className="flex items-center gap-2 text-white/70 hover:text-auric-gold transition-colors duration-200"
+                        >
+                            <ArrowLeft className="h-5 w-5" />
+                            <span className="font-medium">Back to Home</span>
+                        </button>
+                    </div>
+
+                    <header className="text-center mb-8 relative">
+                        <div className="absolute top-0 right-0 flex items-center gap-3">
+                            <span className="text-sm text-white/70">{user?.email}</span>
+                            <button
+                                onClick={handleSignOut}
+                                className="bg-red-500/20 hover:bg-red-500/30 text-red-300 border border-red-500/50 px-4 py-2 rounded-md text-sm font-medium transition duration-200"
+                            >
+                                Sign Out
+                            </button>
+                        </div>
+                        <h1 className="text-5xl font-extrabold text-yellow-400 font-serif tracking-widest">KarmAnk</h1>
+                        <p className="text-yellow-200/70">Discover Your True Potential</p>
+                    </header>
 
             <Card className="mb-8">
                 <form onSubmit={handleGenerate} className="grid md:grid-cols-4 gap-4 items-end">
                     <div className="md:col-span-1">
                         <label htmlFor="name" className="block text-sm font-medium text-yellow-500">Name</label>
-                        <input type="text" id="name" value={userData.name} onChange={e => setUserData({...userData, name: e.target.value})} className="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm p-2" />
+                        <input type="text" id="name" value={userData.name} onChange={e => setUserData({...userData, name: e.target.value})} className="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm p-2 text-white placeholder:text-gray-400" />
                     </div>
                     <div className="md:col-span-1">
                         <label htmlFor="dob" className="block text-sm font-medium text-yellow-500">Date of Birth</label>
-                        <input type="date" id="dob" value={userData.dob} onChange={e => setUserData({...userData, dob: e.target.value})} className="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm p-2" />
+                        <input type="date" id="dob" value={userData.dob} onChange={e => setUserData({...userData, dob: e.target.value})} className="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm p-2 text-white" />
                     </div>
                     <div className="md:col-span-1">
                         <label htmlFor="gender" className="block text-sm font-medium text-yellow-500">Gender</label>
-                        <select id="gender" value={userData.gender} onChange={e => setUserData({...userData, gender: e.target.value})} className="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm p-2">
-                            <option>Male</option>
-                            <option>Female</option>
+                        <select id="gender" value={userData.gender} onChange={e => setUserData({...userData, gender: e.target.value})} className="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm p-2 text-white">
+                            <option className="bg-gray-700 text-white">Male</option>
+                            <option className="bg-gray-700 text-white">Female</option>
                         </select>
                     </div>
                     <div className="md:col-span-1">
@@ -146,22 +167,24 @@ export default function KarmAnkApp() {
                 {formError && <p className="text-red-400 text-center mt-4">{formError}</p>}
             </Card>
 
-            {report ? (
-                <div>
-                    <div className="mb-4 border-b border-yellow-400/20 flex flex-wrap">
-                        {tabs.map(tab => (
-                            <button key={tab} onClick={() => setActiveTab(tab)} className={`py-2 px-4 font-medium transition-colors duration-300 ${activeTab === tab ? 'text-yellow-400 border-b-2 border-yellow-400' : 'text-yellow-200/70 hover:text-yellow-300'}`}>
-                                {tab}
-                            </button>
-                        ))}
-                    </div>
-                    <div className="mt-6">{renderTabContent()}</div>
+                    {report ? (
+                        <div>
+                            <div className="mb-4 border-b border-yellow-400/20 flex flex-wrap">
+                                {tabs.map(tab => (
+                                    <button key={tab} onClick={() => setActiveTab(tab)} className={`py-2 px-4 font-medium transition-colors duration-300 ${activeTab === tab ? 'text-yellow-400 border-b-2 border-yellow-400' : 'text-yellow-200/70 hover:text-yellow-300'}`}>
+                                        {tab}
+                                    </button>
+                                ))}
+                            </div>
+                            <div className="mt-6">{renderTabContent()}</div>
+                        </div>
+                    ) : (
+                        <div className="text-center text-yellow-200/80 p-8 bg-gray-800/50 rounded-lg">
+                            <p>Please enter a name and date of birth to generate your Vedic Numerology report.</p>
+                        </div>
+                    )}
                 </div>
-            ) : (
-                <div className="text-center text-yellow-200/80 p-8 bg-gray-800/50 rounded-lg">
-                    <p>Please enter a name and date of birth to generate your Vedic Numerology report.</p>
-                </div>
-            )}
-        </div>
+            </div>
+        </CosmicBackground>
     );
 }

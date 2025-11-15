@@ -19,7 +19,7 @@ const ShaktiBeejMantraTab = () => {
                     id="purpose-select"
                     value={selectedPurpose}
                     onChange={(e) => setSelectedPurpose(e.target.value)}
-                    className="w-full md:w-1/2 bg-gray-700 border border-gray-600 text-gray-200 text-sm rounded-lg focus:ring-yellow-500 block p-3"
+                    className="w-full md:w-1/2 bg-gray-700 border border-gray-600 text-white text-sm rounded-lg focus:ring-yellow-500 block p-3"
                 >
                     {Object.entries(DATA.shaktiBeejMantras).map(([key, value]) => (
                         <option key={key} value={key}>{getText(value.purpose, language)}</option>

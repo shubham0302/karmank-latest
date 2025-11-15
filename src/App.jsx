@@ -3,9 +3,12 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import LoginPage from './components/auth/LoginPage';
 import ProtectedRoute from './components/auth/ProtectedRoute';
-import KarmAnkApp from './karmank'; // Import your main app component
+import HomePage from './pages/HomePage';
+import KarmAnkApp from './karmank';
+import NameAnalysisPage from './pages/NameAnalysisPage';
+import CompatibilityPage from './pages/CompatibilityPage';
+import GitaGyanPage from './pages/GitaGyanPage';
 
-// The AppWrapper provides the background and base styles
 const App = () => (
     <AuthProvider>
         <BrowserRouter>
@@ -15,9 +18,39 @@ const App = () => (
                     path="/"
                     element={
                         <ProtectedRoute>
-                            <div className="min-h-screen bg-indigo-900 text-gray-200 font-sans p-4 md:p-8" style={{background: 'radial-gradient(circle, rgba(23,20,69,1) 0%, rgba(12,10,42,1) 100%)'}}>
-                                <KarmAnkApp />
-                            </div>
+                            <HomePage />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/numerology"
+                    element={
+                        <ProtectedRoute>
+                            <KarmAnkApp />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/name-analysis"
+                    element={
+                        <ProtectedRoute>
+                            <NameAnalysisPage />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/compatibility"
+                    element={
+                        <ProtectedRoute>
+                            <CompatibilityPage />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/gita-gyan"
+                    element={
+                        <ProtectedRoute>
+                            <GitaGyanPage />
                         </ProtectedRoute>
                     }
                 />

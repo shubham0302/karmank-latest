@@ -14,7 +14,7 @@ const GeneralRemediesTab = ({ report }) => {
             <h2 className="text-2xl font-bold text-yellow-400 mb-4">
                 {title} (Number: {number})
             </h2>
-            <div className="space-y-4 text-gray-300">
+            <div className="space-y-4 text-white/90">
                 <div>
                     <h3 className="font-semibold text-yellow-300 text-lg mb-1">General Advice</h3>
                     <p>{getText(remedyData.general, language)}</p>

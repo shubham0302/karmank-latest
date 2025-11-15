@@ -152,19 +152,19 @@ const MarriageForecastTab = ({ report, dashaReport, targetDate }) => {
 
             <Card>
                 <SectionTitle>Personality Compatibility Snapshot</SectionTitle>
-                <p className="mb-4 text-gray-300">As a Destiny Number <span className="font-bold text-yellow-400">{report.destinyNumber}</span>, your core life path energy influences who you connect with most naturally. {compatibilityDescription}</p>
+                <p className="mb-4 text-white/90">As a Destiny Number <span className="font-bold text-yellow-400">{report.destinyNumber}</span>, your core life path energy influences who you connect with most naturally. {compatibilityDescription}</p>
                 <div className="grid md:grid-cols-3 gap-4 text-center">
                     <div className="bg-green-500/10 p-3 rounded-lg">
                         <h4 className="font-bold text-green-400 mb-2">Good Compatibility</h4>
-                        <p className="text-2xl font-bold text-gray-200">{compatibility?.good?.join(', ') || 'N/A'}</p>
+                        <p className="text-2xl font-bold text-white">{compatibility?.good?.join(', ') || 'N/A'}</p>
                     </div>
                     <div className="bg-yellow-500/10 p-3 rounded-lg">
                         <h4 className="font-bold text-yellow-400 mb-2">Neutral</h4>
-                        <p className="text-2xl font-bold text-gray-200">{compatibility?.neutral?.join(', ') || 'N/A'}</p>
+                        <p className="text-2xl font-bold text-white">{compatibility?.neutral?.join(', ') || 'N/A'}</p>
                     </div>
                     <div className="bg-red-500/10 p-3 rounded-lg">
                         <h4 className="font-bold text-red-400 mb-2">{compatibility?.not ? 'Not Compatible' : 'Avoid'}</h4>
-                        <p className="text-2xl font-bold text-gray-200">{(compatibility?.not || compatibility?.avoid || []).join(', ') || 'N/A'}</p>
+                        <p className="text-2xl font-bold text-white">{(compatibility?.not || compatibility?.avoid || []).join(', ') || 'N/A'}</p>
                     </div>
                 </div>
             </Card>

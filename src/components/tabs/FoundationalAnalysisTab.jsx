@@ -47,11 +47,11 @@ const FoundationalAnalysisTab = ({ analysis, yogas, specialInsights }) => {
                             <div key={item.number} className="bg-gray-900/50 p-4 rounded-md border-l-4 border-yellow-500">
                                 <div className="flex justify-between items-baseline">
                                     <h3 className="text-xl font-bold text-yellow-400">Number: {item.number}</h3>
-                                    <span className="text-sm text-gray-400">Occurrences: {item.occurrences}</span>
+                                    <span className="text-sm text-white/70">Occurrences: {item.occurrences}</span>
                                 </div>
                                 <div className="mt-3">
                                     <h4 className="font-semibold text-yellow-500 mb-1">Influence:</h4>
-                                    <p className="text-gray-300">{item.influence}</p>
+                                    <p className="text-white/90">{item.influence}</p>
                                 </div>
                             </div>
                         ))}
@@ -67,7 +67,7 @@ const FoundationalAnalysisTab = ({ analysis, yogas, specialInsights }) => {
                         {specialInsights.map((insight, index) => (
                             <div key={index} className="bg-indigo-900/40 p-4 rounded-md border-l-4 border-purple-400">
                                 <h3 className="text-xl font-bold text-purple-300">{getText(insight.title, language)}</h3>
-                                <p className="text-gray-300 mt-2">{getText(insight.text, language)}</p>
+                                <p className="text-white/90 mt-2">{getText(insight.text, language)}</p>
                             </div>
                         ))}
                     </div>
@@ -83,9 +83,9 @@ const FoundationalAnalysisTab = ({ analysis, yogas, specialInsights }) => {
                         {yogas.map(yoga => (
                             <div key={getText(yoga.name, language)} className="bg-gray-900/30 p-3 rounded-md">
                                 <strong className="text-yellow-500">{getText(yoga.name, language)}</strong>
-                                <p className="text-sm text-gray-300">{getText(yoga.description, language)}</p>
+                                <p className="text-sm text-white/90">{getText(yoga.description, language)}</p>
                                 {yoga.traits && (
-                                    <ul className="list-disc list-inside text-xs mt-1 text-gray-400">
+                                    <ul className="list-disc list-inside text-xs mt-1 text-white/70">
                                         {yoga.traits.map(trait => <li key={getText(trait, language)}>{getText(trait, language)}</li>)}
                                     </ul>
                                 )}

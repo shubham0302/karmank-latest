@@ -145,9 +145,9 @@ const TravelForecastTab = ({ report, dashaReport, targetDate }) => {
                         </div>
 
                         <div className="grid md:grid-cols-3 gap-4 mb-6 text-center text-sm">
-                            <div className="bg-gray-800 p-2 rounded-md"><p className="text-gray-400">Travel Score</p><p className="font-bold text-xl">{travelAnalysis.score}</p></div>
-                            <div className="bg-gray-800 p-2 rounded-md"><p className="text-gray-400">Visa Ease</p><p className="font-bold text-xl">{travelAnalysis.visaEase}</p></div>
-                            <div className="bg-gray-800 p-2 rounded-md"><p className="text-gray-400">Destination Type</p><p className="font-bold text-xl">{travelAnalysis.countryType}</p></div>
+                            <div className="bg-gray-800 p-2 rounded-md"><p className="text-white/70">Travel Score</p><p className="font-bold text-xl">{travelAnalysis.score}</p></div>
+                            <div className="bg-gray-800 p-2 rounded-md"><p className="text-white/70">Visa Ease</p><p className="font-bold text-xl">{travelAnalysis.visaEase}</p></div>
+                            <div className="bg-gray-800 p-2 rounded-md"><p className="text-white/70">Destination Type</p><p className="font-bold text-xl">{travelAnalysis.countryType}</p></div>
                         </div>
 
                         <div className="space-y-6">

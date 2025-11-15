@@ -1,7 +1,6 @@
 import React, { useMemo } from 'react';
 import Card from '../Card';
 import SectionTitle from '../SectionTitle';
-import StaticVedicKundli from '../StaticVedicKundli';
 import { combinationInsights, DATA } from '../../data/data'; // Import from data.js
 import { getText } from '../../utils/helpers'; // Import getText
 
@@ -49,7 +48,21 @@ const WelcomeTab = ({ report }) => {
     const insightKey = `${report.basicNumber}-${report.destinyNumber}`;
     // Using 'en' as a default
     const snapshotDescription = getText(combinationInsights[insightKey], 'en') || "No specific insight available for this combination.";
-    
+
+    // Function to get cell background color based on number significance
+    const getCellBackground = (num) => {
+        const colors = [];
+
+        if (report.destinyNumber === num) colors.push(DATA.colorMap.destiny);
+        if (report.basicNumber === num) colors.push(DATA.colorMap.basic);
+
+        if (colors.length === 0) {
+            return report.baseKundliGrid[num] > 0 ? DATA.colorMap.dob : '#4b5563'; // Gray for empty
+        }
+        if (colors.length === 1) return colors[0];
+        return `linear-gradient(135deg, ${colors.join(', ')})`;
+    };
+
     return (
         <div className="space-y-6">
             <Card className="bg-indigo-900/30 border-indigo-400">
@@ -57,15 +70,56 @@ const WelcomeTab = ({ report }) => {
                 <p className="text-indigo-200 whitespace-pre-wrap">{snapshotDescription}</p>
             </Card>
 
-            <div className="grid md:grid-cols-2 gap-6 text-center">
-                <Card><p className="text-sm text-yellow-500">Basic Number (Moolank)</p><p className="text-5xl font-bold">{report.basicNumber}</p></Card>
-                <Card><p className="text-sm text-yellow-500">Destiny Number (Bhagyank)</p><p className="text-5xl font-bold">{report.destinyNumber}</p></Card>
-            </div>
-            
             <Card>
-                <h3 className="text-xl font-bold text-center text-yellow-300 mb-4">Base Kundli</h3>
-                <div className="flex justify-center">
-                    <StaticVedicKundli grid={report.baseKundliGrid} />
+                <div className="grid lg:grid-cols-5 gap-6">
+                    {/* Left Section - Base Kundli (3/5 width on large screens) */}
+                    <div className="lg:col-span-3">
+                        <h3 className="text-lg font-bold text-center text-yellow-300 mb-3">Base Kundli</h3>
+                        <div className="flex justify-center items-center">
+                            <div className="w-full max-w-xs">
+                                <div className="grid grid-cols-3 gap-1.5 bg-gray-900/50 p-2 rounded-md aspect-square">
+                                    {[3, 1, 9, 6, 7, 5, 2, 8, 4].map((num, i) => (
+                                        <div
+                                            key={i}
+                                            style={{ background: getCellBackground(num) }}
+                                            className="flex items-center justify-center text-xl font-bold rounded-md aspect-square text-white transition-all duration-300 ease-in-out shadow-lg"
+                                        >
+                                            {report.baseKundliGrid[num] > 0 ? String(num).repeat(report.baseKundliGrid[num]) : ''}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                        {/* Legend */}
+                        <div className="mt-3 flex flex-wrap justify-center gap-2 text-xs">
+                            <div className="flex items-center gap-1.5">
+                                <div className="w-3 h-3 rounded" style={{ backgroundColor: DATA.colorMap.basic }}></div>
+                                <span className="text-white/70">Basic</span>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                                <div className="w-3 h-3 rounded" style={{ backgroundColor: DATA.colorMap.destiny }}></div>
+                                <span className="text-white/70">Destiny</span>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                                <div className="w-3 h-3 rounded" style={{ backgroundColor: DATA.colorMap.dob }}></div>
+                                <span className="text-white/70">DOB</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Right Section - Numbers (2/5 width on large screens) */}
+                    <div className="lg:col-span-2 flex flex-col justify-center space-y-3">
+                        <div className="text-center p-4 bg-gradient-to-br from-rose-900/40 to-rose-800/20 border border-rose-700/50 rounded-lg">
+                            <p className="text-xs text-rose-400 mb-0.5">Basic Number</p>
+                            <p className="text-xs text-rose-300/70 mb-2">(Moolank)</p>
+                            <p className="text-6xl font-bold text-rose-300">{report.basicNumber}</p>
+                        </div>
+                        <div className="text-center p-4 bg-gradient-to-br from-green-900/40 to-green-800/20 border border-green-700/50 rounded-lg">
+                            <p className="text-xs text-green-400 mb-0.5">Destiny Number</p>
+                            <p className="text-xs text-green-300/70 mb-2">(Bhagyank)</p>
+                            <p className="text-6xl font-bold text-green-300">{report.destinyNumber}</p>
+                        </div>
+                    </div>
                 </div>
             </Card>
 
@@ -89,7 +143,7 @@ const WelcomeTab = ({ report }) => {
                                     {isDestiny && <span className="ml-2 text-xs font-normal bg-yellow-500/20 text-yellow-300 px-2 py-1 rounded-full">Destiny Number</span>}
                                     {num === report.basicNumber && !isDestiny && <span className="ml-2 text-xs font-normal bg-rose-500/20 text-rose-300 px-2 py-1 rounded-full">Basic Number</span>}
                                 </h4>
-                                <p className="text-sm text-gray-300 mt-1">{description}</p>
+                                <p className="text-sm text-white/90 mt-1">{description}</p>
                                 {report.baseKundliGrid[num] > 1 && (
                                     <p className="text-xs text-cyan-300 italic mt-1">This number appears multiple times in the grid, amplifying its influence (see Foundational Analysis tab).</p>
                                 )}

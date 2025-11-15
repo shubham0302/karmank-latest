@@ -30,7 +30,7 @@ const NumerologyTraitsTab = ({ report, gender }) => {
     const TraitItem = ({ label, value }) => (
         <div className="bg-gray-900/50 p-3 rounded-md">
             <h4 className="font-semibold text-yellow-500 text-sm">{label}</h4>
-            <p className="text-gray-300">{value}</p>
+            <p className="text-white/90">{value}</p>
         </div>
     );
 
@@ -48,7 +48,7 @@ const NumerologyTraitsTab = ({ report, gender }) => {
                 <h4 className={`font-bold ${styles.text} mb-2 text-center`}>{title}</h4>
                 <ul className="space-y-1 text-center">
                     {items.map(item => (
-                        <li key={getText(item, language)} className="text-gray-300 text-sm">
+                        <li key={getText(item, language)} className="text-white/90 text-sm">
                             {getText(item, language)}
                         </li>
                     ))}
@@ -96,7 +96,7 @@ const NumerologyTraitsTab = ({ report, gender }) => {
                         </div>
                         <div className="p-4 rounded-lg bg-indigo-500/10 text-center">
                             <h4 className="font-bold text-indigo-400 mb-2">Support Needed</h4>
-                            <p className="text-gray-300 text-sm mb-3">{getText(professions.supportNeeded, language)}</p>
+                            <p className="text-white/90 text-sm mb-3">{getText(professions.supportNeeded, language)}</p>
                             <div className="flex justify-center flex-wrap gap-4">
                                 {supportAnalysis.map(item => (
                                     <div key={item.number} className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold ${item.isPresent ? 'bg-green-500/20 text-green-300' : 'bg-red-500/20 text-red-300'}`}>

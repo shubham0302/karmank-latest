@@ -121,7 +121,7 @@ const AdvancedDashaTab = ({ dashaReport, baseKundliGrid, basicNumber, destinyNum
                 <div className="text-center p-8 bg-gray-900/50 rounded-lg h-full flex flex-col justify-center">
                     {currentDaily ? (
                         <>
-                            <p className="text-gray-400">Dasha for {formatDate(targetDate)}</p>
+                            <p className="text-white/70">Dasha for {formatDate(targetDate)}</p>
                             <p className="text-7xl font-bold my-4 text-yellow-400">{currentDaily.dashaNumber}</p>
                         </>
                     ) : <p className="text-2xl font-bold">Could not calculate Dasha for this day.</p>}
@@ -177,7 +177,7 @@ const AdvancedDashaTab = ({ dashaReport, baseKundliGrid, basicNumber, destinyNum
                             destinyNumber={destinyNumber} 
                         />
                         <div className="mt-4 text-center p-2 bg-gray-900/50 rounded-lg text-xs">
-                            <p className="text-gray-300">
+                            <p className="text-white/90">
                                 Maha: <span className="font-bold text-purple-400">{currentMaha ? currentMaha.dashaNumber : 'N/A'}</span> |
                                 Yearly: <span className="font-bold text-indigo-400">{currentYearly ? currentYearly.dashaNumber : 'N/A'}</span> | 
                                 Monthly: <span className="font-bold text-emerald-400">{currentMonthly ? currentMonthly.dashaNumber : 'N/A'}</span> |
@@ -205,7 +205,7 @@ const AdvancedDashaTab = ({ dashaReport, baseKundliGrid, basicNumber, destinyNum
                         {dynamicAnalysis.combinedNote && (
                             <div className="p-3 bg-fuchsia-500/20 border-l-4 border-fuchsia-400 rounded-r-lg">
                                 <h4 className="font-bold text-fuchsia-300">Combined Insight</h4>
-                                <p className="text-sm text-gray-300">{dynamicAnalysis.combinedNote}</p>
+                                <p className="text-sm text-white/90">{dynamicAnalysis.combinedNote}</p>
                             </div>
                         )}
                         {Object.entries(dynamicAnalysis.traitAnalysis).map(([number, data]) => (
@@ -215,7 +215,7 @@ const AdvancedDashaTab = ({ dashaReport, baseKundliGrid, basicNumber, destinyNum
                                     These traits are derived from the active {data.sources.join(' & ')} Dasha.
                                     {data.sources.length > 1 && <span className="font-bold text-red-400"> (Amplified Influence)</span>}
                                 </p>
-                                <p className="text-sm text-gray-300">{getText(data.details.description, language)}</p>
+                                <p className="text-sm text-white/90">{getText(data.details.description, language)}</p>
                             </div>
                         ))}
                     </div>
@@ -232,7 +232,7 @@ const AdvancedDashaTab = ({ dashaReport, baseKundliGrid, basicNumber, destinyNum
                                 <p className="text-xs text-cyan-200/80 italic mb-2">
                                     The active Dasha(s) have increased the count of Number {item.number} to {item.occurrences}, introducing the following traits:
                                 </p>
-                                <p className="text-sm text-gray-300">{item.influence}</p>
+                                <p className="text-sm text-white/90">{item.influence}</p>
                             </div>
                         ))}
                     </div>
@@ -249,9 +249,9 @@ const AdvancedDashaTab = ({ dashaReport, baseKundliGrid, basicNumber, destinyNum
                         {dynamicAnalysis.dynamicYogas.map(yoga => (
                             <div key={getText(yoga.name, language)} className="bg-gray-900/30 p-3 rounded-md">
                                 <strong className="text-yellow-500">{getText(yoga.name, language)}</strong>
-                                <p className="text-sm text-gray-300">{getText(yoga.description, language)}</p>
+                                <p className="text-sm text-white/90">{getText(yoga.description, language)}</p>
                                 {yoga.traits && (
-                                    <ul className="list-disc list-inside text-xs mt-1 text-gray-400">
+                                    <ul className="list-disc list-inside text-xs mt-1 text-white/70">
                                         {yoga.traits.map(trait => <li key={getText(trait, language)}>{getText(trait, language)}</li>)}
                                     </ul>
                                 )}

@@ -90,7 +90,7 @@ const PropertyForecastTab = ({ report, dashaReport, targetDate }) => {
         return (
             <div className={`p-4 rounded-lg border-l-4 ${colorClass}`}>
                 <h4 className="font-bold text-lg mb-1">{title}</h4>
-                <p className="text-gray-300">{text}</p>
+                <p className="text-white/90">{text}</p>
             </div>
         )
     };
