@@ -97,8 +97,8 @@ export default function KarmAnkApp() {
         };
 
         switch (activeTab) {
-            case 'Welcome': 
-                return <WelcomeTab report={report} />;
+            case 'Welcome':
+                return <WelcomeTab report={report} userData={userData} />;
             case 'Foundational Analysis': 
                 return <FoundationalAnalysisTab analysis={report.recurringNumbersAnalysis} yogas={report.yogas} specialInsights={report.specialInsights} />;
             case 'Advanced Dasha': 

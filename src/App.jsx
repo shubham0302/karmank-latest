@@ -8,6 +8,7 @@ import KarmAnkApp from './karmank';
 import NameAnalysisPage from './pages/NameAnalysisPage';
 import CompatibilityPage from './pages/CompatibilityPage';
 import GitaGyanPage from './pages/GitaGyanPage';
+import AssetVibrationPage from './pages/AssetVibrationPage';
 
 const App = () => (
     <AuthProvider>
@@ -51,6 +52,14 @@ const App = () => (
                     element={
                         <ProtectedRoute>
                             <GitaGyanPage />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/asset-vibration"
+                    element={
+                        <ProtectedRoute>
+                            <AssetVibrationPage />
                         </ProtectedRoute>
                     }
                 />
