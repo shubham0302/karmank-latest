@@ -34,6 +34,12 @@ export default function HomePage() {
       route: "/compatibility"
     },
     {
+      title: "KARMANK • ASSET VIBRATION",
+      blurb: "Discover cosmic alignment of properties, businesses, vehicles & investments with your destiny numbers.",
+      cta: "Analyze",
+      route: "/asset-vibration"
+    },
+    {
       title: "KARMANK • GITA GYAN",
       blurb: "Timeless wisdom of the Bhagavad Gita mapped to modern decisions and your numerological signatures.",
       cta: "Open",
@@ -110,7 +116,7 @@ export default function HomePage() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.6 }}
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 items-stretch"
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5 items-stretch"
           >
             {modules.map((module, index) => (
               <motion.div
