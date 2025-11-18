@@ -118,16 +118,610 @@ export const DATA = {
 
   // C) Destiny traits panel
   destinyTraits: {
-    1: { Planet: {en: "Sun", hi: "सूर्य","en-hi": "Sun (सूर्य)"}, Finance: {en: "Good earning, lucky with money", hi: "अच्छी कमाई, पैसों में भाग्यशाली", "en-hi": "Good earning, paison mein lucky"}, "Health Defects": {en: " Prone to sunstroke, BP, problems with eyesight, and heart issues.", hi: "सूर्याघात, ब्लड प्रेशर, दृष्टि समस्याएँ और हृदय संबंधी समस्याओं की संभावना।", "en-hi": "Sunstroke, BP, drishti samasya aur heart sambandhi samasyaon ki sambhavna."}, "Lucky Days": {en: "Sunday, Monday, Thursday", hi: "रविवार, सोमवार, गुरुवार", "en-hi": "Ravivar, Somvar, Guruwar"}, "Lucky Colours": {en: " Gold, Yellow, Orange, Purple",hi: "सुनहरा, पीला, नारंगी, बैंगनी", "en-hi": "Sunehra, Peela, Narangi, Baingani"}, "Lucky Jewels": {en: "Ruby",hi: "माणिक","en-hi": "Maanik"}, "Important Years": {en: "1, 10, 19, 28, 37, 46, 55, 64, 73", hi: "1, 10, 19, 28, 37, 46, 55, 64, 73","en-hi": "1, 10, 19, 28, 37, 46, 55, 64, 73"}, "Friendly Number": {en: "1, 3, 4, 5, 6, 9", hi: "1, 3, 4, 5, 6, 9", "en-hi": "1, 3, 4, 5, 6, 9"}, "As Wife": {en: "You can be quick to anger, proud, and may act bossy. You like to take charge and want to be respected. For a loving marriage, a calm and level-headed husband is a good match.", hi: "आप जल्दी गुस्सा हो सकती हैं, गर्व महसूस करती हैं और कभी-कभी हठीली हो सकती हैं। आपको नियंत्रण में रहना पसंद है और सम्मान चाहिए। स्नेही विवाह के लिए शांत और समझदार पति अच्छा मेल है।", "en-hi": "Aap jaldi gussa ho sakti hain, garv mehsus karti hain aur kabhi-kabhi hathiili ho sakti hain. Aapko control pasand hai aur samman chahiye."}, "As Husband": {en: "You are generous but can be controlling of your wife. You care about your social standing and like to be the head of the family. You will not put up with disrespect.", hi: "आप उदार हैं लेकिन अपनी पत्नी पर नियंत्रण रख सकते हैं। आप सामाजिक प्रतिष्ठा की परवाह करते हैं और परिवार के मुखिया बनना पसंद करते हैं। आप अपमान बर्दाश्त नहीं करेंगे।", "en-hi": "Aap udar hain lekin apni patni par control rakh sakte hain. Aap social sthiti ki parwah karte hain."}, "Good Quality": {en: "Ambitious, Creative, Leader-like, Confident, Determined, likes to research things, Energetic.", hi: "महत्वाकांक्षी, रचनात्मक, नेतृत्व-युक्त, आत्मविश्वासी, दृढ़ निश्चयी, शोध करना पसंद करते हैं, ऊर्जावान।", "en-hi": "Mahattvakanshi, Rachnatmak, Leader-like, Atmavishwas, Drid Nischay, research pasand, Urjawan"}, Drawback: { en: "Emotionally distant, Bossy, Pushy, Stubborn, Arrogant, Spends too much money.", hi: "भावनात्मक रूप से दूरी बनाने वाला, हठीला, दबंग, जिद्दी, अहंकारी, अधिक खर्च करने वाला।", "en-hi": "Bhavnaatmak doori banane wala, hathiila, dabang, ziddi, ahankari, adhik kharch karne wala"}, "Spiritual Insights": {en: "Learn to lead with wisdom and understanding, not just your ego.", hi: "सिर्फ अहंकार नहीं, बल्कि बुद्धि और समझ के साथ नेतृत्व करना सीखें।", "en-hi": "Sirf ahankar nahi, balki buddhi aur samajh ke saath netritva karein."}},
-    2: { Planet: { en: "Moon", hi: "चंद्र", "en-hi": "Moon (चंद्र)" }, Finance: { en: "Average financial luck with ups and downs, but gains well through partnerships.", hi: "आर्थिक भाग्य औसत है, उतार-चढ़ाव के साथ, लेकिन साझेदारी से अच्छा लाभ होता है।", "en-hi": "Average financial luck, partnerships se gains" },"Health Defects": { en: "May experience poor blood circulation, Cold, Cough", hi: "रक्त संचार की समस्या, सर्दी, खांसी हो सकती है।", "en-hi": "Poor blood circulation, cold, cough" }, "Lucky Days": { en: "Monday, Friday", hi: "सोमवार, शुक्रवार", "en-hi": "Somvar, Shukrwar" }, "Lucky Colours": { en: "White, Cream, Blue", hi: "सफेद, क्रीम, नीला", "en-hi": "Safed, Cream, Neela" }, "Lucky Jewels": { en: "Pearl, Moonstone", hi: "मोती, चंद्रमणि", "en-hi": "Moti, Chandramani" }, "Important Years": { en: "2, 11, 20, 29, 38, 47, 56, 65, 74", hi: "2, 11, 20, 29, 38, 47, 56, 65, 74", "en-hi": "2,11,20,29,38,47,56,65,74" }, "Friendly Number": { en: "2, 4, 6, 9", hi: "2, 4, 6, 9", "en-hi": "2,4,6,9" }, "As Wife": { en: "You are caring, loving, and loyal. You can be moody and may nag at times, but you are very sensitive. You take care of your responsibilities but are not very interested in cooking.", hi: "आप देखभाल करने वाली, प्यार करने वाली और वफादार हैं। कभी-कभी मूडी हो सकती हैं और नाक-झोंक कर सकती हैं, लेकिन आप बहुत संवेदनशील हैं। आप अपनी जिम्मेदारियों का ध्यान रखती हैं लेकिन खाना बनाने में ज्यादा रुचि नहीं है।", "en-hi": "Aap caring, loving, loyal hain. Kabhi moody ho sakti hain, responsibilities sambhalti hain, cooking mein interest kam" }, "As Husband": { en: "There are two types: one is bossy, and the other enjoys life's pleasures. You tend to spend a lot of money on comforts.", hi: "दो प्रकार हैं: एक हठीला होता है, और दूसरा जीवन की सुख-सुविधाओं का आनंद लेता है। आप आराम पर अधिक पैसा खर्च करते हैं।", "en-hi": "Do types hain: ek bossy, doosra enjoys life, comfort par zyada kharch" }, "Good Quality": { en: "Imaginative, Cooperative, Diplomatic, Peacemaker, Intuitive, Sensitive, Supportive.", hi: "कल्पनाशील, सहयोगी, कूटनीतिक, शांतिप्रिय, सहज ज्ञान वाली, संवेदनशील, सहायक।", "en-hi": "Kalpanashil, cooperative, diplomatic, peacemaker, intuitive, sensitive, supportive" }, Drawback: { en: "Emotionally distant at times, Prone to mood swings, Tends to interfere too much, Can have a two-sided nature, Unpredictable.", hi: "कभी-कभी भावनात्मक रूप से दूरी बनाना, मूड स्विंग्स, अधिक हस्तक्षेप करना, दोहरी प्रवृत्ति, अप्रत्याशित।", "en-hi": "Emotionally distant, mood swings, interfere, two-sided, unpredictable" }, "Spiritual Insights": { en: "Follow your gut feeling (intuition) rather than just relying on logic.", hi: "सिर्फ तर्क पर निर्भर न रहें, अपनी सहज अनुभूति (intuition) का पालन करें।", "en-hi": "Follow gut feeling, intuition over logic" }},
-    3: { Planet: { en: "Jupiter", hi: "बृहस्पति", "en-hi": "Jupiter (बृहस्पति)" }, Finance: { en: "Fortunate, good advisor", hi: "सौभाग्यशाली, अच्छा सलाहकार", "en-hi": "Fortunate, accha salahkaar" }, "Health Defects": { en: "Susceptible to problems with the chest and lungs.", hi: "छाती और फेफड़ों से संबंधित समस्याओं की संभावना।", "en-hi": "Chest aur lungs ki samasya" }, "Lucky Days": { en: "Tuesday, Thursday, Friday", hi: "मंगलवार, गुरुवार, शुक्रवार", "en-hi": "Mangalvar, Guruwar, Shukrawar" }, "Lucky Colours": { en: "Yellow, Cream, Orange", hi: "पीला, क्रीम, नारंगी", "en-hi": "Peela, Cream, Narangi" }, "Lucky Jewels": { en: "Yellow Sapphire, Topaz, Amethyst", hi: "पीला नीलम, टोपाज़, ऐमिथिस्ट", "en-hi": "Peela Neelam, Topaz, Amethyst" }, "Important Years": { en: "3, 12, 21, 30, 39, 48, 57, 66, 75", hi: "3, 12, 21, 30, 39, 48, 57, 66, 75", "en-hi": "3,12,21,30,39,48,57,66,75" }, "Friendly Number": { en: "1, 3, 5, 6, 7, 8, 9", hi: "1, 3, 5, 6, 7, 8, 9", "en-hi": "1,3,5,6,7,8,9" }, "As Wife": { en: "You’re a caring and supportive partner who helps in your husband’s work and manages the home well. You have a positive attitude towards love and family, and your approach to relationships is joyful and graceful.", hi: "आप देखभाल करने वाली और सहायक जीवनसाथी हैं जो अपने पति के कार्य में मदद करती हैं और घर का प्रबंधन अच्छी तरह करती हैं। आप प्रेम और परिवार के प्रति सकारात्मक दृष्टिकोण रखती हैं, और आपके संबंधों का तरीका आनंददायक और सुरुचिपूर्ण है।", "en-hi": "Aap caring aur supportive partner hain, husband ke kaam mein madad karti hain, relationship mein joyful aur graceful approach"}, "As Husband": { en: "You tend to marry early and have big dreams, which can lead to expecting too much from your wife. You want a smart, charming, and confident partner, and you’re most compatible with someone who’s a number 3 or 6.", hi: "आप आमतौर पर जल्दी शादी करते हैं और बड़े सपने देखते हैं, जिससे पत्नी से बहुत अधिक अपेक्षा हो सकती है। आप एक स्मार्ट, आकर्षक और आत्मविश्वासी साथी चाहते हैं और आप सबसे अधिक संख्या 3 या 6 वाले व्यक्ति के साथ संगत हैं।", "en-hi": "Aap early marry karte hain, big dreams, expect zyada from wife, compatible with 3 or 6" }, "Good Quality": { en: "Ambitious, Self-disciplined, Independent, Strong-willed, Cares about social status and reputation.", hi: "महत्वाकांक्षी, आत्म-अनुशासित, स्वतंत्र, दृढ़संकल्पी, सामाजिक प्रतिष्ठा और सम्मान की परवाह करने वाला।", "en-hi": "Ambitious, self-disciplined, independent, strong-willed, cares about social status" }, Drawback: { en: "Can be cruel, Acts like a dictator, Not genuine (says one thing but does another), Wastes money, Overly proud of appearance.", hi: "कठोर हो सकता है, तानाशाह जैसा व्यवहार, असली नहीं (एक कहता है और दूसरा करता है), पैसा बर्बाद करता है, रूप और दिखावे पर अत्यधिक गर्व।", "en-hi": "Cruel, acts like dictator, not genuine, wastes money, proud of appearance" }, "Spiritual Insights": { en: "Use your wisdom to help others, not just to feed your own pride.", hi: "अपनी बुद्धिमानी का उपयोग दूसरों की मदद करने के लिए करें, सिर्फ अपने अहंकार को बढ़ावा देने के लिए नहीं।", "en-hi": "Use wisdom to help others, not just feed ego" }},
-    4: { Planet: { en: "Rahu", hi: "राहु", "en-hi": "Rahu (राहु)" }, Finance: { en: "Sudden gains and losses", hi: "अचानक लाभ और हानि", "en-hi": "Sudden gains aur losses" }, "Health Defects": { en: "Mysterious illness, breathing issues, Can have issues with knees and feet; prone to urinary infections.", hi: "रहस्यमय बीमारियाँ, श्वसन समस्याएँ, घुटनों और पैरों में समस्याएँ हो सकती हैं; मूत्र संबंधी संक्रमण के प्रति संवेदनशील।", "en-hi": "Rahasyamay illness, breathing issues, knees aur feet problems, prone to urinary infections" }, "Lucky Days": { en: "Friday, Monday, Saturday", hi: "शुक्रवार, सोमवार, शनिवार", "en-hi": "Shukrawar, Somvar, Shaniwar" }, "Lucky Colours": { en: "Electric blue, Electric Gray, White, Maroon", hi: "इलेक्ट्रिक नीला, इलेक्ट्रिक ग्रे, सफेद, मैरून", "en-hi": "Electric blue, Electric gray, Safed, Maroon" }, "Lucky Jewels": { en: "Hessonite, Coral, Pearl", hi: "हेसोनाइट, मूंगा, मोती", "en-hi": "Hessonite, Moonga, Moti" }, "Important Years": { en: "4, 13, 22, 31, 40, 49, 58, 67, 76", hi: "4, 13, 22, 31, 40, 49, 58, 67, 76", "en-hi": "4,13,22,31,40,49,58,67,76" }, "Friendly Number": { en: "1, 2, 4, 5, 7, 8, 9", hi: "1, 2, 4, 5, 7, 8, 9", "en-hi": "1,2,4,5,7,8,9" }, "As Wife": { en: "You are intelligent, confident, and have a strong will. You can be very patriotic. You are stubborn and like things done your way, which can create a bossy atmosphere.", hi: "आप बुद्धिमान, आत्मविश्वासी और मजबूत इच्छाशक्ति वाली हैं। आप बहुत देशभक्त हो सकती हैं। आप हठीली हैं और चीजें अपने तरीके से करना पसंद करती हैं, जिससे कभी-कभी अधीनस्थ माहौल बन सकता है।", "en-hi": "Aap intelligent, confident aur strong will wali hain, hamesha apne tareeke se kaam pasand" },"As Husband": { en: "You love your country. You can be possessive and bossy, but you are a good family man. You are stubborn and insist on having things your way.", hi: "आप अपने देश से प्यार करते हैं। आप स्वामित्व रखने वाले और हठीले हो सकते हैं, लेकिन आप अच्छे परिवारिक पुरुष हैं। आप हठीले हैं और हमेशा चीजें अपने तरीके से करने पर जोर देते हैं।", "en-hi": "Aap apne desh se pyaar karte hain, possessive aur bossy ho sakte hain, family man, stubborn" }, "Good Quality": { en: "Active, Full of energy, Good at organizing, Works in a systematic and orderly way.", hi: "सक्रिय, ऊर्जावान, आयोजन में कुशल, व्यवस्थित और सुनियोजित तरीके से कार्य करता है।", "en-hi": "Active, energy full, good at organizing, systematic work" }, Drawback: { en: "Unpredictable and moody, can be neglectful, overly critical, holds grudges, Jealous.", hi: "अपूर्वानुमेय और चिड़चिड़ा, उपेक्षापूर्ण हो सकता है, अत्यधिक आलोचनात्मक, मन में दुश्मनी रखता है, ईर्ष्यालु।", "en-hi": "Unpredictable, moody, neglectful, overly critical, jealous" }, "Spiritual Insights": { en: "Build your life on a foundation of good morals and principles.", hi: "अपनी जीवन यात्रा को अच्छे नैतिक और सिद्धांतों की नींव पर बनाएं।", "en-hi": "Life foundation on good morals aur principles" }},
-    5: { Planet: { en: "Mercury", hi: "बुध", "en-hi": "Mercury (बुध)" },  Finance: { en: "Excellent in trade, risk-taker", hi: "व्यापार में उत्कृष्ट, जोखिम लेने वाला", "en-hi": "Excellent in trade, risk lene wala" }, "Health Defects": { en: "Prone to indigestion or liver-related issues, Nervous system, breathing problems", hi: "पाचन या जिगर संबंधी समस्याओं के प्रति संवेदनशील, तंत्रिका तंत्र और श्वसन समस्याएँ।", "en-hi": "Indigestion ya liver-related problems, nervous system aur breathing issues" }, "Lucky Days": { en: "Wednesday, Friday", hi: "बुधवार, शुक्रवार", "en-hi": "Budhwar, Shukrawar" }, "Lucky Colours": { en: "Green, White", hi: "हरा, सफेद", "en-hi": "Hara, Safed" }, "Lucky Jewels": { en: "Emerald", hi: "पन्ना", "en-hi": "Panna" }, "Important Years": { en: "5, 14, 23, 32, 41, 50, 59, 68, 77", hi: "5, 14, 23, 32, 41, 50, 59, 68, 77", "en-hi": "5,14,23,32,41,50,59,68,77" }, "Friendly Number": { en: "1, 3, 4, 5, 7, 8", hi: "1, 3, 4, 5, 7, 8", "en-hi": "1,3,4,5,7,8" }, "As Wife": { en: "You are very active at home. You are a good manager and use your cleverness to get things done.", hi: "आप घर पर बहुत सक्रिय हैं। आप एक अच्छे प्रबंधक हैं और कामों को निपटाने के लिए अपनी चतुराई का उपयोग करते हैं।", "en-hi": "Aap ghar par active hain, good manager, cleverness se kaam niptaate hain" }, "As Husband": { en: "You deeply love your wife and kids. You are proud of how your wife looks and are generous in providing a comfortable life.", hi: "आप अपनी पत्नी और बच्चों से गहरा प्रेम करते हैं। आप अपनी पत्नी की सुंदरता पर गर्व करते हैं और आरामदायक जीवन प्रदान करने में उदार हैं।", "en-hi": "Aap apni patni aur baccho se pyaar karte hain, proud aur generous" }, "Good Quality": { en: "Cooperative, takes initiative, Smart and sharp, Watchful and alert.", hi: "सहयोगी, पहल करने वाला, होशियार और तेज, सतर्क और चौकस।", "en-hi": "Cooperative, initiative lene wala, smart aur sharp, watchful aur alert" }, Drawback: { en: "Gives up easily, can be dishonest or tricky, not dependable.", hi: "आसानी से हार मान लेने वाला, कभी-कभी बेईमान या चालाक हो सकता है, भरोसेमंद नहीं।", "en-hi": "Asani se give up karne wala, kabhi dishonest ya tricky, not dependable" },"Spiritual Insights": { en: "Focus on being truthful, not just on being clever or witty.", hi: "सिर्फ चालाक या बुद्धिमान बनने पर ध्यान न दें, बल्कि सच्चाई पर ध्यान केंद्रित करें।", "en-hi": "Sirf clever ya witty banne par nahi, truth par focus karein" }},
-    6: { Planet: { en: "Venus", hi: "शुक्र", "en-hi": "Venus (शुक्र)" }, Finance: { en: "Attracts wealth, enjoys luxury", hi: "धन आकर्षित करता है, विलासिता का आनंद लेता है", "en-hi": "Dhan attract karta hai, luxury enjoy karta hai" }, "Health Defects": { en: "No specific health concern, but may be prone to reproductive issues.", hi: "कोई विशिष्ट स्वास्थ्य समस्या नहीं, लेकिन प्रजनन संबंधी समस्याओं के प्रति संवेदनशील हो सकते हैं।", "en-hi": "No specific health concern, lekin reproductive issues ho sakte hain" }, "Lucky Days": { en: "Sunday, Friday, Saturday", hi: "रविवार, शुक्रवार, शनिवार", "en-hi": "Ravivar, Shukrawar, Shanivar" }, "Lucky Colours": { en: "White, Blue, Pink", hi: "सफेद, नीला, गुलाबी", "en-hi": "Safed, Neela, Gulabi" }, "Lucky Jewels": { en: "Diamond, Turquoise", hi: "हीरा, फ़िरोज़ा", "en-hi": "Heera, Firoza" }, "Important Years": { en: "6, 15, 24, 33, 42, 51, 60, 69, 78", hi: "6, 15, 24, 33, 42, 51, 60, 69, 78", "en-hi": "6,15,24,33,42,51,60,69,78" }, "Friendly Number": { en: "2, 3, 6, 9", hi: "2, 3, 6, 9", "en-hi": "2,3,6,9" }, "As Wife": { en: "You are a loyal and dedicated wife and mother. Your main focus is on family comfort and financial security.", hi: "आप एक वफादार और समर्पित पत्नी और माँ हैं। आपका मुख्य ध्यान परिवार की सुविधा और वित्तीय सुरक्षा पर है।", "en-hi": "Aap loyal aur dedicated wi aur mother hain, focus family comfort aur financial security par hai"}, "As Husband": { en: "You tend to marry early and are a devoted, kind, and polite husband. You are an emotional person who also desires material things.", hi: "आप जल्दी विवाह करने की प्रवृत्ति रखते हैं और एक समर्पित, दयालु और विनम्र पति हैं। आप भावुक हैं और भौतिक चीज़ों की भी इच्छा रखते हैं।", "en-hi": "Aap early marry karte hain, devoted, kind aur polite husband, emotional aur material desires bhi"}, "Good Quality": { en: "Appreciates beauty, Responsible, Loving and affectionate, seeks peace and harmony.", hi: "सौंदर्य की सराहना करने वाला, जिम्मेदार, प्रेमपूर्ण और स्नेही, शांति और सामंजस्य चाहता है।", "en-hi": "Beauty appreciate karta, Responsible, Loving aur affectionate, peace aur harmony chahte hain" }, Drawback: { en: "Expects too much from others, tends to live in a fantasy world, gets too attached to people or things, overly proud of appearance.", hi: "दूसरों से बहुत अधिक अपेक्षाएँ रखता है, कल्पना में जीने की प्रवृत्ति, लोगों या चीज़ों से अधिक लगाव, स्वरूप पर अत्यधिक गर्व।", "en-hi": "Expect zyada from others, fantasy world mein rehta, logon ya cheezon se attachment, overly proud of appearance" }, "Spiritual Insights": { en: "Don't let physical pleasures and worldly desires control your life.", hi: "शारीरिक सुख और सांसारिक इच्छाओं को अपने जीवन पर नियंत्रण न करने दें।", "en-hi": "Physical pleasures aur worldly desires se life control na hone dein" }},
-    7: { Planet: { en: "Ketu", hi: "केतु", "en-hi": "Ketu (केतु)" }, Finance: { en: "Detached, earns via specialized knowledge", hi: "वियुक्त, विशेष ज्ञान के माध्यम से कमाई करता है", "en-hi": "Detached, special knowledge ke through kamai" }, "Health Defects": { en: "Mental stress, skin issues, accidents", hi: "मानसिक तनाव, त्वचा की समस्याएँ, दुर्घटनाएँ", "en-hi": "Mental stress, twacha ki samasya aur accidents" }, "Lucky Days": { en: "Sunday, Monday, Thursday", hi: "रविवार, सोमवार, गुरुवार", "en-hi": "Ravivar, Somvar, Guruwar" }, "Lucky Colours": { en: "Green, Grey, Yellow", hi: "हरा, ग्रे, पीला", "en-hi": "Hara, Grey, Peela" }, "Lucky Jewels": { en: "Cat's Eye", hi: "कैट्स आई", "en-hi": "Cat's Eye" }, "Important Years": { en: "7, 16, 25, 34, 43, 52, 61, 70, 79", hi: "7, 16, 25, 34, 43, 52, 61, 70, 79", "en-hi": "7,16,25,34,43,52,61,70,79" }, "Friendly Number": { en: "1, 3, 4, 5, 7, 8, 9", hi: "1, 3, 4, 5, 7, 8, 9", "en-hi": "1,3,4,5,7,8,9" }, "As Wife": { en: "You can be moody and unpredictable, and you need a lot of attention. You have a direct and assertive way of dealing with things.", hi: "आप मूडी और अप्रत्याशित हो सकती हैं, और आपको बहुत ध्यान चाहिए। आप सीधे और आत्मविश्वासी ढंग से चीज़ों से निपटती हैं।", "en-hi": "Aap moody aur unpredictable ho sakti hain, zyada attention chahiye, direct aur assertive tarike se deal karti hain" },"As Husband": { en: "You are emotional, open-minded, and understanding. You love to travel but are careful with your money.", hi: "आप भावुक, खुले विचारों वाले और समझदार हैं। आपको यात्रा पसंद है लेकिन आप अपने पैसे के प्रति सावधान रहते हैं।", "en-hi": "Aap emotional, open-minded aur understanding hain, travel pasand, paisa leke careful" }, "Good Quality": { en: "Interested in mystery and the unknown, Likes to research things, A deep thinker, Reflects on yourself.", hi: "रहस्य और अज्ञात में रुचि रखते हैं, चीज़ों पर शोध करना पसंद करते हैं, गहरे विचारक, आत्म-चिंतनशील।", "en-hi": "Mystery aur unknown mein interested, research pasand, deep thinker, self-reflective" }, Drawback: { en: "Prone to sadness, Often feels anxious or worried, Can experience depression.", hi: "दुःख की प्रवृत्ति, अक्सर चिंतित या परेशान महसूस करता है, अवसाद का अनुभव कर सकता है।", "en-hi": "Sadness prone, anxious ya worried feel, depression ho sakta hai" }, "Spiritual Insights": { en: "When you need time alone, use it for personal growth, not just to run away from problems.", hi: "जब आपको अकेले समय की आवश्यकता हो, इसका उपयोग व्यक्तिगत विकास के लिए करें, केवल समस्याओं से भागने के लिए नहीं।", "en-hi": "Alone time ka use personal growth ke liye karein, sirf problems se run karne ke liye nahi" }},
-    8: { Planet: { en: "Saturn", hi: "शनि", "en-hi": "Saturn (शनि)" },Finance: { en: "Slow but steady gains", hi: "धीरे-धीरे लेकिन स्थिर लाभ", "en-hi": "Slow but steady gains" }, "Health Defects": { en: "May have problems with legs, teeth, or ears; prone to joint pain (rheumatism).", hi: "टांगों, दांतों या कानों में समस्याएँ हो सकती हैं; जोड़ो में दर्द (रूमेटिज़्म) की संभावना।", "en-hi": "Legs, teeth, ears mein problem, joint pain (rheumatism) ho sakta hai" }, "Lucky Days": { en: "Saturday, Wednesday, Friday", hi: "शनिवार, बुधवार, शुक्रवार", "en-hi": "Shanivar, Budhvar, Shukravar" }, "Lucky Colours": { en: "Dark Grey, Dark Blue, Purple, Black", hi: "गहरा ग्रे, गहरा नीला, बैंगनी, काला", "en-hi": "Gehra Grey, Gehra Blue, Baingani, Kala" }, "Lucky Jewels": { en: "Blue Sapphire", hi: "नीलम", "en-hi": "Neelam" }, "Important Years": { en: "8, 17, 26, 35, 44, 53, 62, 71, 80", hi: "8, 17, 26, 35, 44, 53, 62, 71, 80", "en-hi": "8,17,26,35,44,53,62,71,80" }, "Friendly Number": { en: "3, 4, 5, 7, 8", hi: "3, 4, 5, 7, 8", "en-hi": "3,4,5,7,8" }, "As Wife": { en: "You are dedicated to helping your husband succeed, but you might not be very emotional or sentimental. You are clever and have a good sense of humor.", hi: "आप अपने पति को सफल बनाने के लिए समर्पित हैं, लेकिन आप बहुत भावुक या संवेदी नहीं हो सकती। आप चालाक हैं और आपकी हास्य बोध अच्छी है।", "en-hi": "Aap husband ko succeed karne ke liye dedicated hain, par zyada emotional ya sentimental nahi. Clever aur humor sense acchi hai."}, "As Husband": { en: "You can be emotionally distant, which creates loneliness and can lead to a difficult marriage. You may not show much emotion or humor.", hi: "आप भावनात्मक रूप से दूरी बना सकते हैं, जिससे अकेलापन पैदा होता है और कठिन विवाह हो सकता है। आप ज्यादा भावना या हास्य नहीं दिखा सकते।", "en-hi": "Aap emotional distant ho sakte hain, loneliness ho sakta hai, marriage difficult ho sakta hai. Emotion aur humor kam dikhate hain." }, "Good Quality": { en: "Can handle difficulties, Self-disciplined, Responsible, Good at planning and thinking ahead.", hi: "कठिनाइयों को संभालने में सक्षम, आत्म-अनुशासित, जिम्मेदार, योजना बनाने और आगे सोचने में निपुण।", "en-hi": "Difficulties handle kar sakte hain, Self-disciplined, Responsible, Planning aur future thinking strong" },  Drawback: { en: "Stubborn and inflexible, Feels lonely, Can be harsh with words or actions, Very traditional and resistant to change.", hi: "जिद्दी और लचीले नहीं, अकेलापन महसूस करना, शब्दों या कार्यों में कठोर हो सकता है, बहुत पारंपरिक और बदलाव के प्रति प्रतिरोधी।", "en-hi": "Ziddi aur inflexible, lonely feel, words/actions mein harsh, very traditional aur resistant to change" }, "Spiritual Insights": { en: "Achieve your goals through patience and hard work, not by taking the easy way out.", hi: "धैर्य और कड़ी मेहनत के माध्यम से अपने लक्ष्यों को प्राप्त करें, आसान रास्ता अपनाने से नहीं।", "en-hi": "Dharya aur hard work ke through goals achieve karein, easy way se nahi" }},
-    9: { Planet: { en: "Mars", hi: "मंगल", "en-hi": "Mars (मंगल)" }, Finance: { en: "Spends quickly, earns through risk", hi: "जल्दी खर्च करने वाला, जोखिम लेकर कमाई करता है", "en-hi": "Jaldi kharch karta hai, risk se kamai karta hai" }, "Health Defects": { en: "Head, blood, accidents, fevers, skin sores, kidney problems", hi: "सिर, रक्त, दुर्घटनाएँ, बुखार, त्वचा में घाव, किडनी की समस्याएँ", "en-hi": "Sir, blood, accidents, bukhar, twacha ke ghaav, kidney problems" }, "Lucky Days": { en: "Tuesday, Friday", hi: "मंगलवार, शुक्रवार", "en-hi": "Mangalvar, Shukravar" }, "Lucky Colours": { en: "Red, Coral, Pink", hi: "लाल, मूंगा, गुलाबी", "en-hi": "Laal, Moonga, Gulabi" }, "Lucky Jewels": { en: "Coral", hi: "मूंगा", "en-hi": "Moonga" }, "Important Years": { en: "9, 18, 27, 36, 45, 54, 63, 72, 81", hi: "9, 18, 27, 36, 45, 54, 63, 72, 81", "en-hi": "9,18,27,36,45,54,63,72,81" }, "Friendly Number": { en: "1, 2, 3, 4, 6, 7, 9", hi: "1, 2, 3, 4, 6, 7, 9", "en-hi": "1,2,3,4,6,7,9" }, "As Wife": { en: "You are clever and witty. You are very supportive of your husband's career and may have your own. You do best with a successful husband.", hi: "आप चतुर और बुद्धिमान हैं। आप अपने पति के करियर में बहुत समर्थन देती हैं और आपका खुद का करियर भी हो सकता है। सफल पति के साथ आप सबसे अच्छा करती हैं।", "en-hi": "Aap clever aur witty hain. Husband ke career mein support karti hain, apna career bhi ho sakta hai. Successful husband ke sath best karti hain." }, "As Husband": { en: "You are passionate, romantic, and full of energy. You need a wife who is practical and down-to-earth. In a marriage, you can be suspicious and overly critical.", hi: "आप जुनूनी, रोमांटिक और ऊर्जा से भरपूर हैं। आपको ऐसी पत्नी चाहिए जो व्यावहारिक और जमीनी हो। विवाह में आप संदेहशील और अधिक आलोचनात्मक हो सकते हैं।", "en-hi": "Aap passionate, romantic aur energy se full hain. Practical aur down-to-earth wife chahiye. Marriage mein suspicious aur over-critical ho sakte hain."}, "Good Quality": { en: "Brave, Patient and accepting of others, Willing to make sacrifices for the greater good, A natural leader.", hi: "साहसी, धैर्यशील और दूसरों को स्वीकार करने वाला, भलाई के लिए बलिदान देने को तैयार, एक प्राकृतिक नेता।", "en-hi": "Sahasi, patient aur dusron ko accept karta hai, greater good ke liye sacrifice ready, natural leader" }, Drawback: { en: "Gets angry easily, Can be arrogant or think you are better than others, Prone to jealousy.", hi: "आसानी से गुस्सा आता है, अहंकारी हो सकता है या सोच सकता है कि आप दूसरों से बेहतर हैं, ईर्ष्या की प्रवृत्ति।", "en-hi": "Asani se gussa aata hai, arrogant ho sakta hai, jealous ho sakta hai" }, "Spiritual Insights": { en: "Use your powerful energy for something meaningful and positive.", hi: "अपनी शक्तिशाली ऊर्जा का उपयोग किसी सार्थक और सकारात्मक चीज़ के लिए करें।", "en-hi": "Apni powerful energy ka use meaningful aur positive kaam ke liye karein" }}
+    "1": {
+        "Planet": {
+            "en": "Sun",
+            "hi": "सूर्य",
+            "en-hi": "Sun (सूर्य)"
+        },
+        "Finance": {
+            "en": "You are a lucky person and earn enough, but are extravagant and a spendthrift. You may not amass wealth but will make others believe you are rich.",
+            "hi": "आप एक भाग्यशाली व्यक्ति हैं और पर्याप्त कमाते हैं, लेकिन आप खर्चीले हैं। हो सकता है आप धन जमा न कर पाएं, लेकिन दूसरों को विश्वास दिला देंगे कि आप अमीर हैं।",
+            "en-hi": "Aap ek lucky person hain aur kaafi kamate hain, lekin aap kharchile hain. Ho sakta hai aap daulat na jamma kar paayein, lekin doosron ko vishwas diladenge ki aap ameer hain."
+        },
+        "Health Defects": {
+            "en": "Generally good health, but you are susceptible to mental strain or worry, which can lead to nervous disorders or breakdowns.",
+            "hi": "आम तौर पर अच्छा स्वास्थ्य, लेकिन आप मानसिक तनाव या चिंता के प्रति संवेदनशील हैं, जो तंत्रिका संबंधी विकारों या नर्वस ब्रेकडाउन का कारण बन सकता है।",
+            "en-hi": "Aam taur par acchi health, lekin aap mental strain ya chinta ke prati sensitive hain, jo nervous disorders ya breakdown ka kaaran ban sakta hai."
+        },
+        "Lucky Days": {
+            "en": "Sundays, Mondays, Thursdays",
+            "hi": "रविवार, सोमवार, गुरुवार",
+            "en-hi": "Ravivar, Somvar, Guruwar"
+        },
+        "Lucky Colours": {
+            "en": "All shades of gold, yellow, orange, and purple",
+            "hi": "सुनहरी, पीली, नारंगी और बैंगनी रंग के सभी शेड",
+            "en-hi": "Sunehre, peele, narangi aur baingani rang ke sabhi shades"
+        },
+        "Lucky Jewels": {
+            "en": "Ruby, Emerald, Moonstone, Pale green stone",
+            "hi": "माणिक, पन्ना, चंद्रमणि, हल्का हरा पत्थर",
+            "en-hi": "Maanik, Panna, Chandramani, Halka hara patthar"
+        },
+        "Important Years": {
+            "en": "1, 19, 28, 37, 46, 55, 64, 73",
+            "hi": "1, 19, 28, 37, 46, 55, 64, 73",
+            "en-hi": "1, 19, 28, 37, 46, 55, 64, 73"
+        },
+        "Friendly Number": {
+            "en": "1, 3, 4, 5, 7, 9",
+            "hi": "1, 3, 4, 5, 7, 9",
+            "en-hi": "1, 3, 4, 5, 7, 9"
+        },
+        "As Wife": {
+            "en": "Aristocratic by temperament, you are passionate and need a virile husband. You are often disappointed if your partner is not of your choice.",
+            "hi": "स्वभाव से कुलीन, आप भावुक हैं और आपको एक पुरुषपूर्ण पति की आवश्यकता है। यदि आपका साथी आपकी पसंद का नहीं है तो आप अक्सर निराश होती हैं।",
+            "en-hi": "Swabhav se aristocratic, aap passionate hain aur aapko ek virile husband chahiye. Agar partner aapki pasand ka nahi hai toh aap niraash hoti hain."
+        },
+        "As Husband": {
+            "en": "You are generous with a kind and loving heart, but you want your family to dance to your tune and will not tolerate disrespect.",
+            "hi": "आप दयालु और प्रेमपूर्ण हृदय से उदार हैं, लेकिन आप चाहते हैं कि आपका परिवार आपके धुन पर नाचे और आप अनादर बर्दाश्त नहीं करेंगे।",
+            "en-hi": "Aap generous aur loving heart waale hain, lekin aap chahte hain ki aapki family aapke ishaaron par chale aur aap disrespect bardaasht nahi karenge."
+        },
+        "Good Quality": {
+            "en": "Aspiration, Attack, Authority, Confidence, Determination, Research, Vigour",
+            "hi": "आकांक्षा, आक्रमण, अधिकार, आत्मविश्वास, दृढ़ संकल्प, अनुसंधान, शक्ति",
+            "en-hi": "Aspiration, Attack, Authority, Confidence, Determination, Research, Vigour"
+        },
+        "Drawback": {
+            "en": "Aloofness, Domination, Impertinence, Inflexibility, Pride, Show, Spendthrift",
+            "hi": "अलगाव, प्रभुत्व, धृष्टता, अनम्यता, अभिमान, दिखावा, खर्चीला",
+            "en-hi": "Aloofness, Domination, Impertinence, Inflexibility, Pride, Show, Spendthrift"
+        },
+        "Spiritual Insights": {
+            "en": "Learn to lead with wisdom and understanding, not just your ego.",
+            "hi": "सिर्फ अहंकार नहीं, बल्कि बुद्धि और समझ के साथ नेतृत्व करना सीखें।",
+            "en-hi": "Sirf ahankar nahi, balki buddhi aur samajh ke saath netritva karein."
+        }
     },
+    "2": {
+        "Planet": {
+            "en": "Moon",
+            "hi": "चंद्र",
+            "en-hi": "Moon (चंद्र)"
+        },
+        "Finance": {
+            "en": "You have a mediocre financial status because you are lethargic and do not like to do any hard work.",
+            "hi": "आपकी वित्तीय स्थिति mediocre (औसत) है क्योंकि आप सुस्त हैं और कोई भी कठिन काम करना पसंद नहीं करते हैं।",
+            "en-hi": "Aapka financial status mediocre hai kyunki aap sust hain aur koi mehnati kaam karna pasand nahi karte."
+        },
+        "Health Defects": {
+            "en": "Prone to digestive and bowel issues (colic, constipation, typhoid), poor blood circulation, anaemia, diabetes, and asthmatic trouble.",
+            "hi": "पाचन और आंत की समस्याएं (पेट दर्द, कब्ज, टाइफाइड), खराब रक्त परिसंचरण, एनीमिया, मधुमेह और अस्थमा की परेशानी के प्रति संवेदनशील।",
+            "en-hi": "Pet aur aant ki samasyaon (pet dard, kabz, typhoid), kharaab blood circulation, khoon ki kami, diabetes, aur asthmatic pareshani ho sakti hai."
+        },
+        "Lucky Days": {
+            "en": "Mondays, Tuesdays, Fridays",
+            "hi": "सोमवार, मंगलवार, शुक्रवार",
+            "en-hi": "Somvar, Mangalvar, Shukrawar"
+        },
+        "Lucky Colours": {
+            "en": "All shades of white, cream, or blue",
+            "hi": "सफेद, क्रीम या नीले रंग के सभी शेड",
+            "en-hi": "Safed, cream ya neele rang ke sabhi shades"
+        },
+        "Lucky Jewels": {
+            "en": "Pearls, Diamonds, Moonstone, Agate",
+            "hi": "मोती, हीरा, चंद्रमणि, अगेट",
+            "en-hi": "Moti, Heera, Chandramani, Agate"
+        },
+        "Important Years": {
+            "en": "2, 11, 20, 29, 38, 47, 56, 65, 74",
+            "hi": "2, 11, 20, 29, 38, 47, 56, 65, 74",
+            "en-hi": "2, 11, 20, 29, 38, 47, 56, 65, 74"
+        },
+        "Friendly Number": {
+            "en": "2, 4, 6, 9",
+            "hi": "2, 4, 6, 9",
+            "en-hi": "2, 4, 6, 9"
+        },
+        "As Wife": {
+            "en": "You are sympathetic, affectionate, and devoted, but also moody, changeable, and sensitive. You are not much interested in the kitchen and are somewhat cold, lacking a fire of passion.",
+            "hi": "आप सहानुभूतिपूर्ण, स्नेही और समर्पित हैं, लेकिन मूडी, परिवर्तनशील और संवेदनशील भी हैं। आपको रसोई में ज्यादा दिलचस्पी नहीं है और आप कुछ हद तक ठंडी हैं, आप में जुनून की कमी है।",
+            "en-hi": "Aap sympathetic, affectionate, aur devoted hain, lekin moody, changeable, aur sensitive bhi hain. Aapko kitchen mein zyada interest nahi hai aur aap thodi cold hain, passion ki kami hai."
+        },
+        "As Husband": {
+            "en": "There are two types: one is dominating, exacting, and fault-finding. The other type is passive, lazy, indulgent, and will marry for the sake of money.",
+            "hi": "दो प्रकार हैं: एक है दबंग, सख्त और गलतियां निकालने वाला। दूसरा प्रकार निष्क्रिय, आलसी, भोगी है और पैसे के लिए शादी करेगा।",
+            "en-hi": "Do type hain: ek hai dominating, strict, aur galtiyan nikalne wala. Doosra type passive, lazy, indulgent hai aur paise ke liye shaadi karega."
+        },
+        "Good Quality": {
+            "en": "Sympathy, Fellowship, Honesty, Imagination, Simplicity, Ideality",
+            "hi": "सहानुभूति, साहचर्य, ईमानदारी, कल्पना, सादगी, आदर्शवादिता",
+            "en-hi": "Sympathy, Fellowship, Honesty, Imagination, Simplicity, Ideality"
+        },
+        "Drawback": {
+            "en": "Coldness, Envy, Haste, Intervention, Shyness, Whimsicality",
+            "hi": "शीतलता, ईर्ष्या, जल्दबाजी, हस्तक्षेप, शर्म, मनमौजीपन",
+            "en-hi": "Coldness, Envy, Haste, Intervention, Shyness, Whimsicality"
+        },
+        "Spiritual Insights": {
+            "en": "Follow your gut feeling (intuition) rather than just relying on logic.",
+            "hi": "सिर्फ तर्क पर निर्भर न रहें, अपनी सहज अनुभूति (intuition) का पालन करें।",
+            "en-hi": "Follow gut feeling, intuition over logic"
+        }
+    },
+    "3": {
+        "Planet": {
+            "en": "Jupiter",
+            "hi": "बृहस्पति",
+            "en-hi": "Jupiter (बृहस्पति)"
+        },
+        "Finance": {
+            "en": "You are lucky in financial matters, get opportunities for high-grade positions, and thereby earn quite a lot.",
+            "hi": "आप वित्तीय मामलों में भाग्यशाली हैं, उच्च-श्रेणी के पदों के अवसर प्राप्त करते हैं, और इस प्रकार बहुत कुछ अर्जित करते हैं।",
+            "en-hi": "Aap financial maamlon mein lucky hain, high-grade positions ke mauke milte hain, aur is tarah kaafi kuch kamate hain."
+        },
+        "Health Defects": {
+            "en": "Has a major influence on the blood and the arterial system. Also governs the sense of smell, the lumbar region, the skin, and the kidneys.",
+            "hi": "रक्त और धमनी प्रणाली पर एक बड़ा प्रभाव डालता है। यह गंध की भावना, काठ का क्षेत्र, त्वचा और गुर्दे को भी नियंत्रित करता है।",
+            "en-hi": "Blood aur arterial system par bada prabhav daalta hai. Yeh soonghne ki shakti, kamar ke hisse, skin, aur kidneys ko bhi control karta hai."
+        },
+        "Lucky Days": {
+            "en": "Tuesdays, Thursdays, Fridays",
+            "hi": "मंगलवार, गुरुवार, शुक्रवार",
+            "en-hi": "Mangalvar, Guruwar, Shukrawar"
+        },
+        "Lucky Colours": {
+            "en": "All shades of yellow, violet, purple, and green",
+            "hi": "पीले, बैंगनी (violet), बैंगनी (purple), और हरे रंग के सभी शेड",
+            "en-hi": "Peele, baingani (violet), baingani (purple), aur hare rang ke sabhi shades"
+        },
+        "Lucky Jewels": {
+            "en": "Topaz, Amethyst, Cat's eye",
+            "hi": "पुखराज, एमिथिस्ट, लहसुनिया",
+            "en-hi": "Topaz, Amethyst, Cat's eye"
+        },
+        "Important Years": {
+            "en": "3, 12, 21, 30, 39, 48, 57, 66, 75",
+            "hi": "3, 12, 21, 30, 39, 48, 57, 66, 75",
+            "en-hi": "3, 12, 21, 30, 39, 48, 57, 66, 75"
+        },
+        "Friendly Number": {
+            "en": "1, 3, 5, 6, 7",
+            "hi": "1, 3, 5, 6, 7",
+            "en-hi": "1, 3, 5, 6, 7"
+        },
+        "As Wife": {
+            "en": "You're a caring and supportive partner who helps in your husband's work and manages the home well. You have a positive attitude towards love and family, and your approach to relationships is joyful and graceful.",
+            "hi": "आप देखभाल करने वाली और सहायक जीवनसाथी हैं जो अपने पति के कार्य में मदद करती हैं और घर का प्रबंधन अच्छी तरह करती हैं। आप प्रेम और परिवार के प्रति सकारात्मक दृष्टिकोण रखती हैं, और आपके संबंधों का तरीका आनंददायक और सुरुचिपूर्ण है।",
+            "en-hi": "Aap caring aur supportive partner hain, husband ke kaam mein madad karti hain, relationship mein joyful aur graceful approach"
+        },
+        "As Husband": {
+            "en": "You tend to marry early and have big dreams, which can lead to expecting too much from your wife. You want a smart, charming, and confident partner, and you're most compatible with someone who's a number 3 or 6.",
+            "hi": "आप आमतौर पर जल्दी शादी करते हैं और बड़े सपने देखते हैं, जिससे पत्नी से बहुत अधिक अपेक्षा हो सकती है। आप एक स्मार्ट, आकर्षक और आत्मविश्वासी साथी चाहते हैं और आप सबसे अधिक संख्या 3 या 6 वाले व्यक्ति के साथ संगत हैं।",
+            "en-hi": "Aap early marry karte hain, big dreams, expect zyada from wife, compatible with 3 or 6"
+        },
+        "Good Quality": {
+            "en": "Ambition, Dignity, Individuality, Philosophy, Prestige",
+            "hi": "महत्वाकांक्षा, गरिमा, व्यक्तित्व, दर्शन, प्रतिष्ठा",
+            "en-hi": "Ambition, Dignity, Individuality, Philosophy, Prestige"
+        },
+        "Drawback": {
+            "en": "Cruelty, Dictatorship, Hypocrisy, Spendthrift, Vanity",
+            "hi": "क्रूरता, तानाशाही, पाखंड, खर्चीला, घमंड",
+            "en-hi": "Cruelty, Dictatorship, Hypocrisy, Spendthrift, Vanity"
+        },
+        "Spiritual Insights": {
+            "en": "Use your wisdom to help others, not just to feed your own pride.",
+            "hi": "अपनी बुद्धिमानी का उपयोग दूसरों की मदद करने के लिए करें, सिर्फ अपने अहंकार को बढ़ावा देने के लिए नहीं।",
+            "en-hi": "Use wisdom to help others, not just feed ego"
+        }
+    },
+    "4": {
+        "Planet": {
+            "en": "Uranus",
+            "hi": "यूरेनस",
+            "en-hi": "Uranus"
+        },
+        "Finance": {
+            "en": "Usually well settled, but you experience delays and difficulties. Financial prosperity usually starts after the age of 40.",
+            "hi": "आमतौर पर अच्छी तरह से बसे हैं, लेकिन आपको देरी और कठिनाइयों का अनुभव होता है। वित्तीय समृद्धि आमतौर पर 40 साल की उम्र के बाद शुरू होती है।",
+            "en-hi": "Aam taur par well-settled, lekin aapko deri aur mushkilon ka anubhav hota hai. Financial prosperity 40 saal ki umar ke baad shuru hoti hai."
+        },
+        "Health Defects": {
+            "en": "Trouble with the kidney or bladder, a weak respiratory system (breathlessness), and issues with the knees, shanks, and feet.",
+            "hi": "गुर्दे या मूत्राशय में परेशानी, एक कमजोर श्वसन प्रणाली (सांस फूलना), और घुटनों, पिंडलियों और पैरों के साथ समस्याएं।",
+            "en-hi": "Kidney ya bladder mein pareshani, kamzor respiratory system (saans phoolna), aur ghutnon, pindliyon aur pairon mein samasya."
+        },
+        "Lucky Days": {
+            "en": "Sundays, Mondays, Saturdays",
+            "hi": "रविवार, सोमवार, शनिवार",
+            "en-hi": "Ravivar, Somvar, Shanivar"
+        },
+        "Lucky Colours": {
+            "en": "Electric blue, Electric grey, White, Maroon",
+            "hi": "इलेक्ट्रिक नीला, इलेक्ट्रिक ग्रे, सफेद, मैरून",
+            "en-hi": "Electric blue, Electric grey, Safed, Maroon"
+        },
+        "Lucky Jewels": {
+            "en": "Diamond, Coral, Pearl",
+            "hi": "हीरा, मूंगा, मोती",
+            "en-hi": "Heera, Moonga, Moti"
+        },
+        "Important Years": {
+            "en": "4, 13, 22, 31, 40, 49, 58, 67, 76",
+            "hi": "4, 13, 22, 31, 40, 49, 58, 67, 76",
+            "en-hi": "4, 13, 22, 31, 40, 49, 58, 67, 76"
+        },
+        "Friendly Number": {
+            "en": "1, 2, 4, 5, 7, 8, 9",
+            "hi": "1, 2, 4, 5, 7, 8, 9",
+            "en-hi": "1, 2, 4, 5, 7, 8, 9"
+        },
+        "As Wife": {
+            "en": "You are smart and attractive with a strong will, but aim at several things and hardly succeed at one. You can be dictatorial, moody, headstrong, and sometimes cruel.",
+            "hi": "आप मजबूत इच्छाशक्ति के साथ स्मार्ट और आकर्षक हैं, लेकिन एक कई चीजों का लक्ष्य रखती हैं और शायद ही किसी एक में सफल होती हैं। आप तानाशाही, मूडी, हठी और कभी-कभी क्रूर हो सकती हैं।",
+            "en-hi": "Aap strong will ke saath smart aur attractive hain, lekin kayi cheezon ka aim rakhti hain aur mushkil se hi ek mein safal hoti hain. Aap dictatorial, moody, ziddi aur kabhi-kabhi cruel ho sakti hain."
+        },
+        "As Husband": {
+            "en": "You are affectionate, emotional, and generous, but also quite possessive and dominating. You are shrewd, intelligent, and want all affairs to run as you desire.",
+            "hi": "आप स्नेही, भावुक और उदार हैं, लेकिन साथ ही काफी अधिकार जमाने वाले और दबंग भी हैं। आप चतुर, बुद्धिमान हैं और चाहते हैं कि सभी मामले आपकी इच्छानुसार चलें।",
+            "en-hi": "Aap affectionate, emotional aur generous hain, lekin kaafi possessive aur dominating bhi hain. Aap chatur, intelligent hain aur chahte hain ki sabhi maamle aapki iccha se chalen."
+        },
+        "Good Quality": {
+            "en": "Activity, Endurance, Energy, Reliability, Method and system",
+            "hi": "गतिविधि, धैर्य, ऊर्जा, विश्वसनीयता, विधि और व्यवस्था",
+            "en-hi": "Activity, Endurance, Energy, Reliability, Method and system"
+        },
+        "Drawback": {
+            "en": "Changeable, Dominating, Stubborn, Vindictive, Jealous",
+            "hi": "परिवर्तनशील, दबंग, जिद्दी, प्रतिशोधी, ईर्ष्यालु",
+            "en-hi": "Changeable, Dominating, Stubborn, Vindictive, Jealous"
+        },
+        "Spiritual Insights": {
+            "en": "Build your life on a foundation of good morals and principles.",
+            "hi": "अपनी जीवन यात्रा को अच्छे नैतिक और सिद्धांतों की नींव पर बनाएं।",
+            "en-hi": "Life foundation on good morals aur principles"
+        }
+    },
+    "5": {
+        "Planet": {
+            "en": "Mercury",
+            "hi": "बुध",
+            "en-hi": "Mercury (बुध)"
+        },
+        "Finance": {
+            "en": "Number 5 is a business number, so you can expect opulence. You are lucky in your financial position.",
+            "hi": "नंबर 5 एक व्यापारिक नंबर है, इसलिए आप समृद्धि की उम्मीद कर सकते हैं। आप अपनी वित्तीय स्थिति में भाग्यशाली हैं।",
+            "en-hi": "Number 5 ek business number hai, isliye aap opulence expect kar sakte hain. Aap apni financial position mein lucky hain."
+        },
+        "Health Defects": {
+            "en": "Your basic defect is biliousness and nervousness. This number rules over the nerves, neck, arms, ears, and the respiratory system.",
+            "hi": "आपका मूल दोष पित्त और घबराहट है। यह संख्या तंत्रिकाओं, गर्दन, बाहों, कानों और श्वसन प्रणाली पर शासन करती है।",
+            "en-hi": "Aapka basic defect biliousness (pitt) aur nervousness hai. Yeh number nerves, gardan, baahon, kaanon aur respiratory system par shaasan karta hai."
+        },
+        "Lucky Days": {
+            "en": "Wednesdays, Fridays, Saturdays",
+            "hi": "बुधवार, शुक्रवार, शनिवार",
+            "en-hi": "Budhwar, Shukrawar, Shanivar"
+        },
+        "Lucky Colours": {
+            "en": "White and green. You should not use red.",
+            "hi": "सफेद और हरा। आपको लाल रंग का प्रयोग नहीं करना चाहिए।",
+            "en-hi": "Safed aur hara. Aapko laal rang ka istemaal nahi karna chahiye."
+        },
+        "Lucky Jewels": {
+            "en": "Emerald, Diamond, Sapphire (can also be used)",
+            "hi": "पन्ना, हीरा, नीलम (भी इस्तेमाल किया जा सकता है)",
+            "en-hi": "Panna, Heera, Neelam (bhi istemaal kar sakte hain)"
+        },
+        "Important Years": {
+            "en": "5, 14, 23, 32, 41, 50, 59, 68, 77",
+            "hi": "5, 14, 23, 32, 41, 50, 59, 68, 77",
+            "en-hi": "5, 14, 23, 32, 41, 50, 59, 68, 77"
+        },
+        "Friendly Number": {
+            "en": "1, 3, 4, 5, 7, 8",
+            "hi": "1, 3, 4, 5, 7, 8",
+            "en-hi": "1, 3, 4, 5, 7, 8"
+        },
+        "As Wife": {
+            "en": "You have interest at home as well as outside and manage them well. You like tidiness and get it done through your commanding personality.",
+            "hi": "आपको घर के साथ-साथ बाहर भी दिलचस्पी है और आप उन्हें अच्छी तरह से प्रबंधित करती हैं। आपको साफ-सफाई पसंद है और आप इसे अपनी दबंग व्यक्तित्व के माध्यम से करवाती हैं।",
+            "en-hi": "Aapko ghar ke saath-saath baahar bhi interest hai aur aap unhein acchi tarah manage karti hain. Aapko safai pasand hai aur aap ise apni commanding personality se karwa leti hain."
+        },
+        "As Husband": {
+            "en": "You are lucky and successful in married life. You love your partner, are proud of your wife, love children, are fond of home, and are liberal in spending.",
+            "hi": "आप शादीशुदा जीवन में भाग्यशाली और सफल हैं। आप अपने साथी से प्यार करते हैं, अपनी पत्नी पर गर्व करते हैं, बच्चों से प्यार करते हैं, और घर के शौकीन हैं और खर्च करने में उदार हैं।",
+            "en-hi": "Aap shaadi-shuda zindagi mein lucky aur safal hain. Aap apne partner se pyaar karte hain, apni patni par garv karte hain, bachhon se pyaar karte hain, ghar ke shaukeen hain aur kharch karne mein liberal hain."
+        },
+        "Good Quality": {
+            "en": "Co-operation, Practicability, Shrewdness, Vigilance",
+            "hi": "सहयोग, व्यावहारिकता, चतुराई, सतर्कता",
+            "en-hi": "Co-operation, Practicability, Shrewdness, Vigilance"
+        },
+        "Drawback": {
+            "en": "Lack of perseverance, Scepticism, Unreliability",
+            "hi": "दृढ़ता की कमी, संदेहवाद, अविश्वसनीयता",
+            "en-hi": "Lack of perseverance, Scepticism, Unreliability"
+        },
+        "Spiritual Insights": {
+            "en": "Focus on being truthful, not just on being clever or witty.",
+            "hi": "सिर्फ चालाक या बुद्धिमान बनने पर ध्यान न दें, बल्कि सच्चाई पर ध्यान केंद्रित करें।",
+            "en-hi": "Sirf clever ya witty banne par nahi, truth par focus karein"
+        }
+    },
+    "6": {
+        "Planet": {
+            "en": "Venus",
+            "hi": "शुक्र",
+            "en-hi": "Venus (शुक्र)"
+        },
+        "Finance": {
+            "en": "You are not attracted towards money and opulence is a rarity for you. You prefer spending to saving.",
+            "hi": "आप पैसे की प्रति आकर्षित नहीं हैं और समृद्धि आपके लिए एक दुर्लभ वस्तु है। आप बचत करने से ज्यादा खर्च करना पसंद करते हैं।",
+            "en-hi": "Aap paise ki taraf attract nahi hote aur dhan-daulat aapke liye rare hai. Aap bachat se zyada kharch karna pasand karte hain."
+        },
+        "Health Defects": {
+            "en": "On the whole you are a healthy person, but you are susceptible to epidemic fever, influenza, and are prone to nervousness.",
+            "hi": "कुल मिलाकर आप एक स्वस्थ व्यक्ति हैं, लेकिन आप महामारी बुखार, इन्फ्लूएंजा के प्रति संवेदनशील हैं, और घबराहट से ग्रस्त हैं।",
+            "en-hi": "Aap ek healthy insaan hain, lekin aapko epidemic fever, influenza ho sakta hai, aur aap nervousness se grast rehte hain."
+        },
+        "Lucky Days": {
+            "en": "Mondays, Tuesdays, Thursdays, Fridays",
+            "hi": "सोमवार, मंगलवार, गुरुवार, शुक्रवार",
+            "en-hi": "Somvar, Mangalvar, Guruwar, Shukrawar"
+        },
+        "Lucky Colours": {
+            "en": "All shades of blue, rose, and pink. It is advised that you avoid yellow.",
+            "hi": "नीले, गुलाब और गुलाबी रंग के सभी शेड। आपको पीले रंग से बचने की सलाह दी जाती है।",
+            "en-hi": "Neele, gulab aur gulabi rang ke sabhi shades. Aapko peele rang se bachne ki salah di jaati hai."
+        },
+        "Lucky Jewels": {
+            "en": "Turquoise, Emerald, Pearl, Diamond",
+            "hi": "फ़िरोज़ा, पन्ना, मोती, हीरा",
+            "en-hi": "Firoza, Panna, Moti, Heera"
+        },
+        "Important Years": {
+            "en": "6, 15, 24, 33, 42, 51, 60, 69, 78",
+            "hi": "6, 15, 24, 33, 42, 51, 60, 69, 78",
+            "en-hi": "6, 15, 24, 33, 42, 51, 60, 69, 78"
+        },
+        "Friendly Number": {
+            "en": "2, 3, 6, 9",
+            "hi": "2, 3, 6, 9",
+            "en-hi": "2, 3, 6, 9"
+        },
+        "As Wife": {
+            "en": "You are a devoted mother and a loving wife; a perfect housewife. You never resort to divorce and will endure extreme hardship.",
+            "hi": "आप एक समर्पित मां और एक प्यारी पत्नी हैं; एक आदर्श गृहिणी। आप कभी भी तलाक का सहारा नहीं लेती हैं और अत्यधिक कठिनाई सहन करेंगी।",
+            "en-hi": "Aap ek devoted maa aur ek loving patni hain; ek perfect housewife. Aap kabhi divorce nahi leti hain aur atyadhik kathinai sahengi."
+        },
+        "As Husband": {
+            "en": "You usually marry early, and are a kind, generous, and devoted husband. You are impractical in not understanding material values.",
+            "hi": "आप आमतौर पर जल्दी शादी करते हैं, और एक दयालु, उदार और समर्पित पति होते हैं। आप भौतिक मूल्यों को न समझने में अव्यावहारिक हैं।",
+            "en-hi": "Aap aam taur par jaldi shaadi karte hain, aur ek dayalu, udaar aur devoted pati hote hain. Aap material values ko na samajhne mein impractical hain."
+        },
+        "Good Quality": {
+            "en": "Harmony, Love, Peace, Strong memory",
+            "hi": "सद्भाव, प्रेम, शांति, मजबूत याददाश्त",
+            "en-hi": "Harmony, Love, Peace, Strong memory"
+        },
+        "Drawback": {
+            "en": "Absence of foresight, Interference, Moodiness, Timidity",
+            "hi": "दूरदर्शिता का अभाव, हस्तक्षेप, उदासी, डरपोकपन",
+            "en-hi": "Absence of foresight, Interference, Moodiness, Timidity"
+        },
+        "Spiritual Insights": {
+            "en": "Don't let physical pleasures and worldly desires control your life.",
+            "hi": "शारीरिक सुख और सांसारिक इच्छाओं को अपने जीवन पर नियंत्रण न करने दें।",
+            "en-hi": "Physical pleasures aur worldly desires se life control na hone dein"
+        }
+    },
+    "7": {
+        "Planet": {
+            "en": "Neptune",
+            "hi": "नेपच्यून",
+            "en-hi": "Neptune"
+        },
+        "Finance": {
+            "en": "It is difficult for you to amass wealth due to changes in life, but you can be a wealthy person if you find a job of your choice.",
+            "hi": "जीवन में बदलावों के कारण आपके लिए धन जमा करना मुश्किल है, लेकिन अगर आपको अपनी पसंद की नौकरी मिल जाए तो आप एक अमीर व्यक्ति बन सकते हैं।",
+            "en-hi": "Life mein changes ke kaaran aapke liye daulat ikattha karna mushkil hai, lekin agar aapko apni pasand ki naukri mil jaaye toh aap ek ameer insaan ban sakte hain."
+        },
+        "Health Defects": {
+            "en": "Your main trouble is your nervous constitution. You are liable to suffer from faulty blood circulation, stomach disorders, and fever.",
+            "hi": "आपकी मुख्य परेशानी आपकी घबराहट है। आप खराब रक्त परिसंचरण, पेट की खराबी और बुखार से पीड़ित हो सकते हैं।",
+            "en-hi": "Aapki main pareshani aapki nervous constitution hai. Aap kharaab blood circulation, pet ki kharabi aur bukhar se pareshan ho sakte hain."
+        },
+        "Lucky Days": {
+            "en": "Sundays, Mondays, Wednesdays, Thursdays",
+            "hi": "रविवार, सोमवार, बुधवार, गुरुवार",
+            "en-hi": "Ravivar, Somvar, Budhwar, Guruwar"
+        },
+        "Lucky Colours": {
+            "en": "All shades of green and yellow",
+            "hi": "हरे और पीले रंग के सभी शेड",
+            "en-hi": "Hare aur peele rang ke sabhi shades"
+        },
+        "Lucky Jewels": {
+            "en": "Topaz, Emerald, Moonstone, Cat's eye",
+            "hi": "पुखराज, पन्ना, चंद्रमणि, लहसुनिया",
+            "en-hi": "Topaz, Panna, Moonstone, Cat's eye"
+        },
+        "Important Years": {
+            "en": "7, 16, 25, 34, 43, 52, 61, 70, 79",
+            "hi": "7, 16, 25, 34, 43, 52, 61, 70, 79",
+            "en-hi": "7, 16, 25, 34, 43, 52, 61, 70, 79"
+        },
+        "Friendly Number": {
+            "en": "1, 3, 4, 5, 7, 8, 9",
+            "hi": "1, 3, 4, 5, 7, 8, 9",
+            "en-hi": "1, 3, 4, 5, 7, 8, 9"
+        },
+        "As Wife": {
+            "en": "You are very moody and your behaviour is unpredictable. You get easily disturbed over small matters and expect your husband to look after you all the time.",
+            "hi": "आप बहुत मूडी हैं और आपका व्यवहार अप्रत्याशित है। आप छोटी-छोटी बातों पर आसानी से परेशान हो जाती हैं और उम्मीद करती हैं कि आपके पति हर समय आपकी देखभाल करें।",
+            "en-hi": "Aap bahut moody hain aur aapka behaviour unpredictable hai. Aap chhoti-chhoti baaton par aasani se pareshan ho jaati hain aur expect karti hain ki aapke pati har samay aapki dekhbhaal karein."
+        },
+        "As Husband": {
+            "en": "You are very emotional and understand your wife's feelings. You are liberal, fond of picnics, travels, and the cinema, and are a spendthrift.",
+            "hi": "आप बहुत भावुक हैं और अपनी पत्नी की भावनाओं को समझते हैं। आप उदार हैं, पिकनिक, यात्रा और सिनेमा के शौकीन हैं, और एक खर्चीले व्यक्ति हैं।",
+            "en-hi": "Aap bahut emotional hain aur apni patni ki feelings ko samajhte hain. Aap liberal hain, picnics, travels, aur cinema ke shaukeen hain, aur ek spendthrift (kharchile) hain."
+        },
+        "Good Quality": {
+            "en": "Austerity, Peace, Reflection, Serenity, Tolerance",
+            "hi": "तपस्या, शांति, चिंतन, शांति, सहिष्णुता",
+            "en-hi": "Austerity, Peace, Reflection, Serenity, Tolerance"
+        },
+        "Drawback": {
+            "en": "Despondency, Diffidence, Restlessness, Whimsicality",
+            "hi": "निराशा, संकोच, बेचैनी, मनमौजीपन",
+            "en-hi": "Despondency, Diffidence, Restlessness, Whimsicality"
+        },
+        "Spiritual Insights": {
+            "en": "When you need time alone, use it for personal growth, not just to run away from problems.",
+            "hi": "जब आपको अकेले समय की आवश्यकता हो, इसका उपयोग व्यक्तिगत विकास के लिए करें, केवल समस्याओं से भागने के लिए नहीं।",
+            "en-hi": "Alone time ka use personal growth ke liye karein, sirf problems se run karne ke liye nahi"
+        }
+    },
+    "8": {
+        "Planet": {
+            "en": "Saturn",
+            "hi": "शनि",
+            "en-hi": "Saturn (शनि)"
+        },
+        "Finance": {
+            "en": "You experience delay in all matters. Stability is achieved at a very late age, and you rarely succeed in getting opulence.",
+            "hi": "आपको सभी मामलों में देरी का अनुभव होता है। स्थिरता बहुत देर की उम्र में हासिल होती है, और आप शायद ही कभी समृद्धि प्राप्त करने में सफल होते हैं।",
+            "en-hi": "Aapko sabhi maamlon mein deri ka anubhav hota hai. Stability bahut late age mein haasil hoti hai, aur aap shaayad hi kabhi opulence (samriddhi) paate hain."
+        },
+        "Health Defects": {
+            "en": "Prone to nervousness, irritation, trouble with legs, teeth, and ears. Paralysis, rheumatism, varicose veins, and hemorrhoids are likely.",
+            "hi": "घबराहट, चिड़चिड़ापन, पैरों, दांतों और कानों में परेशानी से ग्रस्त। पक्षाघात, गठिया, वेरिकोज़ नसें और बवासीर की संभावना है।",
+            "en-hi": "Nervousness, irritation, pairon, daanton aur kaanon mein pareshani se grast. Paralysis, rheumatism (gathiya), varicose veins aur hemorrhoids (bawasir) ki sambhavna hai."
+        },
+        "Lucky Days": {
+            "en": "Wednesdays, Thursdays, Saturdays",
+            "hi": "बुधवार, गुरुवार, शनिवार",
+            "en-hi": "Budhwar, Guruwar, Shanivar"
+        },
+        "Lucky Colours": {
+            "en": "Dark grey, Dark blue, Purple, Black",
+            "hi": "गहरा ग्रे, गहरा नीला, बैंगनी, काला",
+            "en-hi": "Gehra Grey, Gehra Blue, Baingani, Kala"
+        },
+        "Lucky Jewels": {
+            "en": "Sapphire, Black pearl, Black diamond, Cat's eye, Amethyst",
+            "hi": "नीलम, काला मोती, काला हीरा, लहसुनिया, एमिथिस्ट",
+            "en-hi": "Neelam, Kaala moti, Kaala heera, Cat's eye, Amethyst"
+        },
+        "Important Years": {
+            "en": "8, 17, 26, 35, 44, 53, 62, 71",
+            "hi": "8, 17, 26, 35, 44, 53, 62, 71",
+            "en-hi": "8, 17, 26, 35, 44, 53, 62, 71"
+        },
+        "Friendly Number": {
+            "en": "3, 4, 5, 7, 8",
+            "hi": "3, 4, 5, 7, 8",
+            "en-hi": "3, 4, 5, 7, 8"
+        },
+        "As Wife": {
+            "en": "You have a masculine personality and are capable and systematic. Your fault is that you lack feminine warmth, sentiment, and delicacy.",
+            "hi": "आपका व्यक्तित्व मर्दाना है और आप सक्षम और व्यवस्थित हैं। आपकी गलती यह है कि आप में स्त्रीण गर्मजोशी, भावुकता और कोमलता की कमी है।",
+            "en-hi": "Aapki personality masculine hai aur aap kaabil aur systematic hain. Aapki galti yeh hai ki aap mein feminine warmth, sentiment aur nazakat ki kami hai."
+        },
+        "As Husband": {
+            "en": "You have a weak desire to get married and prefer loneliness; you may marry at a very late stage. You are very orthodox and can make married life miserable.",
+            "hi": "आप में शादी करने की इच्छा कमजोर है और आप अकेला रहना पसंद करते हैं; आप बहुत लेट से शादी कर सकते हैं। आप बहुत रूढ़िवादी हैं और शादीशुदा जीवन को दयनीय बना सकते हैं।",
+            "en-hi": "Aap mein shaadi karne ki iccha kamzor hai aur aap akela rehna pasand karte hain; aap bahut late stage mein shaadi kar sakte hain. Aap bahut orthodox hain aur shaadi-shuda zindagi ko miserable bana sakte hain."
+        },
+        "Good Quality": {
+            "en": "Authority, Methodical, Practical, Steady, Systematic",
+            "hi": "अधिकार, व्यवस्थित, व्यावहारिक, स्थिर, स्व्यवस्थित",
+            "en-hi": "Authority, Methodical, Practical, Steady, Systematic"
+        },
+        "Drawback": {
+            "en": "Cynicism, Delay, Vindictiveness, Nervousness, Laziness",
+            "hi": "निंदक, देरी, प्रतिशोध, घबराहट, आलस्य",
+            "en-hi": "Cynicism, Delay, Vindictiveness, Nervousness, Laziness"
+        },
+        "Spiritual Insights": {
+            "en": "Achieve your goals through patience and hard work, not by taking the easy way out.",
+            "hi": "धैर्य और कड़ी मेहनत के माध्यम से अपने लक्ष्यों को प्राप्त करें, आसान रास्ता अपनाने से नहीं।",
+            "en-hi": "Dharya aur hard work ke through goals achieve karein, easy way se nahi"
+        }
+    },
+    "9": {
+        "Planet": {
+            "en": "Mars",
+            "hi": "मंगल",
+            "en-hi": "Mars (मंगल)"
+        },
+        "Finance": {
+            "en": "You are lucky in monetary affairs and earn far more than an average person. You are also very liberal while spending.",
+            "hi": "आप मौद्रिक मामलों में भाग्यशाली हैं और एक औसत व्यक्ति से कहीं अधिक कमाते हैं। आप खर्च करते समय भी बहुत उदार होते हैं।",
+            "en-hi": "Aap monetary maamlon mein lucky hain aur ek average insaan se kahin zyada kamate hain. Aap kharch karte waqt bhi bahut liberal rehte hain."
+        },
+        "Health Defects": {
+            "en": "Your main health defect arises from heat; susceptible to piles, fevers, small pox, kidney or bladder stone problems, and throat trouble.",
+            "hi": "आपका मुख्य स्वास्थ्य दोष गर्मी से उत्पन्न होता है; बवासीर, बुखार, छोटी, गुर्दे या मूत्राशय की पथरी की समस्याओं और गले की परेशानी के प्रति संवेदनशील।",
+            "en-hi": "Aapka main health defect garmi se hota hai; piles (bawasir), bukhar, small pox, kidney ya bladder stone ki samasyaon aur gale ki pareshani ho sakti hai."
+        },
+        "Lucky Days": {
+            "en": "Mondays, Tuesdays, Fridays",
+            "hi": "सोमवार, मंगलवार, शुक्रवार",
+            "en-hi": "Somvar, Mangalvar, Shukrawar"
+        },
+        "Lucky Colours": {
+            "en": "All shades of red, white, and yellow",
+            "hi": "लाल, सफेद और पीले रंग के सभी शेड",
+            "en-hi": "Laal, safed aur peele rang ke sabhi shades"
+        },
+        "Lucky Jewels": {
+            "en": "Topaz, Pearl, Ruby, Blood-stones, Garnet",
+            "hi": "पुखराज, मोती, माणिक, ब्लड-स्टोन, गार्नेट",
+            "en-hi": "Topaz, Moti, Maanik, Blood-stones, Garnet"
+        },
+        "Important Years": {
+            "en": "9, 18, 27, 36, 45, 54, 63, 72",
+            "hi": "9, 18, 27, 36, 45, 54, 63, 72",
+            "en-hi": "9, 18, 27, 36, 45, 54, 63, 72"
+        },
+        "Friendly Number": {
+            "en": "1, 2, 3, 4, 6, 7, 9",
+            "hi": "1, 2, 3, 4, 6, 7, 9",
+            "en-hi": "1, 2, 3, 4, 6, 7, 9"
+        },
+        "As Wife": {
+            "en": "You are a wonderful wife for an ambitious person; a witty and clever conversationalist. You assist your husband in his business and may start your own activity.",
+            "hi": "आप एक महत्वाकांक्षी व्यक्ति के लिए एक अद्भुत पत्नी हैं; एक मजाकिया और चतुर वार्तालाप करने वाली। आप अपने पति के व्यवसाय में सहायता करती हैं और अपनी खुद की गतिविधि शुरू कर सकती हैं।",
+            "en-hi": "Aap ek ambitious insaan ke liye ek wonderful patni hain; ek witty aur clever conversationalist. Aap apne pati ke business mein help karti hain aur apna khud ka kaam shuru kar sakti hain."
+        },
+        "As Husband": {
+            "en": "You are passionate, enthusiastic, and fond of family. You have a hot-tempered nature and are usually suspicious about your wife.",
+            "hi": "आप भावुक, उत्साही और परिवार के शौकीन हैं। आपका स्वभाव गर्म-मिजाज है और आप आमतौर पर अपनी पत्नी पर शक करते हैं।",
+            "en-hi": "Aap passionate, enthusiastic aur family ke shaukeen hain. Aapka nature gusse wala hai aur aap aam taur par apni patni par shak karte hain."
+        },
+        "Good Quality": {
+            "en": "Activity, Courage, Dash, Energy, Enthusiasm",
+            "hi": "गतिविधि, साहस, तेज, ऊर्जा, उत्साह",
+            "en-hi": "Activity, Courage, Dash, Energy, Enthusiasm"
+        },
+        "Drawback": {
+            "en": "Destruction, Erratic, Hot-tempered, Impatient, Quarrelsome",
+            "hi": " विनाश, अनियमित, गर्म-मिजाज, अधीर, झगड़ालू",
+            "en-hi": "Destruction, Erratic, Hot-tempered, Impatient, Quarrelsome"
+        },
+        "Spiritual Insights": {
+            "en": "Use your powerful energy for something meaningful and positive.",
+            "hi": "अपनी शक्तिशाली ऊर्जा का उपयोग किसी सार्थक और सकारात्मक चीज़ के लिए करें।",
+            "en-hi": "Apni powerful energy ka use meaningful aur positive kaam ke liye karein"
+        }
+    }
+},
 
   // D) Professions
     destinyProfessions: {

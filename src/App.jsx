@@ -9,6 +9,7 @@ import NameAnalysisPage from './pages/NameAnalysisPage';
 import CompatibilityPage from './pages/CompatibilityPage';
 import GitaGyanPage from './pages/GitaGyanPage';
 import AssetVibrationPage from './pages/AssetVibrationPage';
+import CareerPathPage from './pages/CareerPathPage';
 
 const App = () => (
     <AuthProvider>
@@ -60,6 +61,14 @@ const App = () => (
                     element={
                         <ProtectedRoute>
                             <AssetVibrationPage />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/career-path"
+                    element={
+                        <ProtectedRoute>
+                            <CareerPathPage />
                         </ProtectedRoute>
                     }
                 />
