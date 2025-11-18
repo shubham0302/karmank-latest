@@ -30,14 +30,15 @@ export default function HoloDestinyCard({
         className="
           relative p-[2px] rounded-3xl ring-1 ring-blue-300/20
           shadow-[0_0_24px_6px_rgba(56,120,248,0.12)]
+          backdrop-blur-md
         "
         style={{
           background:
-            "linear-gradient(135deg, rgba(13,28,60,0.9), rgba(9,22,48,0.9))",
+            "linear-gradient(135deg, rgba(13,28,60,0.15), rgba(9,22,48,0.15))",
         }}
       >
         {/* Glass core: fixed height + flex column so the CTA stays at the bottom */}
-        <div className="relative h-[360px] md:h-[380px] rounded-[22px] overflow-hidden backdrop-blur-xl bg-transparent border border-white/10">
+        <div className="relative h-[240px] md:h-[260px] rounded-[22px] overflow-hidden backdrop-blur-xl bg-gradient-to-b from-white/5 to-white/[0.02] border border-white/10">
           {/* Subtle inner glow for depth */}
           <div
             className="absolute inset-0 pointer-events-none"
@@ -63,6 +64,7 @@ export default function HoloDestinyCard({
                 bg-[linear-gradient(90deg,#facc15_0%,#fbbf24_22%,#f9a8d4_60%,#c084fc_100%)]
                 bg-clip-text text-transparent
                 drop-shadow-[0_0_8px_rgba(255,255,255,0.15)]
+                pb-1
               "
             >
               {title}
@@ -74,7 +76,7 @@ export default function HoloDestinyCard({
             </p>
 
             {/* CTA pinned at the bottom */}
-            <div className="mt-auto pt-4">
+            <div className="mt-auto pt-2">
               <div className="flex justify-center">
                 <button
                   onClick={onPrimary}
