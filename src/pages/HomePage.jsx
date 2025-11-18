@@ -112,7 +112,7 @@ export default function HomePage() {
             >
               Choose your cosmic path
               <br className="hidden md:block" />
-              to begin your KarmAnk journey
+              to begin your KarmAnk Journey
             </h2>
             <motion.p
               initial={{ opacity: 0 }}
