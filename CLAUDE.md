@@ -4,9 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**KarmAnk** is a client-side React SPA that provides Vedic numerology readings and cosmic destiny reports. The application calculates numerological insights based on name, date of birth, and gender, then displays comprehensive analysis through a tabbed interface.
+**KarmAnk** is a React SPA that provides Vedic numerology readings and cosmic destiny reports. The application calculates numerological insights based on name, date of birth, and gender, then displays comprehensive analysis through a tabbed interface. Features authentication via Supabase and multiple analysis tools including numerology, name analysis, compatibility checking, and Bhagavad Gita wisdom.
 
-**Key Technologies:** React 18, Vite, Tailwind CSS, Radix UI, TypeScript/JavaScript (mixed)
+**Key Technologies:** React 18, Vite, Tailwind CSS, Radix UI, Supabase, React Router, TypeScript/JavaScript (mixed)
 
 ## Development Commands
 
@@ -34,14 +34,23 @@ npm run lint
 
 ### Application Flow
 
-1. **Entry Point:** `index.html` → `src/main.tsx` → `src/App.js` → `src/karmank.js`
-2. **Main Component:** `KarmAnkApp` in [karmank.js](src/karmank.js) is the central hub managing all state and routing
-3. **User Input:** Collects name, DOB, gender via form
-4. **Calculation Engine:**
+1. **Entry Point:** `index.html` → [src/main.tsx](src/main.tsx) → [src/App.jsx](src/App.jsx)
+2. **Authentication:** Supabase OTP-based email authentication wraps all routes via `AuthContext`
+3. **Routing:** React Router with protected routes:
+   - `/login` - OTP login page
+   - `/` - HomePage (landing/dashboard with 5 module cards)
+   - `/numerology` - Main KarmAnk numerology tool
+   - `/name-analysis` - Name vibration analysis
+   - `/compatibility` - Relationship compatibility checker
+   - `/asset-vibration` - Property/business/asset compatibility analysis
+   - `/gita-gyan` - Bhagavad Gita wisdom integration
+4. **Main Component:** `KarmAnkApp` in [src/karmank.jsx](src/karmank.jsx) manages numerology state and tab navigation
+5. **User Input:** Collects name, DOB, gender via form
+6. **Calculation Engine:**
    - Numerology calculations in [src/utils/calculators.js](src/utils/calculators.js)
    - Helper functions in [src/utils/helpers.js](src/utils/helpers.js)
-5. **Data Source:** All static content (number meanings, yogas, remedies) in [src/data/data.js](src/data/data.js) (40K+ lines)
-6. **Output:** 6 main tabs displaying various aspects of the numerology report
+7. **Data Source:** All static content (number meanings, yogas, remedies) in [src/data/data.js](src/data/data.js) (40K+ lines)
+8. **Output:** 6 main tabs displaying various aspects of the numerology report
 
 ### Core Calculation Functions
 
@@ -62,31 +71,52 @@ npm run lint
 ### Component Structure
 
 ```
-src/components/
-├── tabs/                    # 6 main application views
-│   ├── WelcomeTab.js
-│   ├── FoundationalAnalysisTab.js
-│   ├── AdvancedDashaTab.js
-│   ├── ForecastTab.js
-│   ├── RemediesAndGuidanceTab.js
-│   └── NumerologyTraitsTab.js
-├── Remedies/               # 7 remedy-specific components
-│   ├── RudrakshaTab.js
-│   ├── MantrasTab.js
-│   ├── ChakraTab.js
-│   └── ... (4 more)
-├── forecasts/              # 6 life event prediction components
-│   ├── MarriageForecastTab.js
-│   ├── ChildBirthForecastTab.js
-│   └── ... (4 more)
-└── dasha/                  # Dasha visualization components
-    ├── VedicDashaKundli.js
-    └── Dynamic*Display.js
+src/
+├── components/
+│   ├── tabs/                   # 6 main numerology views + special cards
+│   │   ├── WelcomeTab.jsx
+│   │   ├── FoundationalAnalysisTab.jsx
+│   │   ├── AdvancedDashaTab.jsx
+│   │   ├── ForecastTab.jsx
+│   │   ├── RemediesAndGuidanceTab.jsx
+│   │   ├── NumerologyTraitsTab.jsx
+│   │   ├── NameAnalysisSection.jsx    # Pythagorean name analysis (in Welcome)
+│   │   └── AssetVibrationCard.jsx     # Asset compatibility analysis (in Welcome)
+│   ├── Remedies/              # 7 remedy-specific components
+│   │   ├── RudrakshaTab.jsx
+│   │   ├── MantrasTab.jsx
+│   │   └── ChakraTab.jsx
+│   ├── forecasts/             # Life event prediction components
+│   │   ├── MarriageForecastTab.jsx
+│   │   └── ChildBirthForecastTab.jsx
+│   ├── dasha/                 # Dasha visualization components
+│   │   ├── VedicDashaKundli.jsx
+│   │   └── Dynamic*Display.jsx
+│   └── auth/                  # Authentication components
+│       ├── LoginPage.jsx
+│       └── ProtectedRoute.jsx
+├── pages/                     # Top-level page components
+│   ├── HomePage.jsx
+│   ├── NameAnalysisPage.jsx
+│   ├── CompatibilityPage.jsx
+│   ├── AssetVibrationPage.jsx   # Standalone asset compatibility page
+│   └── GitaGyanPage.jsx
+├── contexts/
+│   └── AuthContext.jsx        # Supabase auth state management
+└── lib/
+    ├── supabase.js            # Supabase client configuration
+    └── utils.js               # General utilities (cn, etc.)
 ```
 
 ### State Management Pattern
 
-**Local state in KarmAnkApp:**
+**Authentication (React Context):**
+```javascript
+// AuthContext provides: user, loading, signInWithOtp, verifyOtp, signOut
+const { user, signOut } = useAuth()
+```
+
+**Numerology state in KarmAnkApp:**
 ```javascript
 const [userData, setUserData] = useState({ dob, name, gender })
 const [report, setReport] = useState(null)           // Main numerology report
@@ -95,11 +125,12 @@ const [activeTab, setActiveTab] = useState('Welcome')
 ```
 
 **Data Flow:**
-1. User submits form → `handleGenerate()`
-2. Calculate numerology and dasha reports
-3. Store in state
-4. Child components receive as props
-5. Render appropriate tab content
+1. User logs in via OTP → Supabase session stored → Navigate to protected route
+2. User submits form → `handleGenerate()`
+3. Calculate numerology and dasha reports
+4. Store in state
+5. Child components receive as props
+6. Render appropriate tab content
 
 ### Multi-Language Support
 
@@ -128,6 +159,7 @@ Use `getText(textObject, language)` helper to retrieve the appropriate language 
    - `mantras` - Sacred chanting formulas with Devanagari script
    - `specialRudrakshaRemedies` - Exception cases
    - `destinyBasedRemedies` - Destiny number specific remedies
+   - `assetCompatibility` - Asset/property number compatibility with destiny numbers (auspicious, good, neutral, avoid)
 
 ## Important Implementation Details
 
@@ -155,6 +187,38 @@ The kundli grid is a 3x3 matrix with numbers 1-9 in specific positions:
 ```
 Each cell displays count of that digit appearing in the birth date.
 
+### Authentication Flow
+1. User navigates to any protected route → redirected to `/login`
+2. User enters email → `signInWithOtp(email)` sends OTP to email
+3. User enters 6-digit OTP → `verifyOtp(email, token)` validates
+4. On success: Supabase creates session → `AuthContext` sets user state
+5. `ProtectedRoute` checks `user` → if authenticated, renders page; else redirects to `/login`
+6. Sign out: `signOut()` → clears session → redirects to `/login`
+
+### Special Features in Welcome Tab
+
+The Welcome tab includes one specialized analysis card that appears above the main numerology snapshot:
+
+**Name Analysis Section** ([NameAnalysisSection.jsx](src/components/tabs/NameAnalysisSection.jsx))
+- Pythagorean numerology analysis of user's name
+- Calculates Expression, Soul Urge, and Personality numbers
+- Shows amplified traits from letter repetitions
+- Displays Name-Destiny synergy (when DOB provided)
+- Uses purple/indigo gradient holo-card styling
+
+### Asset Vibration Page (Standalone)
+
+**Asset Vibration Analysis** ([AssetVibrationPage.jsx](src/pages/AssetVibrationPage.jsx))
+- **Independent page** accessible from HomePage via `/asset-vibration` route (5th holo card)
+- User enters name + DOB to calculate Destiny & Basic numbers
+- Analyzes compatibility of properties, businesses, vehicles, investments with user's destiny
+- Uses `DATA.assetCompatibility` for compatibility ratings (no calculation changes)
+- Interactive: user selects asset type (6 categories) and enters asset number (1-9)
+- Shows status (Auspicious/Good/Neutral/Avoid) with color-coded results
+- Includes complete compatibility matrix and remedial suggestions
+- Uses purple/violet gradient holo-card styling matching HomePage aesthetic
+- **Core Logic:** Preserved from existing `DATA.assetCompatibility` structure
+
 ## Styling
 
 - **Framework:** Tailwind CSS with custom cosmic theme
@@ -167,18 +231,35 @@ Each cell displays count of that digit appearing in the birth date.
 - **Component Library:** Radix UI for accessible primitives
 - **Animations:** Framer Motion
 
+## Environment Configuration
+
+**Required Environment Variables:**
+```bash
+VITE_SUPABASE_URL=your_supabase_project_url
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
+
+These are configured in [src/lib/supabase.js](src/lib/supabase.js) and must be set for authentication to work. Create a `.env` file locally (not committed to git) or configure them in your hosting platform.
+
 ## TypeScript Configuration
 
 - Path alias: `@/*` maps to `./src/*`
 - Lenient settings: `noImplicitAny: false`, `strictNullChecks: false`
-- Mixed .js and .tsx files allowed
+- Mixed `.js`, `.jsx`, `.ts`, and `.tsx` files allowed
+- React SWC plugin for fast refresh
 
 ## Common Development Tasks
 
-### Adding a New Tab
-1. Create component in `src/components/tabs/YourTab.js`
-2. Add tab button in `KarmAnkApp` tab navigation section
-3. Add case to switch statement in tab content renderer
+### Adding a New Page Route
+1. Create page component in `src/pages/YourPage.jsx`
+2. Add route in [src/App.jsx](src/App.jsx) within `<Routes>`
+3. Wrap with `<ProtectedRoute>` if authentication required
+4. Add navigation link in HomePage or relevant component
+
+### Adding a New Numerology Tab
+1. Create component in `src/components/tabs/YourTab.jsx`
+2. Add tab name to `tabs` array in `KarmAnkApp`
+3. Add case to switch statement in `renderTabContent()`
 4. Pass required props (report, dashaReport, userData, etc.)
 
 ### Adding New Numerology Insights
@@ -199,12 +280,20 @@ Many components check `userData.gender` for differentiated display. Add male/fem
 
 ## Known Limitations
 
-- **No backend:** All calculations are client-side
-- **No persistence:** Reports not saved (no database)
+- **Client-side calculations:** All numerology calculations are performed in the browser
+- **No report persistence:** Reports are not saved to database (session-only)
 - **No testing:** No test suite currently exists
 - **Large data file:** [data.js](src/data/data.js) is 40K+ lines and could benefit from code-splitting
 - **No PDF export:** Consider adding in future
+- **Supabase dependency:** Authentication requires Supabase configuration
 
 ## Building for Production
 
-Run `npm run build` to create optimized production build in `dist/` directory. The app is fully static and can be deployed to any static hosting service (Vercel, Netlify, Cloudflare Pages, etc.) without special configuration.
+Run `npm run build` to create optimized production build in `dist/` directory.
+
+**Deployment Notes:**
+- The app uses React Router with client-side routing
+- [vercel.json](vercel.json) configures SPA fallback (rewrites all routes to `/`)
+- Set environment variables (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`) in hosting platform
+- Compatible with Vercel, Netlify, Cloudflare Pages, and other static hosting services
+- Use `npm run preview` to test production build locally before deploying

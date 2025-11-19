@@ -17,28 +17,46 @@ export default function HomePage() {
   const modules = [
     {
       title: "KARMANK • NUMEROLOGY",
-      blurb: "Decode your 3×3 Vedic grid, karmic patterns and the sacred mathematics shaping your life's rhythm.",
+      blurb:
+        "Decode your 3×3 Vedic grid, karmic patterns and the sacred mathematics shaping your life's rhythm.",
       cta: "Explore",
-      route: "/numerology"
+      route: "/numerology",
     },
     {
       title: "KARMANK • NAME ANALYSIS",
-      blurb: "Uncover name vibrations, auspicious spellings and alignment with your destiny grid.",
+      blurb:
+        "Uncover name vibrations, auspicious spellings and alignment with your destiny grid.",
       cta: "Analyze",
-      route: "/name-analysis"
+      route: "/name-analysis",
     },
     {
       title: "KARMANK • COSMIC COMPATIBILITY",
-      blurb: "Measure synergy for partners, teams and relationships using authentic Vedic numerology.",
+      blurb:
+        "Measure synergy for partners, teams and relationships using authentic Vedic numerology.",
       cta: "Check",
-      route: "/compatibility"
+      route: "/compatibility",
+    },
+    {
+      title: "KARMANK • ASSET VIBRATION",
+      blurb:
+        "Discover cosmic alignment of properties, businesses, vehicles & investments with your destiny numbers.",
+      cta: "Analyze",
+      route: "/asset-vibration",
     },
     {
       title: "KARMANK • GITA GYAN",
-      blurb: "Timeless wisdom of the Bhagavad Gita mapped to modern decisions and your numerological signatures.",
+      blurb:
+        "Timeless wisdom of the Bhagavad Gita mapped to modern decisions and your numerological signatures.",
       cta: "Open",
-      route: "/gita-gyan"
-    }
+      route: "/gita-gyan",
+    },
+    {
+      title: "KARMANK • CAREER PATH",
+      blurb:
+        "Psychometric profiling for students: Discover your personality, interests & aptitude aligned with Vedic numerology.",
+      cta: "Begin",
+      route: "/career-path",
+    },
   ];
 
   return (
@@ -65,7 +83,9 @@ export default function HomePage() {
               transition={{ duration: 0.6 }}
               className="flex items-center gap-3"
             >
-              <span className="text-sm text-white/70 hidden md:block">{user?.email}</span>
+              <span className="text-sm text-white/70 hidden md:block">
+                {user?.email}
+              </span>
               <button
                 onClick={handleSignOut}
                 className="bg-red-500/20 hover:bg-red-500/30 text-red-300 border border-red-500/50 px-4 py-2 rounded-md text-sm font-medium transition duration-200"
@@ -84,7 +104,7 @@ export default function HomePage() {
           >
             <h2
               className="
-                text-center text-4xl md:text-6xl font-serif font-extrabold leading-snug
+                text-center text-4xl md:text-6xl p-1 font-serif font-extrabold leading-snug
                 bg-[linear-gradient(90deg,#facc15_0%,#fbbf24_20%,#f9a8d4_60%,#c084fc_100%)]
                 bg-clip-text text-transparent
                 drop-shadow-[0_0_12px_rgba(0,255,255,.25)]
@@ -92,7 +112,7 @@ export default function HomePage() {
             >
               Choose your cosmic path
               <br className="hidden md:block" />
-              to begin your KarmAnk journey
+              to begin your KarmAnk Journey
             </h2>
             <motion.p
               initial={{ opacity: 0 }}
@@ -101,7 +121,8 @@ export default function HomePage() {
               className="mt-4 text-sm md:text-base text-white/70 flex items-center justify-center gap-2"
             >
               <Sparkles className="h-4 w-4 text-auric-gold" />
-              Each card is a gateway. Enter any module—switch anytime from the navigation.
+              Each card is a gateway. Enter any module—switch anytime from the
+              navigation.
             </motion.p>
           </motion.div>
 
@@ -110,7 +131,7 @@ export default function HomePage() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.6 }}
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 items-stretch"
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 items-stretch"
           >
             {modules.map((module, index) => (
               <motion.div
@@ -120,7 +141,7 @@ export default function HomePage() {
                 transition={{ duration: 0.5, delay: 0.7 + index * 0.1 }}
               >
                 <HoloDestinyCard
-                  title={module.title}
+                  title={module.title.split("•")[1].trim()}
                   blurb={module.blurb}
                   ctaLabel={module.cta}
                   onPrimary={() => navigate(module.route)}
@@ -137,8 +158,8 @@ export default function HomePage() {
             className="mt-12 text-center text-xs text-white/40 font-light"
           >
             <p className="flex items-center justify-center gap-2">
-              <Sparkles className="h-3 w-3" />
-              © {new Date().getFullYear()} KarmAnk - Sacred Technology
+              <Sparkles className="h-3 w-3" />© {new Date().getFullYear()}{" "}
+              KarmAnk - Sacred Technology
             </p>
           </motion.div>
         </div>
