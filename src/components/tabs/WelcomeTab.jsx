@@ -3,7 +3,6 @@ import Card from '../Card';
 import SectionTitle from '../SectionTitle';
 import { combinationInsights, DATA } from '../../data/data'; // Import from data.js
 import { getText } from '../../utils/helpers'; // Import getText
-import NameAnalysisSection from './NameAnalysisSection';
 
 const WelcomeTab = ({ report, userData }) => {
     const { kundliNumbers, coreVibrationSummary } = useMemo(() => {
@@ -66,14 +65,6 @@ const WelcomeTab = ({ report, userData }) => {
 
     return (
         <div className="space-y-6">
-            {/* KarmAnk Name Analysis Section */}
-            {userData?.name && (
-                <NameAnalysisSection
-                    userName={userData.name}
-                    userDob={userData.dob}
-                />
-            )}
-
             <Card className="bg-indigo-900/30 border-indigo-400">
                 <h3 className="text-xl font-bold text-indigo-300 mb-3">Your Numerology Snapshot</h3>
                 <p className="text-indigo-200 whitespace-pre-wrap">{snapshotDescription}</p>
