@@ -1,19 +1,123 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Home, Building2, Car, Briefcase, Landmark, TrendingUp, AlertCircle, CheckCircle, MinusCircle, XCircle, ArrowLeft, Crown } from 'lucide-react';
+import {
+  Home, Building2, Car, Briefcase, Landmark, TrendingUp, AlertCircle,
+  CheckCircle, MinusCircle, XCircle, ArrowLeft, Crown, Phone, CreditCard,
+  Sparkles, Wand2, CheckCircle2, Star
+} from 'lucide-react';
 import CosmicBackground from '../components/CosmicBackground';
 import { DATA } from '../data/data';
 import { getText } from '../utils/helpers';
 import { useAuth } from '../contexts/AuthContext';
 
+// Enhanced Asset Data with Pythagorean Letter Values
+const ASSET_DATA = {
+  letterValues: {
+    'A': 1, 'B': 2, 'C': 3, 'D': 4, 'E': 5, 'F': 6, 'G': 7, 'H': 8, 'I': 9,
+    'J': 1, 'K': 2, 'L': 3, 'M': 4, 'N': 5, 'O': 6, 'P': 7, 'Q': 8, 'R': 9,
+    'S': 1, 'T': 2, 'U': 3, 'V': 4, 'W': 5, 'X': 6, 'Y': 7, 'Z': 8,
+  },
+  vehicleNumberDetails: {
+    1: "Represents leadership and independence. Great for a car that stands out and is often driven solo.",
+    2: "Promotes smooth, pleasant journeys. A good, reliable number, especially for a shared car.",
+    3: "Associated with fun, creativity, and social trips. Expect enjoyable drives.",
+    4: "Signifies reliability and safety, but may be prone to occasional mechanical issues.",
+    5: "The number of adventure and travel. Perfect for road trips and exploring new places.",
+    6: "Represents comfort, luxury, and family trips. A safe and nurturing vehicle.",
+    7: "A number for the spiritual seeker or lone traveler. Great for solo drives and introspection.",
+    8: "Symbolizes power, status, and success. Often associated with business and ambition.",
+    9: "Connected to service and long-distance travel. May be used to help others."
+  },
+  houseNumberDetails: {
+    1: "Promotes independence, ambition, and new beginnings.",
+    2: "Fosters love, harmony, and relationships.",
+    3: "A hub of creativity, social gatherings, and self-expression.",
+    4: "Represents stability, security, and hard work.",
+    5: "Full of adventure, change, and social energy.",
+    6: "The ultimate number for family, nurturing, and responsibility.",
+    7: "A space for introspection, spirituality, and analysis.",
+    8: "Attracts abundance, success, and power.",
+    9: "Fosters compassion, humanitarianism, and wisdom."
+  },
+  mobileNumberDetails: {
+    1: "Vibration of leadership and ambition. Good for business owners.",
+    2: "Vibration of partnership and harmony. Excellent for teamwork.",
+    3: "Vibration of creativity and socializing. Great for artists and writers.",
+    4: "Vibration of hard work, but can also bring unexpected issues.",
+    5: "Vibration of business, sales, and networking. Ideal for adaptability.",
+    6: "Vibration of family, service, and luxury. A nurturing number.",
+    7: "Vibration of introspection and research. Good for analysts.",
+    8: "Vibration of power, finance, and karma. Can attract significant wealth.",
+    9: "Vibration of humanitarianism and energy. Good for public-facing roles."
+  },
+  accountNumberDetails: {
+    1: "Good for accounts related to new ventures and independent earnings.",
+    2: "Favors joint accounts, partnerships, and savings.",
+    3: "Supports accounts used for creative projects and social spending.",
+    4: "Excellent for long-term savings and property investment.",
+    5: "Ideal for accounts with frequent transactions and travel funds.",
+    6: "Best for family savings and household expenses.",
+    7: "Suits accounts for research, education, or spiritual pursuits.",
+    8: "The powerhouse number for wealth, business, and large-scale goals.",
+    9: "Aligns with charitable donations and humanitarian causes."
+  },
+  remedyData: {
+    1: {
+      mantra: "Om Suryaya Namah (ॐ सूर्याय नमः)",
+      crystal: "Ruby (Manik) or Sunstone",
+      advice: "To enhance leadership and vitality, chant the mantra daily. Wearing a Ruby (after consultation) can boost positive solar energy."
+    },
+    2: {
+      mantra: "Om Chandraya Namah (ॐ चंद्राय नमः)",
+      crystal: "Pearl (Moti) or Moonstone",
+      advice: "To balance emotions, chant this mantra. A Pearl can help soothe the mind and promote emotional stability."
+    },
+    3: {
+      mantra: "Om Gurave Namah (ॐ गुरवे नमः)",
+      crystal: "Yellow Sapphire (Pukhraj)",
+      advice: "To attract wisdom and expansion, chant this mantra. A Yellow Sapphire can enhance judgment and prosperity."
+    },
+    4: {
+      mantra: "Om Rahave Namah (ॐ राहवे नमः)",
+      crystal: "Gomed (Hessonite)",
+      advice: "To pacify the disruptive energy of Rahu, chant this mantra 108 times daily. A Gomed crystal can help reduce sudden obstacles."
+    },
+    5: {
+      mantra: "Om Budhaya Namah (ॐ बुधाय नमः)",
+      crystal: "Emerald (Panna)",
+      advice: "To improve communication and intellect, chant this mantra. An Emerald can sharpen the mind and improve financial dealings."
+    },
+    6: {
+      mantra: "Om Shukraya Namah (ॐ शुक्राय नमः)",
+      crystal: "Diamond (Heera) or White Zircon",
+      advice: "To attract luxury, love, and harmony, chant this mantra. A Diamond enhances charm and material comforts."
+    },
+    7: {
+      mantra: "Om Ketave Namah (ॐ केतवे नमः)",
+      crystal: "Cat's Eye (Lehsunia)",
+      advice: "To enhance intuition and protect from hidden issues, chant this mantra. A Cat's Eye can promote spiritual insight and detachment."
+    },
+    8: {
+      mantra: "Om Shanaishcharaya Namah (ॐ शनैश्चराय नमः)",
+      crystal: "Blue Sapphire (Neelam) - *Use with extreme caution*",
+      advice: "To bring discipline and mitigate delays, chant daily. A Blue Sapphire is very powerful and must only be worn after expert consultation."
+    },
+    9: {
+      mantra: "Om Angarakaya Namah (ॐ अंगारकाय नमः)",
+      crystal: "Red Coral (Moonga)",
+      advice: "To boost energy, courage, and reduce conflicts, chant this mantra. A Red Coral can enhance physical vitality and determination."
+    }
+  }
+};
+
 // Asset Type Icons
 const assetIcons = {
-  property: Home,
-  business: Briefcase,
   vehicle: Car,
-  commercial: Building2,
-  investment: TrendingUp,
+  property: Home,
+  mobile: Phone,
+  account: CreditCard,
+  business: Briefcase,
   land: Landmark,
 };
 
@@ -40,8 +144,8 @@ const AssetVibrationPage = () => {
   const [userData, setUserData] = useState({ dob: '', name: '' });
   const [destinyNumber, setDestinyNumber] = useState(null);
   const [basicNumber, setBasicNumber] = useState(null);
-  const [selectedAssetType, setSelectedAssetType] = useState('property');
-  const [assetNumber, setAssetNumber] = useState('');
+  const [selectedAssetType, setSelectedAssetType] = useState('vehicle');
+  const [assetInput, setAssetInput] = useState('');
   const [compatibilityResult, setCompatibilityResult] = useState(null);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [formError, setFormError] = useState('');
@@ -95,13 +199,24 @@ const AssetVibrationPage = () => {
     }
   };
 
-  // Analyze compatibility
-  const analyzeCompatibility = () => {
-    if (!assetNumber) return;
+  // Helper function to reduce to single digit
+  const reduceToSingleDigit = (num) => {
+    if (typeof num !== 'number' && typeof num !== 'string') return 0;
+    let currentNumStr = String(num);
+    while (currentNumStr.length > 1) {
+      currentNumStr = String(currentNumStr.split('').reduce((acc, digit) => {
+        const parsedDigit = parseInt(digit, 10);
+        return acc + (isNaN(parsedDigit) ? 0 : parsedDigit);
+      }, 0));
+    }
+    const finalNum = parseInt(currentNumStr, 10);
+    return isNaN(finalNum) ? 0 : finalNum;
+  };
 
-    const num = parseInt(assetNumber, 10);
-    if (isNaN(num) || num < 1 || num > 9) {
-      alert('Please enter a valid number between 1-9');
+  // Enhanced Analyze compatibility with different asset types
+  const analyzeCompatibility = () => {
+    if (!assetInput.trim()) {
+      alert(`Please enter a ${selectedAssetType} number or identifier.`);
       return;
     }
 
@@ -110,35 +225,100 @@ const AssetVibrationPage = () => {
       return;
     }
 
-    // Use destiny number as primary reference
-    const compatibility = DATA.assetCompatibility[destinyNumber];
+    let finalNumber;
+    let interpretation = '';
 
-    let status = 'neutral';
-    if (compatibility.auspicious.includes(num)) {
-      status = 'auspicious';
-    } else if (compatibility.good.includes(num)) {
-      status = 'good';
-    } else if (compatibility.avoid.includes(num)) {
-      status = 'avoid';
+    try {
+      if (selectedAssetType === 'vehicle') {
+        // Vehicle: Calculate from both letters and numbers
+        const letters = (assetInput.match(/[A-Z]/gi) || []).join('').toUpperCase();
+        const digits = (assetInput.match(/\d/g) || []).join('');
+
+        if (!letters && !digits) {
+          alert("No letters or digits found in the vehicle number.");
+          return;
+        }
+
+        const letterSum = letters.split('').reduce((acc, char) => acc + (ASSET_DATA.letterValues[char] || 0), 0);
+        const digitSum = digits.split('').reduce((acc, d) => acc + parseInt(d, 10), 0);
+
+        finalNumber = reduceToSingleDigit(letterSum + digitSum);
+        interpretation = ASSET_DATA.vehicleNumberDetails[finalNumber];
+      } else if (selectedAssetType === 'mobile') {
+        // Mobile: Calculate from all digits
+        const digits = assetInput.replace(/\D/g, "");
+        if (!digits.length) {
+          alert("No digits found in the mobile number.");
+          return;
+        }
+        const sum = digits.split("").reduce((acc, d) => acc + parseInt(d, 10), 0);
+        finalNumber = reduceToSingleDigit(sum);
+        interpretation = ASSET_DATA.mobileNumberDetails[finalNumber];
+      } else if (selectedAssetType === 'account') {
+        // Account: Calculate from digits
+        const digits = assetInput.replace(/\D/g, "");
+        if (!digits.length) {
+          alert("No digits found in the account number.");
+          return;
+        }
+        const sum = digits.split("").reduce((acc, d) => acc + parseInt(d, 10), 0);
+        finalNumber = reduceToSingleDigit(sum);
+        interpretation = ASSET_DATA.accountNumberDetails[finalNumber];
+      } else if (selectedAssetType === 'property') {
+        // Property: Calculate from digits
+        const digits = assetInput.replace(/\D/g, "");
+        if (!digits.length) {
+          alert("No digits found in the property number.");
+          return;
+        }
+        const sum = digits.split("").reduce((acc, d) => acc + parseInt(d, 10), 0);
+        finalNumber = reduceToSingleDigit(sum);
+        interpretation = ASSET_DATA.houseNumberDetails[finalNumber];
+      } else {
+        // Default: try to parse as number
+        const num = parseInt(assetInput, 10);
+        if (isNaN(num) || num < 1 || num > 9) {
+          alert('Please enter a valid number between 1-9');
+          return;
+        }
+        finalNumber = num;
+      }
+
+      // Use destiny number as primary reference
+      const compatibility = DATA.assetCompatibility[destinyNumber];
+
+      let status = 'neutral';
+      if (compatibility.auspicious.includes(finalNumber)) {
+        status = 'auspicious';
+      } else if (compatibility.good.includes(finalNumber)) {
+        status = 'good';
+      } else if (compatibility.avoid.includes(finalNumber)) {
+        status = 'avoid';
+      }
+
+      // Also check with basic number
+      const basicCompatibility = DATA.assetCompatibility[basicNumber];
+      let basicStatus = 'neutral';
+      if (basicCompatibility.auspicious.includes(finalNumber)) {
+        basicStatus = 'auspicious';
+      } else if (basicCompatibility.good.includes(finalNumber)) {
+        basicStatus = 'good';
+      } else if (basicCompatibility.avoid.includes(finalNumber)) {
+        basicStatus = 'avoid';
+      }
+
+      setCompatibilityResult({
+        assetNum: finalNumber,
+        destinyStatus: status,
+        basicStatus: basicStatus,
+        assetType: selectedAssetType,
+        interpretation: interpretation || `No specific interpretation found for ${selectedAssetType} number ${finalNumber}.`,
+        remedy: ASSET_DATA.remedyData[finalNumber]
+      });
+    } catch (e) {
+      console.error("Asset analyze error:", e);
+      alert("Could not analyze this number. Please try again.");
     }
-
-    // Also check with basic number
-    const basicCompatibility = DATA.assetCompatibility[basicNumber];
-    let basicStatus = 'neutral';
-    if (basicCompatibility.auspicious.includes(num)) {
-      basicStatus = 'auspicious';
-    } else if (basicCompatibility.good.includes(num)) {
-      basicStatus = 'good';
-    } else if (basicCompatibility.avoid.includes(num)) {
-      basicStatus = 'avoid';
-    }
-
-    setCompatibilityResult({
-      assetNum: num,
-      destinyStatus: status,
-      basicStatus: basicStatus,
-      assetType: selectedAssetType,
-    });
   };
 
   // Get compatibility status color
@@ -219,175 +399,172 @@ const AssetVibrationPage = () => {
             </div>
           </div>
 
-          {/* Title */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="text-center mb-8"
-          >
-            <h1 className="text-5xl font-extrabold text-yellow-400 font-serif tracking-widest flex items-center justify-center gap-3">
-              <Crown className="h-12 w-12" />
-              ASSET VIBRATION ANALYSIS
-            </h1>
-            <p className="text-yellow-200/70 mt-2">
-              Discover the cosmic compatibility of properties, businesses & assets with your destiny
-            </p>
-          </motion.div>
-
-          {/* Input Form */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="bg-gray-800/50 backdrop-blur-sm border border-yellow-400/20 p-6 rounded-lg shadow-lg mb-8"
-          >
-            <h2 className="text-2xl font-bold text-yellow-400 mb-4 text-center">
-              Calculate Your Numbers
-            </h2>
-            <form onSubmit={handleCalculate} className="grid md:grid-cols-3 gap-4 items-end">
-              <div>
-                <label htmlFor="name" className="block text-sm font-medium text-yellow-500 mb-2">
-                  Name
-                </label>
-                <input
-                  type="text"
-                  id="name"
-                  value={userData.name}
-                  onChange={(e) => setUserData({ ...userData, name: e.target.value })}
-                  className="w-full px-4 py-3 bg-gray-700 border-gray-600 rounded-md shadow-sm text-white placeholder:text-gray-400"
-                  placeholder="Your Name"
-                />
+          {/* Futuristic Gate Header */}
+          <div className="relative w-full h-40 mb-8 overflow-hidden rounded-xl border border-cyan-500/20">
+            <div className="absolute inset-0 bg-gradient-to-b from-cyan-950/40 via-gray-950 to-black" />
+            <div className="absolute inset-0" style={{
+              backgroundImage: `
+                linear-gradient(to right, rgba(34, 211, 238, 0.1) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(34, 211, 238, 0.1) 1px, transparent 1px)
+              `,
+              backgroundSize: '40px 40px',
+              transform: 'perspective(500px) rotateX(60deg)',
+              transformOrigin: 'center bottom'
+            }} />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="text-center space-y-2 relative z-10">
+                <div className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-blue-400 to-purple-500">
+                  KarmAnk
+                </div>
+                <div className="text-sm text-cyan-400/60 tracking-widest">
+                  ASSET VIBRATION SYSTEM
+                </div>
               </div>
-              <div>
-                <label htmlFor="dob" className="block text-sm font-medium text-yellow-500 mb-2">
-                  Date of Birth
-                </label>
-                <input
-                  type="date"
-                  id="dob"
-                  value={userData.dob}
-                  onChange={(e) => setUserData({ ...userData, dob: e.target.value })}
-                  className="w-full px-4 py-3 bg-gray-700 border-gray-600 rounded-md shadow-sm text-white"
-                  style={{ colorScheme: 'dark' }}
-                />
-              </div>
-              <button
-                type="submit"
-                className="bg-yellow-500 text-indigo-900 font-bold px-8 py-3 rounded-lg hover:bg-yellow-600 transition duration-200 shadow-lg"
-              >
-                Calculate
-              </button>
-            </form>
-            {formError && <p className="text-center text-red-400 mt-4">{formError}</p>}
-          </motion.div>
+            </div>
+          </div>
 
-          {/* Numbers Display & Analysis Section */}
-          {destinyNumber && basicNumber && (
+          {!destinyNumber ? (
+            /* Introduction Page */
+            <div className="max-w-2xl mx-auto">
+              <div className="bg-gray-900/60 backdrop-blur-md p-8 rounded-xl border border-cyan-500/20 shadow-2xl">
+                <h2 className="text-2xl font-bold text-center text-cyan-300 mb-6">
+                  Enter Your Details
+                </h2>
+
+                <div className="space-y-6">
+                  <div className="group relative">
+                    <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-600 to-purple-600 rounded-lg blur opacity-20 group-hover:opacity-60 transition duration-1000 group-hover:duration-200"></div>
+                    <input
+                      type="text"
+                      value={userData.name}
+                      onChange={(e) => setUserData({ ...userData, name: e.target.value })}
+                      placeholder="YOUR FULL NAME"
+                      className="relative w-full px-6 py-5 bg-gray-950 border border-gray-800 rounded-lg focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/50 text-gray-300 text-center tracking-widest uppercase outline-none placeholder-gray-600"
+                    />
+                  </div>
+
+                  <div className="group relative">
+                    <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-600 to-purple-600 rounded-lg blur opacity-20 group-hover:opacity-60 transition duration-1000 group-hover:duration-200"></div>
+                    <input
+                      type="date"
+                      value={userData.dob}
+                      onChange={(e) => setUserData({ ...userData, dob: e.target.value })}
+                      placeholder="DD-MM-YYYY"
+                      className="relative w-full px-6 py-5 bg-gray-950 border border-gray-800 rounded-lg focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/50 text-gray-300 text-center tracking-widest uppercase outline-none"
+                      style={{ colorScheme: 'dark' }}
+                    />
+                  </div>
+
+                  <button
+                    onClick={handleCalculate}
+                    className="w-full py-4 bg-gradient-to-r from-cyan-600 to-purple-600 hover:from-cyan-500 hover:to-purple-500 text-white font-bold rounded-lg transition-all duration-200 transform hover:scale-[1.02] shadow-lg shadow-cyan-500/20"
+                  >
+                    INITIATE ANALYSIS
+                  </button>
+
+                  {formError && (
+                    <p className="text-center text-red-400 text-sm">{formError}</p>
+                  )}
+                </div>
+              </div>
+            </div>
+          ) : (
+            /* Analysis Section */
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.5 }}
               className="space-y-8"
             >
-              {/* Holo Card Container */}
-              <div className="relative">
-                {/* Cosmic aura */}
-                <div
-                  className="absolute -inset-4 -z-10 rounded-[28px] opacity-50 blur-2xl"
-                  style={{
-                    background:
-                      'radial-gradient(circle at 50% 35%, rgba(168,85,247,.35) 0%, rgba(168,85,247,0.0) 55%)',
-                  }}
-                />
+              {/* Main Card Container */}
+              <div className="bg-gray-900/50 p-6 md:p-8 rounded-xl border border-cyan-500/20 shadow-2xl">
+                <div className="space-y-6">
+                  {/* User Numbers Display */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="bg-cyan-900/20 border border-cyan-500/30 rounded-lg p-6 text-center">
+                      <p className="text-sm text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-blue-400 mb-2 font-semibold">Your Destiny Number</p>
+                      <p className="text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-br from-cyan-300 via-cyan-400 to-blue-500">{destinyNumber}</p>
+                      <p className="text-xs text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500 mt-2">(Primary Reference)</p>
+                    </div>
+                    <div className="bg-cyan-900/20 border border-cyan-500/30 rounded-lg p-6 text-center">
+                      <p className="text-sm text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-blue-400 mb-2 font-semibold">Your Basic Number</p>
+                      <p className="text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-br from-cyan-300 via-cyan-400 to-blue-500">{basicNumber}</p>
+                      <p className="text-xs text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500 mt-2">(Secondary Reference)</p>
+                    </div>
+                  </div>
 
-                {/* Deep purple/violet frame */}
-                <div
-                  className="relative p-[2px] rounded-3xl ring-1 ring-purple-300/20 shadow-[0_0_24px_6px_rgba(168,85,247,0.12)]"
-                  style={{
-                    background:
-                      'linear-gradient(135deg, rgba(46,16,101,0.9), rgba(31,13,74,0.9))',
-                  }}
-                >
-                  {/* Glass core */}
-                  <div className="relative rounded-[22px] overflow-hidden backdrop-blur-xl bg-transparent border border-white/10">
-                    {/* Subtle inner glow */}
-                    <div
-                      className="absolute inset-0 pointer-events-none"
-                      style={{
-                        background:
-                          'radial-gradient(800px 420px at 50% 0%, rgba(139,92,246,0.18) 0%, transparent 60%), radial-gradient(700px 380px at 50% 100%, rgba(91,33,182,0.16) 0%, transparent 60%)',
-                      }}
-                    />
+                  {/* Asset Type Selection */}
+                  <div>
+                    <label className="block text-sm font-medium text-cyan-200 mb-3">
+                      Select Asset Type
+                    </label>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                      {Object.entries(assetIcons).map(([type, Icon]) => (
+                        <button
+                          key={type}
+                          onClick={() => setSelectedAssetType(type)}
+                          className={`flex items-center gap-2 p-3 rounded-lg border-2 transition-all ${
+                            selectedAssetType === type
+                              ? 'bg-cyan-600/40 border-cyan-400'
+                              : 'bg-gray-900/50 border-cyan-700/30 hover:bg-cyan-900/30'
+                          }`}
+                        >
+                          <Icon className={`w-5 h-5 ${
+                            selectedAssetType === type
+                              ? 'text-cyan-200'
+                              : 'text-cyan-400'
+                          }`} />
+                          <span className={`text-sm font-medium capitalize ${
+                            selectedAssetType === type
+                              ? 'text-transparent bg-clip-text bg-gradient-to-r from-cyan-200 to-blue-300'
+                              : 'text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-blue-400'
+                          }`}>
+                            {type}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
 
-                    {/* Tiny stars */}
-                    <div className="absolute inset-0 opacity-[0.10] mix-blend-screen pointer-events-none bg-[radial-gradient(circle_at_20%_30%,rgba(255,255,255,0.25)_0.5px,transparent_1px)] bg-[length:3px_3px]" />
-
-                    {/* CONTENT */}
-                    <div className="relative z-10 p-6 md:p-8 space-y-6">
-                      {/* User Numbers Display */}
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="bg-purple-900/30 border border-purple-400/20 rounded-lg p-6 text-center">
-                          <p className="text-sm text-purple-300 mb-2">Your Destiny Number</p>
-                          <p className="text-5xl font-bold text-purple-200">{destinyNumber}</p>
-                          <p className="text-xs text-purple-400 mt-2">(Primary Reference)</p>
-                        </div>
-                        <div className="bg-purple-900/30 border border-purple-400/20 rounded-lg p-6 text-center">
-                          <p className="text-sm text-purple-300 mb-2">Your Basic Number</p>
-                          <p className="text-5xl font-bold text-purple-200">{basicNumber}</p>
-                          <p className="text-xs text-purple-400 mt-2">(Secondary Reference)</p>
-                        </div>
-                      </div>
-
-                      {/* Asset Type Selection */}
-                      <div>
-                        <label className="block text-sm font-medium text-purple-200 mb-3">
-                          Select Asset Type
-                        </label>
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                          {Object.entries(assetIcons).map(([type, Icon]) => (
-                            <button
-                              key={type}
-                              onClick={() => setSelectedAssetType(type)}
-                              className={`flex items-center gap-2 p-3 rounded-lg border-2 transition-all ${
-                                selectedAssetType === type
-                                  ? 'bg-purple-600/40 border-purple-400 text-white'
-                                  : 'bg-purple-900/20 border-purple-700/30 text-purple-300 hover:bg-purple-800/30'
-                              }`}
-                            >
-                              <Icon className="w-5 h-5" />
-                              <span className="text-sm font-medium capitalize">{type}</span>
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Asset Number Input */}
-                      <div>
-                        <label htmlFor="assetNumber" className="block text-sm font-medium text-purple-200 mb-2">
-                          Enter Asset Number (1-9)
-                        </label>
-                        <p className="text-xs text-purple-400/70 mb-3">
-                          For properties: Sum the digits of house/flat number. For businesses: Calculate from business name. For vehicles: Use number plate sum.
-                        </p>
-                        <div className="flex gap-3">
-                          <input
-                            type="text"
-                            id="assetNumber"
-                            value={assetNumber}
-                            onChange={(e) => setAssetNumber(e.target.value)}
-                            placeholder="e.g., 5"
-                            className="flex-1 px-4 py-3 bg-purple-900/30 border border-purple-400/30 rounded-lg focus:ring-2 focus:ring-purple-500 text-white placeholder:text-purple-400/50"
-                            maxLength="1"
-                          />
-                          <button
-                            onClick={analyzeCompatibility}
-                            className="px-6 py-3 rounded-lg bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold shadow-[0_8px_28px_rgba(168,85,247,0.35)] hover:opacity-95 transition"
-                          >
-                            Analyze
-                          </button>
-                        </div>
-                      </div>
+                  {/* Asset Number Input */}
+                  <div>
+                    <label htmlFor="assetInput" className="block text-sm font-medium text-cyan-200 mb-2">
+                      {selectedAssetType === 'vehicle' && 'Enter Vehicle Number (Letters + Digits)'}
+                      {selectedAssetType === 'mobile' && 'Enter Mobile Number (10 Digits)'}
+                      {selectedAssetType === 'account' && 'Enter Account Number (Last 4-6 Digits)'}
+                      {selectedAssetType === 'property' && 'Enter House/Flat Number'}
+                      {!['vehicle', 'mobile', 'account', 'property'].includes(selectedAssetType) && 'Enter Asset Number'}
+                    </label>
+                    <p className="text-xs text-cyan-400/70 mb-3">
+                      {selectedAssetType === 'vehicle' && 'Example: MH12AB1234 (Letters A=1, B=2... are calculated with numbers)'}
+                      {selectedAssetType === 'mobile' && 'Example: 9876543210 (All digits will be summed)'}
+                      {selectedAssetType === 'account' && 'Example: Enter last 4-6 digits of your account number'}
+                      {selectedAssetType === 'property' && 'Example: B-404, 123, or 12 (Digits are summed)'}
+                      {!['vehicle', 'mobile', 'account', 'property'].includes(selectedAssetType) && 'Enter a number between 1-9'}
+                    </p>
+                    <div className="flex gap-3">
+                      <input
+                        type="text"
+                        id="assetInput"
+                        value={assetInput}
+                        onChange={(e) => setAssetInput(e.target.value)}
+                        placeholder={
+                          selectedAssetType === 'vehicle' ? 'MH12AB1234' :
+                          selectedAssetType === 'mobile' ? '9876543210' :
+                          selectedAssetType === 'account' ? '123456' :
+                          selectedAssetType === 'property' ? 'B-404' :
+                          'Enter number'
+                        }
+                        className="flex-1 px-4 py-3 bg-gray-900/50 border border-cyan-500/30 rounded-lg focus:ring-2 focus:ring-cyan-500 text-white placeholder:text-cyan-400/50 uppercase"
+                      />
+                      <button
+                        onClick={analyzeCompatibility}
+                        className="px-6 py-3 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-semibold shadow-lg hover:opacity-95 transition"
+                      >
+                        Analyze
+                      </button>
+                    </div>
+                  </div>
 
                       {/* Compatibility Result */}
                       {compatibilityResult && (
@@ -422,16 +599,58 @@ const AssetVibrationPage = () => {
                             </p>
                           </div>
 
+                          {/* Asset Interpretation */}
+                          {compatibilityResult.interpretation && (
+                            <div className="bg-gray-900/60 p-5 rounded-xl border border-cyan-500/30">
+                              <h5 className="font-semibold text-cyan-400 mb-2 flex items-center gap-2">
+                                <Sparkles className="w-5 h-5" />
+                                {selectedAssetType.charAt(0).toUpperCase() + selectedAssetType.slice(1)} Number Interpretation
+                              </h5>
+                              <p className="text-gray-300 leading-relaxed text-sm">
+                                {compatibilityResult.interpretation}
+                              </p>
+                            </div>
+                          )}
+
+                          {/* Remedial Guidance */}
+                          {compatibilityResult.remedy && (
+                            <div className={`p-5 rounded-xl border-2 ${
+                              [4, 8].includes(compatibilityResult.assetNum)
+                                ? 'bg-red-900/20 border-red-500/50'
+                                : 'bg-cyan-900/20 border-cyan-500/30'
+                            }`}>
+                              <h5 className={`font-bold mb-3 text-lg flex items-center gap-2 ${
+                                [4, 8].includes(compatibilityResult.assetNum)
+                                  ? 'text-red-300'
+                                  : 'text-cyan-300'
+                              }`}>
+                                <Wand2 className="w-5 h-5" />
+                                Remedial Guidance (Vibration {compatibilityResult.assetNum})
+                              </h5>
+                              <p className="text-gray-300 mb-3 text-sm leading-relaxed">{compatibilityResult.remedy.advice}</p>
+                              <div className="space-y-2">
+                                <p className="text-gray-300 text-sm">
+                                  <strong className="text-blue-400">Mantra:</strong>{' '}
+                                  <span className="text-blue-300 italic">{compatibilityResult.remedy.mantra}</span>
+                                </p>
+                                <p className="text-gray-300 text-sm">
+                                  <strong className="text-cyan-400">Crystal:</strong>{' '}
+                                  <span className="text-cyan-300">{compatibilityResult.remedy.crystal}</span>
+                                </p>
+                              </div>
+                            </div>
+                          )}
+
                           {/* Secondary Check with Basic Number */}
                           {compatibilityResult.basicStatus !== compatibilityResult.destinyStatus && (
-                            <div className="bg-purple-900/30 border border-purple-400/20 rounded-lg p-4">
+                            <div className="bg-cyan-900/20 border border-cyan-500/30 rounded-lg p-4">
                               <div className="flex items-center gap-2 mb-2">
                                 <StatusIcon status={compatibilityResult.basicStatus} className="w-5 h-5" />
-                                <p className="text-sm font-semibold text-purple-200">
+                                <p className="text-sm font-semibold text-cyan-200">
                                   Secondary Analysis (Basic Number {basicNumber})
                                 </p>
                               </div>
-                              <p className="text-xs text-purple-300/80">
+                              <p className="text-xs text-cyan-300/80">
                                 With your Basic Number, this asset shows{' '}
                                 <strong>{getStatusText(compatibilityResult.basicStatus)}</strong> energy. Your
                                 Destiny Number takes precedence for major decisions.
@@ -463,15 +682,15 @@ const AssetVibrationPage = () => {
                         </motion.div>
                       )}
 
-                      {/* Advanced Matrix Toggle */}
-                      {compatibilityMatrix && (
-                        <div className="border-t border-purple-400/20 pt-4">
-                          <button
-                            onClick={() => setShowAdvanced(!showAdvanced)}
-                            className="w-full flex items-center justify-between text-sm font-medium text-purple-200 hover:text-white transition"
-                          >
-                            <span>{showAdvanced ? '▼' : '▶'} View Complete Compatibility Matrix</span>
-                          </button>
+                  {/* Advanced Matrix Toggle */}
+                  {compatibilityMatrix && (
+                    <div className="border-t border-cyan-500/20 pt-4">
+                      <button
+                        onClick={() => setShowAdvanced(!showAdvanced)}
+                        className="w-full flex items-center justify-between text-sm font-medium text-cyan-200 hover:text-white transition"
+                      >
+                        <span>{showAdvanced ? '▼' : '▶'} View Complete Compatibility Matrix</span>
+                      </button>
 
                           {showAdvanced && (
                             <motion.div
@@ -527,26 +746,23 @@ const AssetVibrationPage = () => {
                                 </div>
                               </div>
 
-                              {/* Description from DATA */}
-                              <div className="bg-purple-900/30 border border-purple-400/20 rounded-lg p-4">
-                                <p className="text-xs text-purple-200/80 leading-relaxed">
-                                  {getText(DATA.assetCompatibility[destinyNumber].description, 'en')}
-                                </p>
-                              </div>
-                            </motion.div>
-                          )}
-                        </div>
+                          {/* Description from DATA */}
+                          <div className="bg-cyan-900/20 border border-cyan-500/30 rounded-lg p-4">
+                            <p className="text-xs text-cyan-200/80 leading-relaxed">
+                              {getText(DATA.assetCompatibility[destinyNumber].description, 'en')}
+                            </p>
+                          </div>
+                        </motion.div>
                       )}
-
-                      {/* Footer Note */}
-                      <div className="text-center text-xs text-purple-300/60">
-                        <p>
-                          🔮 Asset vibration analysis uses authentic Vedic numerology principles. Consult with a
-                          professional for major investments.
-                        </p>
-                      </div>
                     </div>
-                    {/* /CONTENT */}
+                  )}
+
+                  {/* Footer Note */}
+                  <div className="text-center text-xs text-gray-400/60">
+                    <p>
+                      🔮 Asset vibration analysis uses authentic Vedic numerology principles. Consult with a
+                      professional for major investments.
+                    </p>
                   </div>
                 </div>
               </div>
