@@ -6,7 +6,7 @@ import ProtectedRoute from './components/auth/ProtectedRoute';
 import HomePage from './pages/HomePage';
 import KarmAnkApp from './karmank';
 import NameAnalysisPage from './pages/NameAnalysisPage';
-import CompatibilityPage from './pages/CompatibilityPage';
+import CosmicCompatibilityPage from './pages/CosmicCompatibilityPage';
 import GitaGyanPage from './pages/GitaGyanPage';
 import AssetVibrationPage from './pages/AssetVibrationPage';
 import CareerPathPage from './pages/CareerPathPage';
@@ -44,7 +44,7 @@ const App = () => (
                     path="/compatibility"
                     element={
                         <ProtectedRoute>
-                            <CompatibilityPage />
+                            <CosmicCompatibilityPage />
                         </ProtectedRoute>
                     }
                 />
