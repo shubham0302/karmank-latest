@@ -6,16 +6,31 @@ import ProtectedRoute from './components/auth/ProtectedRoute';
 import HomePage from './pages/HomePage';
 import KarmAnkApp from './karmank';
 import NameAnalysisPage from './pages/NameAnalysisPage';
-import CompatibilityPage from './pages/CompatibilityPage';
+import CosmicCompatibilityPage from './pages/CosmicCompatibilityPage';
 import GitaGyanPage from './pages/GitaGyanPage';
 import AssetVibrationPage from './pages/AssetVibrationPage';
 import CareerPathPage from './pages/CareerPathPage';
+import TermsPage from './pages/TermsPage';
+import PrivacyPage from './pages/PrivacyPage';
+import RefundPage from './pages/RefundPage';
+import DisclaimerPage from './pages/DisclaimerPage';
+import AboutPage from './pages/AboutPage';
+import FeedbackPage from './pages/FeedbackPage';
 
 const App = () => (
     <AuthProvider>
         <BrowserRouter>
             <Routes>
+                {/* Public Routes */}
                 <Route path="/login" element={<LoginPage />} />
+                <Route path="/about" element={<AboutPage />} />
+                <Route path="/feedback" element={<FeedbackPage />} />
+                <Route path="/terms" element={<TermsPage />} />
+                <Route path="/privacy" element={<PrivacyPage />} />
+                <Route path="/refund" element={<RefundPage />} />
+                <Route path="/disclaimer" element={<DisclaimerPage />} />
+
+                {/* Protected Routes */}
                 <Route
                     path="/"
                     element={
@@ -44,7 +59,7 @@ const App = () => (
                     path="/compatibility"
                     element={
                         <ProtectedRoute>
-                            <CompatibilityPage />
+                            <CosmicCompatibilityPage />
                         </ProtectedRoute>
                     }
                 />

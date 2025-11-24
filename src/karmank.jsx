@@ -37,6 +37,17 @@ export default function KarmAnkApp() {
     const [activeTab, setActiveTab] = useState('Welcome');
     const [formError, setFormError] = useState('');
 
+    // Language state with localStorage persistence
+    const [language, setLanguage] = useState(() => {
+        const saved = localStorage.getItem('karmank-numerology-language');
+        return saved || 'en';
+    });
+
+    // Persist language preference
+    useEffect(() => {
+        localStorage.setItem('karmank-numerology-language', language);
+    }, [language]);
+
     const handleSignOut = async () => {
         await signOut();
     };
@@ -87,29 +98,30 @@ export default function KarmAnkApp() {
         if (!report) return null;
 
         // Props for tabs that need them
-        const commonProps = { report, isPremium: false, onUpgradeClick: () => {} };
-        const dashaProps = { 
-            dashaReport, 
-            baseKundliGrid: report.baseKundliGrid, 
-            basicNumber: report.basicNumber, 
-            destinyNumber: report.destinyNumber, 
-            foundationalYogas: report.yogas 
+        const commonProps = { report, isPremium: false, onUpgradeClick: () => {}, language };
+        const dashaProps = {
+            dashaReport,
+            baseKundliGrid: report.baseKundliGrid,
+            basicNumber: report.basicNumber,
+            destinyNumber: report.destinyNumber,
+            foundationalYogas: report.yogas,
+            language
         };
 
         switch (activeTab) {
             case 'Welcome':
-                return <WelcomeTab report={report} userData={userData} />;
-            case 'Foundational Analysis': 
-                return <FoundationalAnalysisTab analysis={report.recurringNumbersAnalysis} yogas={report.yogas} specialInsights={report.specialInsights} />;
-            case 'Advanced Dasha': 
+                return <WelcomeTab report={report} userData={userData} language={language} />;
+            case 'Foundational Analysis':
+                return <FoundationalAnalysisTab analysis={report.recurringNumbersAnalysis} yogas={report.yogas} specialInsights={report.specialInsights} language={language} />;
+            case 'Advanced Dasha':
                 return <AdvancedDashaTab {...dashaProps} />;
-            case 'Forecast': 
-                return <ForecastTab report={report} dashaReport={dashaReport} gender={userData.gender} />;
-            case 'Remedies & Guidance': 
-                return <RemediesAndGuidanceTab report={report} />;
-            case 'Numerology Traits': 
-                return <NumerologyTraitsTab report={report} gender={userData.gender} />;
-            default: 
+            case 'Forecast':
+                return <ForecastTab report={report} dashaReport={dashaReport} gender={userData.gender} language={language} />;
+            case 'Remedies & Guidance':
+                return <RemediesAndGuidanceTab report={report} language={language} />;
+            case 'Numerology Traits':
+                return <NumerologyTraitsTab report={report} gender={userData.gender} language={language} />;
+            default:
                 return <PlaceholderTab name={activeTab} />;
         }
     };
@@ -118,69 +130,154 @@ export default function KarmAnkApp() {
         <CosmicBackground density={140} useVideo={true}>
             <div className="min-h-screen relative px-4 md:px-6 py-6">
                 <div className="max-w-5xl mx-auto relative z-10">
-                    {/* Back to Home Button */}
-                    <div className="mb-6">
+                    {/* Back Button and Language Selector */}
+                    <div className="flex justify-between items-center mb-6">
+                        {/* Language Selector */}
+                        <div className="flex gap-2">
+                            <button
+                                onClick={() => setLanguage('en')}
+                                className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all duration-200 ${
+                                    language === 'en'
+                                        ? 'bg-gradient-to-r from-cyan-600/30 to-purple-600/30 border border-cyan-400 text-cyan-300 shadow-lg shadow-cyan-500/20'
+                                        : 'text-white/60 hover:text-white bg-white/5 hover:bg-white/10 border border-transparent hover:border-white/20'
+                                }`}
+                            >
+                                EN
+                            </button>
+                            <button
+                                onClick={() => setLanguage('hi')}
+                                className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all duration-200 ${
+                                    language === 'hi'
+                                        ? 'bg-gradient-to-r from-cyan-600/30 to-purple-600/30 border border-cyan-400 text-cyan-300 shadow-lg shadow-cyan-500/20'
+                                        : 'text-white/60 hover:text-white bg-white/5 hover:bg-white/10 border border-transparent hover:border-white/20'
+                                }`}
+                            >
+                                HI
+                            </button>
+                            <button
+                                onClick={() => setLanguage('en-hi')}
+                                className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all duration-200 ${
+                                    language === 'en-hi'
+                                        ? 'bg-gradient-to-r from-cyan-600/30 to-purple-600/30 border border-cyan-400 text-cyan-300 shadow-lg shadow-cyan-500/20'
+                                        : 'text-white/60 hover:text-white bg-white/5 hover:bg-white/10 border border-transparent hover:border-white/20'
+                                }`}
+                            >
+                                EN-HI
+                            </button>
+                        </div>
+
+                        {/* Back Button */}
                         <button
                             onClick={handleBackToHome}
-                            className="flex items-center gap-2 text-white/70 hover:text-auric-gold transition-colors duration-200"
+                            className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white border border-white/30 px-4 py-2 rounded-md text-sm font-medium transition duration-200"
                         >
-                            <ArrowLeft className="h-5 w-5" />
-                            <span className="font-medium">Back to Home</span>
+                            <ArrowLeft className="h-4 w-4" />
+                            Back
                         </button>
                     </div>
 
-                    <header className="text-center mb-8 relative">
-                        <div className="absolute top-0 right-0 flex items-center gap-3">
-                            <span className="text-sm text-white/70">{user?.email}</span>
-                            <button
-                                onClick={handleSignOut}
-                                className="bg-red-500/20 hover:bg-red-500/30 text-red-300 border border-red-500/50 px-4 py-2 rounded-md text-sm font-medium transition duration-200"
-                            >
-                                Sign Out
-                            </button>
+                    {/* Futuristic Gate Header */}
+                    <div className="relative w-full h-40 mb-8 overflow-hidden rounded-xl border border-cyan-500/20">
+                        <div className="absolute inset-0 bg-gradient-to-b from-cyan-950/40 via-gray-950 to-black" />
+                        <div className="absolute inset-0" style={{
+                            backgroundImage: `
+                                linear-gradient(to right, rgba(34, 211, 238, 0.1) 1px, transparent 1px),
+                                linear-gradient(to bottom, rgba(34, 211, 238, 0.1) 1px, transparent 1px)
+                            `,
+                            backgroundSize: '40px 40px',
+                            transform: 'perspective(500px) rotateX(60deg)',
+                            transformOrigin: 'center bottom'
+                        }} />
+                        <div className="absolute inset-0 flex items-center justify-center">
+                            <div className="text-center space-y-2 relative z-10">
+                                <div className="text-4xl font-bold">
+                                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-blue-400 to-purple-500">
+                                        KarmAnk
+                                    </span>
+                                    <sup className="text-2xl -top-2 text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-blue-400 to-purple-500">
+                                        ™
+                                    </sup>
+                                </div>
+                                <div className="text-sm text-cyan-400/60 tracking-widest">
+                                    VEDIC NUMEROLOGY SYSTEM
+                                </div>
+                                <div className="flex items-center justify-center gap-2 mt-3">
+                                    <div className="h-px w-16 bg-gradient-to-r from-transparent via-cyan-400/50 to-transparent"></div>
+                                    <div className="text-xs text-cyan-400/40">★</div>
+                                    <div className="h-px w-16 bg-gradient-to-r from-transparent via-cyan-400/50 to-transparent"></div>
+                                </div>
+                            </div>
                         </div>
-                        <h1 className="text-5xl font-extrabold text-yellow-400 font-serif tracking-widest">KarmAnk</h1>
-                        <p className="text-yellow-200/70">Discover Your True Potential</p>
-                    </header>
+                    </div>
 
-            <Card className="mb-8">
-                <form onSubmit={handleGenerate} className="grid md:grid-cols-4 gap-4 items-end">
-                    <div className="md:col-span-1">
-                        <label htmlFor="name" className="block text-sm font-medium text-yellow-500">Name</label>
-                        <input type="text" id="name" value={userData.name} onChange={e => setUserData({...userData, name: e.target.value})} className="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm p-2 text-white placeholder:text-gray-400" />
-                    </div>
-                    <div className="md:col-span-1">
-                        <label htmlFor="dob" className="block text-sm font-medium text-yellow-500">Date of Birth</label>
-                        <input type="date" id="dob" value={userData.dob} onChange={e => setUserData({...userData, dob: e.target.value})} className="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm p-2 text-white" />
-                    </div>
-                    <div className="md:col-span-1">
-                        <label htmlFor="gender" className="block text-sm font-medium text-yellow-500">Gender</label>
-                        <select id="gender" value={userData.gender} onChange={e => setUserData({...userData, gender: e.target.value})} className="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm p-2 text-white">
-                            <option className="bg-gray-700 text-white">Male</option>
-                            <option className="bg-gray-700 text-white">Female</option>
-                        </select>
-                    </div>
-                    <div className="md:col-span-1">
-                        <button type="submit" className="w-full bg-yellow-500 hover:bg-yellow-600 text-indigo-900 font-bold py-2 px-4 rounded-md transition duration-300">Generate Report</button>
-                    </div>
-                </form>
-                {formError && <p className="text-red-400 text-center mt-4">{formError}</p>}
-            </Card>
+                    {!report ? (
+                        /* Introduction Page */
+                        <div className="max-w-2xl mx-auto">
+                            <div className="bg-gray-900/60 backdrop-blur-md p-8 rounded-xl border border-cyan-500/20 shadow-2xl">
+                                <h2 className="text-2xl font-bold text-center text-cyan-300 mb-6">
+                                    Enter Your Details
+                                </h2>
 
-                    {report ? (
+                                <div className="space-y-6">
+                                    <div className="group relative">
+                                        <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-600 to-purple-600 rounded-lg blur opacity-20 group-hover:opacity-60 transition duration-1000 group-hover:duration-200"></div>
+                                        <input
+                                            type="text"
+                                            value={userData.name}
+                                            onChange={(e) => setUserData({ ...userData, name: e.target.value })}
+                                            placeholder="YOUR FULL NAME"
+                                            className="relative w-full px-6 py-5 bg-gray-950 border border-gray-800 rounded-lg focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/50 text-gray-300 text-center tracking-widest uppercase outline-none placeholder-gray-600"
+                                        />
+                                    </div>
+
+                                    <div className="group relative">
+                                        <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-600 to-purple-600 rounded-lg blur opacity-20 group-hover:opacity-60 transition duration-1000 group-hover:duration-200"></div>
+                                        <input
+                                            type="date"
+                                            value={userData.dob}
+                                            onChange={(e) => setUserData({ ...userData, dob: e.target.value })}
+                                            className="relative w-full px-6 py-5 bg-gray-950 border border-gray-800 rounded-lg focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/50 text-gray-300 text-center tracking-widest uppercase outline-none"
+                                            style={{ colorScheme: 'dark' }}
+                                        />
+                                    </div>
+
+                                    <div className="group relative">
+                                        <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-600 to-purple-600 rounded-lg blur opacity-20 group-hover:opacity-60 transition duration-1000 group-hover:duration-200"></div>
+                                        <select
+                                            value={userData.gender}
+                                            onChange={(e) => setUserData({ ...userData, gender: e.target.value })}
+                                            className="relative w-full px-6 py-5 bg-gray-950 border border-gray-800 rounded-lg focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/50 text-gray-300 text-center tracking-widest uppercase outline-none"
+                                        >
+                                            <option className="bg-gray-950 text-gray-300">Male</option>
+                                            <option className="bg-gray-950 text-gray-300">Female</option>
+                                            <option className="bg-gray-950 text-gray-300">Other</option>
+                                        </select>
+                                    </div>
+
+                                    <button
+                                        onClick={handleGenerate}
+                                        className="w-full py-4 bg-gradient-to-r from-cyan-600 to-purple-600 hover:from-cyan-500 hover:to-purple-500 text-white font-bold rounded-lg transition-all duration-200 transform hover:scale-[1.02] shadow-lg shadow-cyan-500/20"
+                                    >
+                                        INITIATE ANALYSIS
+                                    </button>
+
+                                    {formError && (
+                                        <p className="text-center text-red-400 text-sm">{formError}</p>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    ) : (
+                        /* Analysis Results */
                         <div>
-                            <div className="mb-4 border-b border-yellow-400/20 flex flex-wrap">
+                            <div className="mb-4 border-b border-cyan-400/20 flex flex-wrap">
                                 {tabs.map(tab => (
-                                    <button key={tab} onClick={() => setActiveTab(tab)} className={`py-2 px-4 font-medium transition-colors duration-300 ${activeTab === tab ? 'text-yellow-400 border-b-2 border-yellow-400' : 'text-yellow-200/70 hover:text-yellow-300'}`}>
+                                    <button key={tab} onClick={() => setActiveTab(tab)} className={`py-2 px-4 font-medium transition-colors duration-300 ${activeTab === tab ? 'text-cyan-400 border-b-2 border-cyan-400' : 'text-cyan-200/70 hover:text-cyan-300'}`}>
                                         {tab}
                                     </button>
                                 ))}
                             </div>
                             <div className="mt-6">{renderTabContent()}</div>
-                        </div>
-                    ) : (
-                        <div className="text-center text-yellow-200/80 p-8 bg-gray-800/50 rounded-lg">
-                            <p>Please enter a name and date of birth to generate your Vedic Numerology report.</p>
                         </div>
                     )}
                 </div>

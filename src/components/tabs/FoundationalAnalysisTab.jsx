@@ -3,10 +3,33 @@ import Card from '../Card';
 import SectionTitle from '../SectionTitle';
 import NlgSummaryComponent from '../NlgSummaryComponent';
 import { getText } from '../../utils/helpers'; // Import getText
+import { DATA } from '../../data/data';
 
-const FoundationalAnalysisTab = ({ analysis, yogas, specialInsights }) => {
-    // Assuming 'language' prop will be passed, defaulting to 'en' for now
-    const language = 'en'; 
+const FoundationalAnalysisTab = ({ analysis, yogas, specialInsights, language = 'en' }) => {
+    // Re-process analysis with current language
+    const translatedAnalysis = useMemo(() => {
+        if (!analysis || analysis.length === 0) return [];
+
+        return analysis.map(item => {
+            const rule = DATA.recurringNumberInfluence[item.number];
+            if (!rule) return item;
+
+            let influence = [];
+            const count = item.occurrences;
+            const isDestinyMatch = item.isDestinyMatch || false;
+
+            if (rule.base) influence.push(getText(rule.base, language));
+            if (count >= 3 && rule.threeOrMore) influence.push(getText(rule.threeOrMore, language));
+            if (isDestinyMatch && rule.withDestiny) influence.push(getText(rule.withDestiny, language));
+            if (rule.evenCount && count % 2 === 0) influence.push(getText(rule.evenCount, language));
+            if (rule.oddCount && count % 2 !== 0) influence.push(getText(rule.oddCount, language));
+
+            return {
+                ...item,
+                influence: influence.join(' ')
+            };
+        });
+    }, [analysis, language]); 
 
     const nlgPrompt = useMemo(() => {
         if (!analysis && !yogas) return null;
@@ -40,10 +63,10 @@ const FoundationalAnalysisTab = ({ analysis, yogas, specialInsights }) => {
             <NlgSummaryComponent title="Your Foundational Blueprint" prompt={nlgPrompt} />
             <Card>
                 <SectionTitle>Influence of Recurring Numbers</SectionTitle>
-                
-                {analysis.length > 0 ? (
+
+                {translatedAnalysis.length > 0 ? (
                     <div className="space-y-6">
-                        {analysis.map(item => (
+                        {translatedAnalysis.map(item => (
                             <div key={item.number} className="bg-gray-900/50 p-4 rounded-md border-l-4 border-yellow-500">
                                 <div className="flex justify-between items-baseline">
                                     <h3 className="text-xl font-bold text-yellow-400">Number: {item.number}</h3>

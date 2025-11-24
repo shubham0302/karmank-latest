@@ -4,9 +4,7 @@ import SectionTitle from '../SectionTitle';
 import { DATA } from '../../data/data';
 import { getText } from '../../utils/helpers';
 
-const AdvancedRemediesTab = ({ report }) => {
-    // Assuming 'language' prop will be passed, defaulting to 'en' for now
-    const language = 'en'; 
+const AdvancedRemediesTab = ({ report, language = 'en' }) => { 
 
     const { baseKundliGrid } = report;
     const applicableRemedies = useMemo(() => {

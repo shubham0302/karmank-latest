@@ -3,9 +3,7 @@ import Card from '../Card';
 import { DATA } from '../../data/data';
 import { getText } from '../../utils/helpers';
 
-const MantrasTab = ({ report }) => {
-    // Assuming 'language' prop will be passed, defaulting to 'en' for now
-    const language = 'en'; 
+const MantrasTab = ({ report, language = 'en' }) => { 
     const uniqueNumbers = [...new Set([report.basicNumber, report.destinyNumber])];
 
     const MantraCard = ({ number }) => {

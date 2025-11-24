@@ -4,9 +4,7 @@ import SectionTitle from '../SectionTitle';
 import { DATA } from '../../data/data';
 import { getText } from '../../utils/helpers';
 
-const ShaktiBeejMantraTab = () => {
-    // Assuming 'language' prop will be passed, defaulting to 'en' for now
-    const language = 'en'; 
+const ShaktiBeejMantraTab = ({ language = 'en' }) => { 
     const [selectedPurpose, setSelectedPurpose] = useState(Object.keys(DATA.shaktiBeejMantras)[0]);
     const mantraData = DATA.shaktiBeejMantras[selectedPurpose];
     

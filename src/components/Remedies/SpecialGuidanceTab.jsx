@@ -3,9 +3,8 @@ import Card from '../Card';
 import SectionTitle from '../SectionTitle';
 import { getText } from '../../utils/helpers';
 
-const SpecialGuidanceTab = ({ report }) => {
+const SpecialGuidanceTab = ({ report, language = 'en' }) => {
     const { specialRemedies } = report;
-    const language = 'en'; // Assuming 'en' as default
 
     if (!specialRemedies || specialRemedies.length === 0) {
         return (

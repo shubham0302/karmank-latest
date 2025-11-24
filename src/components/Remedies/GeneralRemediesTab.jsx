@@ -3,8 +3,7 @@ import Card from '../Card';
 import { DATA } from '../../data/data';
 import { getText } from '../../utils/helpers';
 
-const GeneralRemediesTab = ({ report }) => {
-    const language = 'en'; // Assuming 'en' as default
+const GeneralRemediesTab = ({ report, language = 'en' }) => {
 
     const basicRemedy = DATA.remedies[report.basicNumber];
     const destinyRemedy = DATA.remedies[report.destinyNumber];

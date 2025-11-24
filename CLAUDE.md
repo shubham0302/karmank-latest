@@ -38,12 +38,13 @@ npm run lint
 2. **Authentication:** Supabase OTP-based email authentication wraps all routes via `AuthContext`
 3. **Routing:** React Router with protected routes:
    - `/login` - OTP login page
-   - `/` - HomePage (landing/dashboard with 5 module cards)
+   - `/` - HomePage (landing/dashboard with 6 module cards)
    - `/numerology` - Main KarmAnk numerology tool
    - `/name-analysis` - Name vibration analysis
    - `/compatibility` - Relationship compatibility checker
    - `/asset-vibration` - Property/business/asset compatibility analysis
    - `/gita-gyan` - Bhagavad Gita wisdom integration
+   - `/career-path` - Psychometric profiling and career guidance
 4. **Main Component:** `KarmAnkApp` in [src/karmank.jsx](src/karmank.jsx) manages numerology state and tab navigation
 5. **User Input:** Collects name, DOB, gender via form
 6. **Calculation Engine:**
@@ -100,7 +101,8 @@ src/
 │   ├── NameAnalysisPage.jsx
 │   ├── CompatibilityPage.jsx
 │   ├── AssetVibrationPage.jsx   # Standalone asset compatibility page
-│   └── GitaGyanPage.jsx
+│   ├── GitaGyanPage.jsx
+│   └── CareerPathPage.jsx       # Psychometric profiling and career guidance
 ├── contexts/
 │   └── AuthContext.jsx        # Supabase auth state management
 └── lib/

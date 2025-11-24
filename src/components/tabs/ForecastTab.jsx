@@ -6,7 +6,7 @@ import PropertyForecastTab from '../forecasts/PropertyForecastTab';
 import MarriageForecastTab from '../forecasts/MarriageForecastTab';
 import ChildBirthForecastTab from '../forecasts/ChildBirthForecastTab';
 
-const ForecastTab = ({ report, dashaReport, gender }) => {
+const ForecastTab = ({ report, dashaReport, gender, language = 'en' }) => {
     const [activeSubTab, setActiveSubTab] = useState('Profession');
     const [forecastYear, setForecastYear] = useState(new Date().getFullYear());
 
@@ -60,11 +60,11 @@ const ForecastTab = ({ report, dashaReport, gender }) => {
             </Card>
 
             <div>
-                {activeSubTab === 'Profession' && <ProfessionForecastTab report={report} dashaReport={dashaReport} gender={gender} targetDate={targetDate} />}
-                {activeSubTab === 'Travel' && <TravelForecastTab report={report} dashaReport={dashaReport} targetDate={targetDate} />}
-                {activeSubTab === 'Property' && <PropertyForecastTab report={report} dashaReport={dashaReport} targetDate={targetDate} />}
-                {activeSubTab === 'Marriage' && <MarriageForecastTab report={report} dashaReport={dashaReport} targetDate={targetDate} />}
-                {activeSubTab === 'Child Birth' && <ChildBirthForecastTab report={report} dashaReport={dashaReport} gender={gender} targetDate={targetDate} />}
+                {activeSubTab === 'Profession' && <ProfessionForecastTab report={report} dashaReport={dashaReport} gender={gender} targetDate={targetDate} language={language} />}
+                {activeSubTab === 'Travel' && <TravelForecastTab report={report} dashaReport={dashaReport} targetDate={targetDate} language={language} />}
+                {activeSubTab === 'Property' && <PropertyForecastTab report={report} dashaReport={dashaReport} targetDate={targetDate} language={language} />}
+                {activeSubTab === 'Marriage' && <MarriageForecastTab report={report} dashaReport={dashaReport} targetDate={targetDate} language={language} />}
+                {activeSubTab === 'Child Birth' && <ChildBirthForecastTab report={report} dashaReport={dashaReport} gender={gender} targetDate={targetDate} language={language} />}
             </div>
         </div>
     );

@@ -16,6 +16,7 @@ import {
   Smile,
   BookOpen,
   Star,
+  Shuffle,
 } from "lucide-react";
 import GITA_DATA, {
   CHAPTER_INFO,
@@ -30,7 +31,7 @@ export default function GitaGyanPage() {
   const navigate = useNavigate();
 
   // Navigation state
-  const [viewMode, setViewMode] = useState("browse"); // 'browse', 'theme', 'mood'
+  const [viewMode, setViewMode] = useState("browse"); // 'browse', 'theme', 'mood', 'random', 'daily'
   const [selectedChapter, setSelectedChapter] = useState(1);
   const [selectedShloka, setSelectedShloka] = useState(null);
   const [activeTab, setActiveTab] = useState("translation"); // 'translation', 'general', 'corporate', 'genz'
@@ -89,7 +90,7 @@ export default function GitaGyanPage() {
 
     const text = `Bhagavad Gita ${chapter}.${verse}\n\n${shloka.shloka}\n\n${
       shloka.translations[language]
-    }\n\n- Shared from KarmAnk Gita Gyan`;
+    }\n\n- Shared from KarmAnk™ Gita Gyan`;
 
     if (navigator.share) {
       navigator.share({ text });
@@ -105,9 +106,57 @@ export default function GitaGyanPage() {
       return searchByTheme(selectedTheme);
     } else if (viewMode === "mood" && selectedMood) {
       return searchByMood(selectedMood);
+    } else if (viewMode === "random") {
+      // Get all shlokas and return a random one
+      const allShlokas = [];
+      Object.keys(GITA_DATA).forEach((chapterNum) => {
+        const chapter = parseInt(chapterNum);
+        Object.keys(GITA_DATA[chapter]).forEach((verseNum) => {
+          const verse = parseInt(verseNum);
+          allShlokas.push({
+            id: `${chapter}.${verse}`,
+            chapter,
+            verse,
+          });
+        });
+      });
+      if (allShlokas.length > 0) {
+        const randomIndex = Math.floor(Math.random() * allShlokas.length);
+        return [allShlokas[randomIndex]];
+      }
+    } else if (viewMode === "daily") {
+      // Get shloka of the day using date-based algorithm
+      const allShlokas = [];
+      Object.keys(GITA_DATA).forEach((chapterNum) => {
+        const chapter = parseInt(chapterNum);
+        Object.keys(GITA_DATA[chapter]).forEach((verseNum) => {
+          const verse = parseInt(verseNum);
+          allShlokas.push({
+            id: `${chapter}.${verse}`,
+            chapter,
+            verse,
+          });
+        });
+      });
+      if (allShlokas.length > 0) {
+        // Use today's date as seed for consistent daily shloka
+        const today = new Date();
+        const dayOfYear = Math.floor((today - new Date(today.getFullYear(), 0, 0)) / 86400000);
+        const index = dayOfYear % allShlokas.length;
+        return [allShlokas[index]];
+      }
     }
     return null;
   }, [viewMode, selectedTheme, selectedMood]);
+
+  // Auto-select first shloka when theme/mood/random/daily is selected
+  useEffect(() => {
+    if (displayedShlokas && displayedShlokas.length > 0) {
+      const firstShloka = displayedShlokas[0];
+      setSelectedChapter(firstShloka.chapter);
+      setSelectedShloka(firstShloka.verse);
+    }
+  }, [displayedShlokas]);
 
   // Toggle chapter expansion
   const toggleChapter = (chapter) => {
@@ -117,63 +166,127 @@ export default function GitaGyanPage() {
   };
 
   return (
-    <CosmicBackground density={140} useVideo={true}>
+    <CosmicBackground density={160} useVideo={true}>
       <div className="min-h-screen relative px-4 md:px-6 py-6 pb-20">
         <div className="relative z-10 max-w-7xl mx-auto">
-          {/* Header */}
-          <div className="flex justify-between items-center mb-8">
+          {/* Back Button */}
+          <div className="flex justify-end items-center mb-6">
             <motion.button
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6 }}
-              onClick={() => navigate("/")}
-              className="flex items-center gap-2 text-white/70 hover:text-auric-gold transition-colors duration-200"
-            >
-              <ArrowLeft className="h-5 w-5" />
-              <span className="font-medium">Back to Home</span>
-            </motion.button>
-
-            {/* Language Toggle & Streak */}
-            <motion.div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6 }}
-              className="flex items-center gap-4"
+              onClick={() => navigate("/")}
+              className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white border border-white/30 px-4 py-2 rounded-md text-sm font-medium transition duration-200"
             >
-              <div className="flex items-center gap-2 bg-white/5 backdrop-blur-xl border border-white/10 rounded-full px-4 py-2">
-                <Flame className="h-4 w-4 text-orange-400" />
-                <span className="text-sm text-white/80 font-medium">{dailyStreak} day streak</span>
-              </div>
-              <button
-                onClick={() => setLanguage(language === "en" ? "hi" : "en")}
-                className="bg-white/5 backdrop-blur-xl border border-white/10 hover:border-auric-gold/50 rounded-full px-4 py-2 text-sm text-white/80 hover:text-white transition-all duration-200"
-              >
-                {language === "en" ? "हिन्दी" : "English"}
-              </button>
-            </motion.div>
+              <ArrowLeft className="h-4 w-4" />
+              Back
+            </motion.button>
           </div>
 
-          {/* Title */}
+          {/* Futuristic Gate Header */}
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            className="relative w-full h-48 mb-8 overflow-hidden rounded-xl border border-cyan-500/20"
+          >
+            <div className="absolute inset-0 bg-gradient-to-b from-cyan-950/40 via-gray-950 to-black" />
+            <div className="absolute inset-0" style={{
+              backgroundImage: `
+                linear-gradient(to right, rgba(34, 211, 238, 0.1) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(34, 211, 238, 0.1) 1px, transparent 1px)
+              `,
+              backgroundSize: '40px 40px',
+              transform: 'perspective(500px) rotateX(60deg)',
+              transformOrigin: 'center bottom'
+            }} />
+
+            {/* Animated particles */}
+            <div className="absolute inset-0 overflow-hidden">
+              {[...Array(20)].map((_, i) => (
+                <motion.div
+                  key={i}
+                  className="absolute w-1 h-1 bg-cyan-400/30 rounded-full"
+                  style={{
+                    left: `${Math.random() * 100}%`,
+                    top: `${Math.random() * 100}%`,
+                  }}
+                  animate={{
+                    y: [0, -100, 0],
+                    opacity: [0.3, 0.8, 0.3],
+                  }}
+                  transition={{
+                    duration: 3 + Math.random() * 2,
+                    repeat: Infinity,
+                    delay: Math.random() * 2,
+                  }}
+                />
+              ))}
+            </div>
+
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="text-center space-y-2 relative z-10">
+                <motion.div
+                  initial={{ scale: 0.9, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ duration: 0.8, delay: 0.2 }}
+                  className="text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-blue-400 to-purple-500"
+                >
+                  Gita Gyan
+                </motion.div>
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.8, delay: 0.4 }}
+                  className="text-sm text-cyan-400/60 tracking-widest flex items-center justify-center gap-2"
+                >
+                  <Sparkles className="h-4 w-4" />
+                  COSMIC WISDOM FOR MODERN LIFE
+                </motion.div>
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.8, delay: 0.6 }}
+                  className="flex items-center justify-center gap-2 mt-3"
+                >
+                  <div className="h-px w-16 bg-gradient-to-r from-transparent via-cyan-400/50 to-transparent"></div>
+                  <div className="text-xs text-cyan-400/40">★</div>
+                  <div className="h-px w-16 bg-gradient-to-r from-transparent via-cyan-400/50 to-transparent"></div>
+                </motion.div>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Stats Bar with Language Toggle & Streak */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="text-center mb-8"
+            transition={{ duration: 0.6, delay: 0.8 }}
+            className="flex flex-wrap items-center justify-between gap-4 mb-8 bg-gray-900/60 backdrop-blur-md p-4 rounded-xl border border-cyan-500/20"
           >
-            <h1 className="text-4xl md:text-6xl font-serif font-extrabold bg-[linear-gradient(90deg,#facc15_0%,#fbbf24_20%,#f9a8d4_60%,#c084fc_100%)] bg-clip-text text-transparent drop-shadow-[0_0_12px_rgba(0,255,255,.25)] mb-3">
-              Gita Gyan
-            </h1>
-            <p className="text-white/70 text-sm md:text-base flex items-center justify-center gap-2">
-              <Sparkles className="h-4 w-4 text-auric-gold" />
-              Timeless wisdom for modern life
-            </p>
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2 bg-gradient-to-r from-orange-500/20 to-red-500/20 border border-orange-400/30 rounded-full px-4 py-2">
+                <Flame className="h-5 w-5 text-orange-400" />
+                <span className="text-sm text-white font-semibold">{dailyStreak} day streak</span>
+              </div>
+              <div className="flex items-center gap-2 bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-400/30 rounded-full px-4 py-2">
+                <Heart className="h-5 w-5 text-pink-400" />
+                <span className="text-sm text-white font-semibold">{favorites.length} favorites</span>
+              </div>
+            </div>
+            <button
+              onClick={() => setLanguage(language === "en" ? "hi" : "en")}
+              className="bg-gradient-to-r from-cyan-600 to-purple-600 hover:from-cyan-500 hover:to-purple-500 border border-cyan-400/30 rounded-full px-5 py-2 text-sm text-white font-semibold transition-all duration-200 transform hover:scale-105"
+            >
+              {language === "en" ? "🕉️ हिन्दी" : "🕉️ English"}
+            </button>
           </motion.div>
 
           {/* View Mode Selector */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
+            transition={{ duration: 0.6, delay: 1.0 }}
             className="flex flex-wrap gap-3 justify-center mb-8"
           >
             <button
@@ -182,36 +295,72 @@ export default function GitaGyanPage() {
                 setSelectedTheme(null);
                 setSelectedMood(null);
               }}
-              className={`flex items-center gap-2 px-5 py-2.5 rounded-full border transition-all duration-200 ${
+              className={`group flex items-center gap-2 px-6 py-3 rounded-xl border transition-all duration-200 transform hover:scale-105 ${
                 viewMode === "browse"
-                  ? "bg-auric-gold/20 border-auric-gold text-auric-gold"
-                  : "bg-white/5 border-white/10 text-white/70 hover:border-white/30"
+                  ? "bg-gradient-to-r from-cyan-600/30 to-purple-600/30 border-cyan-400 text-cyan-300 shadow-lg shadow-cyan-500/20"
+                  : "bg-gray-900/60 backdrop-blur-md border-cyan-500/20 text-white/70 hover:border-cyan-400/50 hover:text-white"
               }`}
             >
-              <Book className="h-4 w-4" />
-              <span className="font-medium">Browse Chapters</span>
+              <Book className={`h-5 w-5 ${viewMode === "browse" ? "text-cyan-300" : "text-cyan-400/60 group-hover:text-cyan-400"}`} />
+              <span className="font-semibold">Browse Chapters</span>
             </button>
             <button
-              onClick={() => setViewMode("theme")}
-              className={`flex items-center gap-2 px-5 py-2.5 rounded-full border transition-all duration-200 ${
+              onClick={() => {
+                setViewMode("theme");
+                setSelectedMood(null);
+              }}
+              className={`group flex items-center gap-2 px-6 py-3 rounded-xl border transition-all duration-200 transform hover:scale-105 ${
                 viewMode === "theme"
-                  ? "bg-auric-gold/20 border-auric-gold text-auric-gold"
-                  : "bg-white/5 border-white/10 text-white/70 hover:border-white/30"
+                  ? "bg-gradient-to-r from-purple-600/30 to-pink-600/30 border-purple-400 text-purple-300 shadow-lg shadow-purple-500/20"
+                  : "bg-gray-900/60 backdrop-blur-md border-purple-500/20 text-white/70 hover:border-purple-400/50 hover:text-white"
               }`}
             >
-              <Search className="h-4 w-4" />
-              <span className="font-medium">Search by Theme</span>
+              <Search className={`h-5 w-5 ${viewMode === "theme" ? "text-purple-300" : "text-purple-400/60 group-hover:text-purple-400"}`} />
+              <span className="font-semibold">Search by Theme</span>
             </button>
             <button
-              onClick={() => setViewMode("mood")}
-              className={`flex items-center gap-2 px-5 py-2.5 rounded-full border transition-all duration-200 ${
+              onClick={() => {
+                setViewMode("mood");
+                setSelectedTheme(null);
+              }}
+              className={`group flex items-center gap-2 px-6 py-3 rounded-xl border transition-all duration-200 transform hover:scale-105 ${
                 viewMode === "mood"
-                  ? "bg-auric-gold/20 border-auric-gold text-auric-gold"
-                  : "bg-white/5 border-white/10 text-white/70 hover:border-white/30"
+                  ? "bg-gradient-to-r from-pink-600/30 to-orange-600/30 border-pink-400 text-pink-300 shadow-lg shadow-pink-500/20"
+                  : "bg-gray-900/60 backdrop-blur-md border-pink-500/20 text-white/70 hover:border-pink-400/50 hover:text-white"
               }`}
             >
-              <Smile className="h-4 w-4" />
-              <span className="font-medium">Search by Mood</span>
+              <Smile className={`h-5 w-5 ${viewMode === "mood" ? "text-pink-300" : "text-pink-400/60 group-hover:text-pink-400"}`} />
+              <span className="font-semibold">Search by Mood</span>
+            </button>
+            <button
+              onClick={() => {
+                setViewMode("random");
+                setSelectedTheme(null);
+                setSelectedMood(null);
+              }}
+              className={`group flex items-center gap-2 px-6 py-3 rounded-xl border transition-all duration-200 transform hover:scale-105 ${
+                viewMode === "random"
+                  ? "bg-gradient-to-r from-orange-600/30 to-red-600/30 border-orange-400 text-orange-300 shadow-lg shadow-orange-500/20"
+                  : "bg-gray-900/60 backdrop-blur-md border-orange-500/20 text-white/70 hover:border-orange-400/50 hover:text-white"
+              }`}
+            >
+              <Shuffle className={`h-5 w-5 ${viewMode === "random" ? "text-orange-300" : "text-orange-400/60 group-hover:text-orange-400"}`} />
+              <span className="font-semibold">Random Shloka</span>
+            </button>
+            <button
+              onClick={() => {
+                setViewMode("daily");
+                setSelectedTheme(null);
+                setSelectedMood(null);
+              }}
+              className={`group flex items-center gap-2 px-6 py-3 rounded-xl border transition-all duration-200 transform hover:scale-105 ${
+                viewMode === "daily"
+                  ? "bg-gradient-to-r from-amber-600/30 to-yellow-600/30 border-amber-400 text-amber-300 shadow-lg shadow-amber-500/20"
+                  : "bg-gray-900/60 backdrop-blur-md border-amber-500/20 text-white/70 hover:border-amber-400/50 hover:text-white"
+              }`}
+            >
+              <Calendar className={`h-5 w-5 ${viewMode === "daily" ? "text-amber-300" : "text-amber-400/60 group-hover:text-amber-400"}`} />
+              <span className="font-semibold">Shloka of the Day</span>
             </button>
           </motion.div>
 
@@ -224,20 +373,20 @@ export default function GitaGyanPage() {
                 exit={{ opacity: 0, height: 0 }}
                 className="mb-8 overflow-hidden"
               >
-                <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
-                  <h3 className="text-white/90 font-semibold mb-4 flex items-center gap-2">
-                    <Search className="h-4 w-4" />
+                <div className="bg-gray-900/60 backdrop-blur-md border border-purple-500/20 rounded-2xl p-6 shadow-lg shadow-purple-500/10">
+                  <h3 className="text-white font-bold mb-4 flex items-center gap-2 text-lg">
+                    <Search className="h-5 w-5 text-purple-400" />
                     Select a Theme
                   </h3>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-3">
                     {THEMES.map((theme) => (
                       <button
                         key={theme}
                         onClick={() => setSelectedTheme(theme)}
-                        className={`px-4 py-2 rounded-full text-sm border transition-all duration-200 ${
+                        className={`px-4 py-2.5 rounded-xl text-sm font-medium border transition-all duration-200 transform hover:scale-105 ${
                           selectedTheme === theme
-                            ? "bg-purple-500/30 border-purple-400 text-purple-200"
-                            : "bg-white/5 border-white/10 text-white/70 hover:border-white/30"
+                            ? "bg-gradient-to-r from-purple-600/40 to-pink-600/40 border-purple-400 text-purple-200 shadow-lg shadow-purple-500/20"
+                            : "bg-gray-900/60 border-purple-500/20 text-white/70 hover:border-purple-400/50 hover:text-white"
                         }`}
                       >
                         {theme}
@@ -258,20 +407,20 @@ export default function GitaGyanPage() {
                 exit={{ opacity: 0, height: 0 }}
                 className="mb-8 overflow-hidden"
               >
-                <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
-                  <h3 className="text-white/90 font-semibold mb-4 flex items-center gap-2">
-                    <Smile className="h-4 w-4" />
+                <div className="bg-gray-900/60 backdrop-blur-md border border-pink-500/20 rounded-2xl p-6 shadow-lg shadow-pink-500/10">
+                  <h3 className="text-white font-bold mb-4 flex items-center gap-2 text-lg">
+                    <Smile className="h-5 w-5 text-pink-400" />
                     How are you feeling today?
                   </h3>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-3">
                     {MOODS.map((mood) => (
                       <button
                         key={mood}
                         onClick={() => setSelectedMood(mood)}
-                        className={`px-4 py-2 rounded-full text-sm border transition-all duration-200 ${
+                        className={`px-4 py-2.5 rounded-xl text-sm font-medium border transition-all duration-200 transform hover:scale-105 ${
                           selectedMood === mood
-                            ? "bg-pink-500/30 border-pink-400 text-pink-200"
-                            : "bg-white/5 border-white/10 text-white/70 hover:border-white/30"
+                            ? "bg-gradient-to-r from-pink-600/40 to-orange-600/40 border-pink-400 text-pink-200 shadow-lg shadow-pink-500/20"
+                            : "bg-gray-900/60 border-pink-500/20 text-white/70 hover:border-pink-400/50 hover:text-white"
                         }`}
                       >
                         {mood}
@@ -284,12 +433,11 @@ export default function GitaGyanPage() {
           </AnimatePresence>
 
           {/* Main Content Area */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Left: Chapter/Shloka List */}
-            <div className="lg:col-span-1 space-y-4">
-              {viewMode === "browse" ? (
-                // Browse by Chapter
-                Object.keys(CHAPTER_INFO).map((chapterNum) => {
+          <div className={`grid grid-cols-1 ${viewMode === "browse" ? "lg:grid-cols-3" : "lg:grid-cols-1"} gap-6`}>
+            {/* Left: Chapter/Shloka List - Only show for Browse mode */}
+            {viewMode === "browse" && (
+              <div className="lg:col-span-1 space-y-4">
+                {Object.keys(CHAPTER_INFO).map((chapterNum) => {
                   const chapter = parseInt(chapterNum);
                   const info = CHAPTER_INFO[chapter];
                   const isExpanded = expandedChapters.includes(chapter);
@@ -301,22 +449,24 @@ export default function GitaGyanPage() {
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.4, delay: chapter * 0.05 }}
-                      className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden"
+                      className="bg-gray-900/60 backdrop-blur-md border border-cyan-500/20 rounded-2xl overflow-hidden shadow-lg hover:shadow-cyan-500/10 transition-shadow duration-300"
                     >
                       <button
                         onClick={() => toggleChapter(chapter)}
-                        className="w-full px-5 py-4 flex items-center justify-between hover:bg-white/5 transition-colors duration-200"
+                        className="w-full px-5 py-4 flex items-center justify-between hover:bg-cyan-500/5 transition-all duration-200 group"
                       >
                         <div className="text-left">
-                          <div className="text-white/90 font-semibold text-sm mb-1">
-                            Chapter {chapter}
+                          <div className="text-white font-bold text-sm mb-1 flex items-center gap-2">
+                            <span className="text-cyan-400">Chapter {chapter}</span>
+                            <span className="text-cyan-400/40 text-xs">•</span>
+                            <span className="text-white/60 text-xs">{shlokas.length} shlokas</span>
                           </div>
                           <div className="text-white/70 text-xs">{info.title[language]}</div>
                         </div>
                         {isExpanded ? (
-                          <ChevronUp className="h-5 w-5 text-white/50" />
+                          <ChevronUp className="h-5 w-5 text-cyan-400 group-hover:text-cyan-300" />
                         ) : (
-                          <ChevronDown className="h-5 w-5 text-white/50" />
+                          <ChevronDown className="h-5 w-5 text-cyan-400 group-hover:text-cyan-300" />
                         )}
                       </button>
 
@@ -355,67 +505,99 @@ export default function GitaGyanPage() {
                       </AnimatePresence>
                     </motion.div>
                   );
-                })
-              ) : (
-                // Theme/Mood search results
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4"
-                >
-                  <h3 className="text-white/90 font-semibold mb-3 text-sm">
-                    {displayedShlokas?.length || 0} Results
-                  </h3>
-                  <div className="space-y-1 max-h-[600px] overflow-y-auto">
-                    {displayedShlokas?.map((shloka) => (
-                      <button
-                        key={shloka.id}
-                        onClick={() => {
-                          setSelectedChapter(shloka.chapter);
-                          setSelectedShloka(shloka.verse);
-                        }}
-                        className={`w-full text-left px-3 py-2 rounded-lg text-xs transition-all duration-200 ${
-                          selectedChapter === shloka.chapter && selectedShloka === shloka.verse
-                            ? "bg-auric-gold/20 text-auric-gold border border-auric-gold/30"
-                            : "text-white/60 hover:bg-white/5 hover:text-white/80"
-                        }`}
-                      >
-                        {shloka.id}
-                        {favorites.includes(shloka.id) && (
-                          <Heart className="inline h-3 w-3 ml-2 fill-current text-red-400" />
-                        )}
-                      </button>
-                    ))}
-                  </div>
-                </motion.div>
-              )}
-            </div>
+                })}
+              </div>
+            )}
 
-            {/* Right: Shloka Detail */}
-            <div className="lg:col-span-2">
+            {/* Shloka Detail */}
+            <div className={viewMode === "browse" ? "lg:col-span-2" : "lg:col-span-1 max-w-4xl mx-auto w-full"}>
               {selectedShloka && GITA_DATA[selectedChapter]?.[selectedShloka] ? (
-                <ShlokaDetailCard
-                  chapter={selectedChapter}
-                  verse={selectedShloka}
-                  data={GITA_DATA[selectedChapter][selectedShloka]}
-                  language={language}
-                  isFavorite={favorites.includes(`${selectedChapter}.${selectedShloka}`)}
-                  onToggleFavorite={() => toggleFavorite(selectedChapter, selectedShloka)}
-                  onShare={() => shareShloka(selectedChapter, selectedShloka)}
-                  activeTab={activeTab}
-                  setActiveTab={setActiveTab}
-                />
+                <div className="space-y-4">
+                  <ShlokaDetailCard
+                    chapter={selectedChapter}
+                    verse={selectedShloka}
+                    data={GITA_DATA[selectedChapter][selectedShloka]}
+                    language={language}
+                    isFavorite={favorites.includes(`${selectedChapter}.${selectedShloka}`)}
+                    onToggleFavorite={() => toggleFavorite(selectedChapter, selectedShloka)}
+                    onShare={() => shareShloka(selectedChapter, selectedShloka)}
+                    activeTab={activeTab}
+                    setActiveTab={setActiveTab}
+                  />
+
+                  {/* Random Shloka button */}
+                  {viewMode === "random" && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="flex justify-center"
+                    >
+                      <button
+                        onClick={() => {
+                          // Force re-render by toggling view mode
+                          setViewMode("browse");
+                          setTimeout(() => setViewMode("random"), 10);
+                        }}
+                        className="flex items-center gap-2 px-8 py-3 rounded-xl bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-500 hover:to-red-500 border border-orange-400/30 text-white font-semibold transition-all duration-200 transform hover:scale-105 shadow-lg shadow-orange-500/20"
+                      >
+                        <Shuffle className="h-5 w-5" />
+                        Get New Random Shloka
+                      </button>
+                    </motion.div>
+                  )}
+                </div>
               ) : (
                 <motion.div
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-12 flex flex-col items-center justify-center text-center min-h-[500px]"
+                  className="relative bg-gray-900/60 backdrop-blur-md border border-cyan-500/20 rounded-3xl p-12 flex flex-col items-center justify-center text-center min-h-[500px] overflow-hidden"
                 >
-                  <BookOpen className="h-16 w-16 text-white/20 mb-4" />
-                  <p className="text-white/50 text-lg">Select a shloka to begin</p>
-                  <p className="text-white/30 text-sm mt-2">
-                    Choose from the chapters on the left, or search by theme/mood above
-                  </p>
+                  {/* Animated background */}
+                  <div className="absolute inset-0 opacity-20">
+                    {[...Array(30)].map((_, i) => (
+                      <motion.div
+                        key={i}
+                        className="absolute w-1 h-1 bg-cyan-400 rounded-full"
+                        style={{
+                          left: `${Math.random() * 100}%`,
+                          top: `${Math.random() * 100}%`,
+                        }}
+                        animate={{
+                          scale: [0, 1, 0],
+                          opacity: [0, 0.8, 0],
+                        }}
+                        transition={{
+                          duration: 2 + Math.random() * 2,
+                          repeat: Infinity,
+                          delay: Math.random() * 2,
+                        }}
+                      />
+                    ))}
+                  </div>
+
+                  <div className="relative z-10">
+                    <motion.div
+                      animate={{
+                        rotate: [0, 360],
+                      }}
+                      transition={{
+                        duration: 20,
+                        repeat: Infinity,
+                        ease: "linear",
+                      }}
+                    >
+                      <BookOpen className="h-20 w-20 text-cyan-400/40 mb-6" />
+                    </motion.div>
+                    <h3 className="text-white/80 text-2xl font-bold mb-3">Select a Shloka to Begin</h3>
+                    <p className="text-white/50 text-sm max-w-md">
+                      Choose from the chapters on the left, or search by theme/mood above to discover timeless wisdom
+                    </p>
+                    <div className="flex items-center justify-center gap-2 mt-6">
+                      <div className="h-px w-12 bg-gradient-to-r from-transparent via-cyan-400/50 to-transparent"></div>
+                      <Sparkles className="h-4 w-4 text-cyan-400/60" />
+                      <div className="h-px w-12 bg-gradient-to-r from-transparent via-cyan-400/50 to-transparent"></div>
+                    </div>
+                  </div>
                 </motion.div>
               )}
             </div>
@@ -443,58 +625,65 @@ function ShlokaDetailCard({
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.4 }}
-      className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl overflow-hidden"
+      className="bg-gray-900/60 backdrop-blur-md border border-cyan-500/20 rounded-3xl overflow-hidden shadow-2xl shadow-cyan-500/10"
     >
       {/* Header */}
-      <div className="bg-gradient-to-r from-auric-gold/20 via-purple-500/20 to-pink-500/20 px-6 py-4 border-b border-white/10">
-        <div className="flex items-center justify-between">
+      <div className="relative bg-gradient-to-r from-cyan-900/40 via-purple-900/40 to-pink-900/40 px-6 py-5 border-b border-cyan-500/20">
+        <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/5 via-purple-500/5 to-pink-500/5"></div>
+        <div className="relative flex items-center justify-between">
           <div>
-            <div className="text-auric-gold font-bold text-lg">
-              Chapter {chapter}, Shloka {verse}
+            <div className="flex items-center gap-3 mb-2">
+              <div className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-purple-400 font-bold text-xl">
+                Chapter {chapter}, Shloka {verse}
+              </div>
+              <div className="h-1 w-1 rounded-full bg-cyan-400"></div>
             </div>
-            <div className="text-white/60 text-xs mt-1">
+            <div className="text-white/70 text-sm">
               {CHAPTER_INFO[chapter]?.title[language]}
             </div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <button
               onClick={onToggleFavorite}
-              className="p-2 rounded-full hover:bg-white/10 transition-colors duration-200"
+              className="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-pink-400/50 transition-all duration-200 group"
             >
               <Heart
-                className={`h-5 w-5 ${
-                  isFavorite ? "fill-current text-red-400" : "text-white/50"
+                className={`h-5 w-5 transition-all ${
+                  isFavorite ? "fill-current text-pink-400 scale-110" : "text-white/50 group-hover:text-pink-400"
                 }`}
               />
             </button>
             <button
               onClick={onShare}
-              className="p-2 rounded-full hover:bg-white/10 transition-colors duration-200"
+              className="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-cyan-400/50 transition-all duration-200 group"
             >
-              <Share2 className="h-5 w-5 text-white/50" />
+              <Share2 className="h-5 w-5 text-white/50 group-hover:text-cyan-400 transition-colors" />
             </button>
           </div>
         </div>
       </div>
 
       {/* Sanskrit Shloka */}
-      <div className="px-6 py-6 border-b border-white/10 bg-gradient-to-b from-white/5 to-transparent">
-        <div className="text-center">
-          <p className="text-white/90 text-lg md:text-xl leading-relaxed font-serif whitespace-pre-line">
-            {data.shloka}
-          </p>
-          <p className="text-white/50 text-sm mt-4 italic">{data.transliteration}</p>
+      <div className="relative px-6 py-8 border-b border-cyan-500/20 bg-gradient-to-b from-cyan-500/5 to-transparent">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(34,211,238,0.05),transparent_70%)]"></div>
+        <div className="relative text-center">
+          <div className="inline-block px-6 py-4 bg-white/5 backdrop-blur-sm rounded-2xl border border-cyan-400/20">
+            <p className="text-white/95 text-xl md:text-2xl leading-relaxed font-serif whitespace-pre-line">
+              {data.shloka}
+            </p>
+          </div>
+          <p className="text-cyan-300/70 text-sm mt-6 italic tracking-wide">{data.transliteration}</p>
         </div>
       </div>
 
       {/* Themes */}
       {data.themes && data.themes.length > 0 && (
-        <div className="px-6 py-4 border-b border-white/10">
+        <div className="px-6 py-4 border-b border-cyan-500/20">
           <div className="flex flex-wrap gap-2">
             {data.themes.map((theme) => (
               <span
                 key={theme}
-                className="px-3 py-1 bg-purple-500/20 border border-purple-400/30 rounded-full text-xs text-purple-200"
+                className="px-3 py-1.5 bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-400/30 rounded-full text-xs font-medium text-purple-200"
               >
                 {theme}
               </span>
@@ -504,8 +693,8 @@ function ShlokaDetailCard({
       )}
 
       {/* Tab Navigation */}
-      <div className="px-6 py-3 border-b border-white/10 bg-white/5">
-        <div className="flex gap-2 overflow-x-auto">
+      <div className="px-6 py-4 border-b border-cyan-500/20 bg-gray-900/40">
+        <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
           <TabButton
             active={activeTab === "translation"}
             onClick={() => setActiveTab("translation")}
@@ -560,10 +749,10 @@ function TabButton({ active, onClick, icon, label }) {
   return (
     <button
       onClick={onClick}
-      className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all duration-200 ${
+      className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold whitespace-nowrap transition-all duration-200 transform hover:scale-105 ${
         active
-          ? "bg-auric-gold/20 text-auric-gold border border-auric-gold/30"
-          : "text-white/60 hover:text-white/80 hover:bg-white/5"
+          ? "bg-gradient-to-r from-cyan-600/30 to-purple-600/30 border border-cyan-400 text-cyan-300 shadow-lg shadow-cyan-500/20"
+          : "text-white/60 hover:text-white bg-white/5 hover:bg-white/10 border border-transparent hover:border-white/20"
       }`}
     >
       {icon}

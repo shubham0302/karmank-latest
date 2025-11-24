@@ -3,9 +3,8 @@ import Card from '../Card';
 import SectionTitle from '../SectionTitle';
 import { combinationInsights, DATA } from '../../data/data'; // Import from data.js
 import { getText } from '../../utils/helpers'; // Import getText
-import NameAnalysisSection from './NameAnalysisSection';
 
-const WelcomeTab = ({ report, userData }) => {
+const WelcomeTab = ({ report, userData, language = 'en' }) => {
     const { kundliNumbers, coreVibrationSummary } = useMemo(() => {
         const numbers = new Set();
         report.baseKundliGrid.forEach((count, number) => {
@@ -29,9 +28,8 @@ const WelcomeTab = ({ report, userData }) => {
             return a - b;
         });
 
-        // Using 'en' as a default, pass language as a prop if needed
-        const topTraits = sortedNumbers.slice(0, 3).map(num => 
-            getText(DATA.numberDetails[num].coreVibration, 'en')
+        const topTraits = sortedNumbers.slice(0, 3).map(num =>
+            getText(DATA.numberDetails[num].coreVibration, language)
         );
         let summary = '';
         if (topTraits.length === 1) {
@@ -42,13 +40,12 @@ const WelcomeTab = ({ report, userData }) => {
             const lastTrait = topTraits.pop();
             summary = `Based on the above grid, the person is primarily influenced by ${topTraits.join(', ')}, and ${lastTrait} core vibrations.`;
         }
-            
+
         return { kundliNumbers: sortedNumbers, coreVibrationSummary: summary };
-    }, [report]);
+    }, [report, language]);
 
     const insightKey = `${report.basicNumber}-${report.destinyNumber}`;
-    // Using 'en' as a default
-    const snapshotDescription = getText(combinationInsights[insightKey], 'en') || "No specific insight available for this combination.";
+    const snapshotDescription = getText(combinationInsights[insightKey], language) || "No specific insight available for this combination.";
 
     // Function to get cell background color based on number significance
     const getCellBackground = (num) => {
@@ -66,14 +63,6 @@ const WelcomeTab = ({ report, userData }) => {
 
     return (
         <div className="space-y-6">
-            {/* KarmAnk Name Analysis Section */}
-            {userData?.name && (
-                <NameAnalysisSection
-                    userName={userData.name}
-                    userDob={userData.dob}
-                />
-            )}
-
             <Card className="bg-indigo-900/30 border-indigo-400">
                 <h3 className="text-xl font-bold text-indigo-300 mb-3">Your Numerology Snapshot</h3>
                 <p className="text-indigo-200 whitespace-pre-wrap">{snapshotDescription}</p>
@@ -137,11 +126,10 @@ const WelcomeTab = ({ report, userData }) => {
                 <div className="space-y-4">
                     {kundliNumbers.map(num => {
                         const isDestiny = num === report.destinyNumber;
-                        // Using 'en' as a default
-                        const description = isDestiny 
-                            ? getText(DATA.destinyNumberDetails[num].description, 'en') 
-                            : getText(DATA.numberDetails[num].description, 'en');
-                        const name = getText(DATA.numberDetails[num].name, 'en');
+                        const description = isDestiny
+                            ? getText(DATA.destinyNumberDetails[num].description, language)
+                            : getText(DATA.numberDetails[num].description, language);
+                        const name = getText(DATA.numberDetails[num].name, language);
                         
                         return (
                             <div key={num} className="p-3 bg-gray-900/50 rounded-md">

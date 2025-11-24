@@ -239,7 +239,7 @@ const NameAnalysisSection = ({ userName, userDob }) => {
     <div className="bg-gradient-to-br from-indigo-900/40 to-purple-900/40 border border-yellow-400/30 rounded-lg p-6 space-y-6">
       <div className="text-center mb-6">
         <h3 className="text-3xl font-bold text-yellow-400 font-serif tracking-wider mb-2">
-          🔮 KarmAnk Name Analysis
+          🔮 KarmAnk™ Name Analysis
         </h3>
         <p className="text-yellow-200/70">Pythagorean Numerology Insights for {nameAnalysisReport.userName}</p>
       </div>
@@ -331,7 +331,7 @@ const NameAnalysisSection = ({ userName, userDob }) => {
               <h4 className="text-2xl font-bold text-yellow-400 mb-4 font-serif tracking-wider">🔗 Synergy Analysis</h4>
               <div className="prose prose-invert text-gray-300 max-w-none space-y-4">
                 <p>
-                  Your name carries a <strong>KarmAnk Number of {nameAnalysisReport.karmAnkProfile.nameExpressionNumber}</strong>,
+                  Your name carries a <strong>KarmAnk™ Number of {nameAnalysisReport.karmAnkProfile.nameExpressionNumber}</strong>,
                   which represents the vibrational energy of your name in relation to your life path.
                 </p>
                 <p>

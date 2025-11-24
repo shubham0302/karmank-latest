@@ -4,14 +4,11 @@ import SectionTitle from '../SectionTitle';
 import { DATA } from '../../data/data';
 import { getText } from '../../utils/helpers'; // Import getText
 
-const NumerologyTraitsTab = ({ report, gender }) => {
+const NumerologyTraitsTab = ({ report, gender, language = 'en' }) => {
     if (!report) return null;
     const { destinyNumber } = report;
     const traits = DATA.destinyTraits[destinyNumber];
-    const professions = DATA.destinyProfessions[destinyNumber];
-    
-    // Assuming 'language' prop will be passed, defaulting to 'en' for now
-    const language = 'en'; 
+    const professions = DATA.destinyProfessions[destinyNumber]; 
 
     const supportAnalysis = useMemo(() => {
         if (!professions || !professions.supportNeeded) return [];

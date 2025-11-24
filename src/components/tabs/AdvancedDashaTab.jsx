@@ -9,12 +9,9 @@ import { DATA } from '../../data/data';
 import { analyzeRecurringNumbers, checkAdvancedYoga } from '../../utils/helpers';
 import { getText } from '../../utils/helpers';
 
-const AdvancedDashaTab = ({ dashaReport, baseKundliGrid, basicNumber, destinyNumber, foundationalYogas }) => {
+const AdvancedDashaTab = ({ dashaReport, baseKundliGrid, basicNumber, destinyNumber, foundationalYogas, language = 'en' }) => {
     const [activeSubTab, setActiveSubTab] = useState('maha');
-    const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
-
-    // Using 'en' as a default, pass language as a prop if needed
-    const language = 'en'; 
+    const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]); 
 
     if (!dashaReport) return <Card><p className="text-center">Generating Advanced Dasha Report...</p></Card>;
     const targetDate = new Date(selectedDate + 'T00:00:00');

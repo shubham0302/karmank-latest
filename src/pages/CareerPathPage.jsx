@@ -2,7 +2,7 @@ import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import CosmicBackground from '../components/CosmicBackground';
-import { Crown, ArrowLeft, ArrowRight, GraduationCap, Sparkles, Brain, Target, TrendingUp } from 'lucide-react';
+import { Crown, ArrowLeft, ArrowRight, GraduationCap, Sparkles, Brain, Target, TrendingUp, Info, X, Clock } from 'lucide-react';
 import {
   BIG_FIVE_QUESTIONS,
   RIASEC_QUESTIONS,
@@ -396,20 +396,8 @@ export default function CareerPathPage() {
     <CosmicBackground density={140} useVideo={true}>
       <div className="min-h-screen relative px-4 md:px-6 py-6 overflow-hidden">
         <div className="relative z-10 max-w-6xl mx-auto">
-          {/* Header */}
-          <div className="flex justify-between items-center mb-8">
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6 }}
-              className="flex items-center gap-3"
-            >
-              <Crown className="h-8 w-8 text-auric-gold" />
-              <h1 className="text-2xl md:text-3xl font-serif font-bold text-white">
-                KarmAnk • Career Path
-              </h1>
-            </motion.div>
-
+          {/* Back Button */}
+          <div className="flex justify-end items-center mb-6">
             <motion.button
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -420,6 +408,40 @@ export default function CareerPathPage() {
               <ArrowLeft className="h-4 w-4" />
               Back
             </motion.button>
+          </div>
+
+          {/* Futuristic Gate Header */}
+          <div className="relative w-full h-40 mb-8 overflow-hidden rounded-xl border border-cyan-500/20">
+            <div className="absolute inset-0 bg-gradient-to-b from-cyan-950/40 via-gray-950 to-black" />
+            <div className="absolute inset-0" style={{
+              backgroundImage: `
+                linear-gradient(to right, rgba(34, 211, 238, 0.1) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(34, 211, 238, 0.1) 1px, transparent 1px)
+              `,
+              backgroundSize: '40px 40px',
+              transform: 'perspective(500px) rotateX(60deg)',
+              transformOrigin: 'center bottom'
+            }} />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="text-center space-y-2 relative z-10">
+                <div className="text-4xl font-bold">
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-blue-400 to-purple-500">
+                    KarmAnk
+                  </span>
+                  <sup className="text-2xl -top-2 text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-blue-400 to-purple-500">
+                    ™
+                  </sup>
+                </div>
+                <div className="text-sm text-cyan-400/60 tracking-widest">
+                  CAREER PATH SYSTEM
+                </div>
+                <div className="flex items-center justify-center gap-2 mt-3">
+                  <div className="h-px w-16 bg-gradient-to-r from-transparent via-cyan-400/50 to-transparent"></div>
+                  <div className="text-xs text-cyan-400/40">★</div>
+                  <div className="h-px w-16 bg-gradient-to-r from-transparent via-cyan-400/50 to-transparent"></div>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Progress Bar */}
@@ -476,10 +498,11 @@ function WelcomeScreen({ onSubmit }) {
     email: '',
     phone: ''
   });
+  const [showModal, setShowModal] = useState(null); // 'personality', 'interests', or 'aptitude'
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (formData.name && formData.dob && formData.class && formData.schoolName && formData.city) {
+    if (formData.name && formData.dob && formData.class && formData.schoolName && formData.city && formData.email && formData.phone) {
       onSubmit(formData);
     }
   };
@@ -496,242 +519,303 @@ function WelcomeScreen({ onSubmit }) {
   ];
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="max-w-2xl mx-auto">
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.6 }}
-        className="bg-gradient-to-br from-purple-900/40 via-indigo-900/40 to-violet-900/40 backdrop-blur-xl border border-white/20 rounded-2xl p-8 shadow-2xl"
+        className="bg-gray-900/60 backdrop-blur-md p-8 rounded-xl border border-cyan-500/20 shadow-2xl"
       >
-        <div className="flex items-center justify-center mb-6">
-          <GraduationCap className="h-16 w-16 text-auric-gold" />
-        </div>
-
-        <h2 className="text-3xl md:text-4xl font-serif font-bold text-center mb-4 bg-gradient-to-r from-auric-gold via-pink-300 to-purple-400 bg-clip-text text-transparent">
-          Discover Your Educational & Career Path
+        <h2 className="text-2xl font-bold text-center text-cyan-300 mb-6">
+          Enter Your Details
         </h2>
 
         <p className="text-white/80 text-center mb-6 text-sm md:text-base">
-          Welcome to the 3-Pillar Profiler: A comprehensive psychometric assessment measuring your <span className="text-auric-gold font-semibold">Personality</span>, <span className="text-pink-300 font-semibold">Interests</span>, and <span className="text-purple-400 font-semibold">Aptitude</span>. Aligned with Vedic numerology to guide you toward your cosmic destiny.
+          Complete this 3-Pillar Profiler to measure your <span className="text-cyan-400 font-semibold">Personality</span>, <span className="text-purple-400 font-semibold">Interests</span>, and <span className="text-pink-400 font-semibold">Aptitude</span> aligned with Vedic numerology.
         </p>
 
         {/* Important Instructions */}
-        <div className="bg-gradient-to-r from-amber-500/20 via-orange-500/20 to-red-500/20 border border-amber-400/40 rounded-xl p-6 mb-8">
+        <div className="bg-gradient-to-r from-amber-500/20 via-orange-500/20 to-red-500/20 border border-amber-400/40 rounded-xl p-5 mb-6">
           <div className="flex items-start gap-3">
-            <div className="flex-shrink-0 mt-1">
-              <div className="w-10 h-10 rounded-full bg-amber-400/30 flex items-center justify-center">
-                <span className="text-2xl">⚠️</span>
+            <div className="flex-shrink-0">
+              <div className="w-8 h-8 rounded-full bg-amber-400/30 flex items-center justify-center">
+                <span className="text-lg">⚠️</span>
               </div>
             </div>
             <div className="flex-1">
-              <h3 className="text-amber-300 font-bold text-lg mb-3">Important Instructions for Accurate Results</h3>
-              <ul className="space-y-2 text-white/90 text-sm">
+              <h3 className="text-amber-300 font-bold text-base mb-2">Important: For Accurate Results</h3>
+              <ul className="space-y-1.5 text-white/90 text-xs">
                 <li className="flex items-start gap-2">
                   <span className="text-amber-400 font-bold mt-0.5">•</span>
-                  <span><strong>Complete Focus:</strong> Take this assessment in a quiet environment without distractions. This is crucial for accurate results.</span>
+                  <span><strong>Complete Focus:</strong> Take this test in a quiet environment without distractions.</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-amber-400 font-bold mt-0.5">•</span>
-                  <span><strong>Be Honest:</strong> Answer questions truthfully based on how you actually think and behave, not how you wish to be.</span>
+                  <span><strong>Be Honest:</strong> Answer truthfully based on how you actually are, not how you wish to be.</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-amber-400 font-bold mt-0.5">•</span>
-                  <span><strong>Take Your Time:</strong> Read each question carefully. Don't rush - the assessment takes approximately 30-40 minutes.</span>
+                  <span><strong>Take Your Time:</strong> The assessment takes approximately 30-40 minutes.</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-amber-400 font-bold mt-0.5">•</span>
-                  <span><strong>First Instinct:</strong> Your initial response is usually the most accurate. Avoid overthinking your answers.</span>
+                  <span><strong>First Instinct:</strong> Your initial response is usually the most accurate.</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-amber-400 font-bold mt-0.5">•</span>
-                  <span><strong>Complete in One Sitting:</strong> Finish the entire assessment without breaks for the most reliable results.</span>
+                  <span><strong>One Sitting:</strong> Complete the entire assessment without breaks for reliable results.</span>
                 </li>
               </ul>
-              <p className="mt-4 text-amber-200 text-sm italic border-t border-amber-400/30 pt-3">
-                Your career path depends on accurate assessment results. Conscious and attentive participation will provide the most beneficial guidance for your educational and professional journey.
+              <p className="mt-3 text-amber-200 text-xs italic border-t border-amber-400/30 pt-2">
+                Your career path depends on accurate results. Conscious participation provides the most beneficial guidance.
               </p>
             </div>
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Personal Information Section */}
-          <div className="bg-white/5 rounded-lg p-6 border border-white/10">
-            <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
-              <span className="text-auric-gold">●</span> Personal Information
-            </h3>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-white/90 text-sm font-medium mb-2">
-                  Full Name <span className="text-red-400">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full bg-white/10 border border-white/30 rounded-lg px-4 py-3 text-white placeholder-white/50 focus:outline-none focus:border-auric-gold transition"
-                  placeholder="Enter your full name"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-white/90 text-sm font-medium mb-2">
-                  Date of Birth <span className="text-red-400">*</span>
-                </label>
-                <input
-                  type="date"
-                  value={formData.dob}
-                  onChange={(e) => setFormData({ ...formData, dob: e.target.value })}
-                  className="w-full bg-white/10 border border-white/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-auric-gold transition"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-white/90 text-sm font-medium mb-2">
-                  Email Address <span className="text-white/50 text-xs">(Optional)</span>
-                </label>
-                <input
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full bg-white/10 border border-white/30 rounded-lg px-4 py-3 text-white placeholder-white/50 focus:outline-none focus:border-auric-gold transition"
-                  placeholder="your.email@example.com"
-                />
-              </div>
-
-              <div>
-                <label className="block text-white/90 text-sm font-medium mb-2">
-                  Phone Number <span className="text-white/50 text-xs">(Optional)</span>
-                </label>
-                <input
-                  type="tel"
-                  value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  className="w-full bg-white/10 border border-white/30 rounded-lg px-4 py-3 text-white placeholder-white/50 focus:outline-none focus:border-auric-gold transition"
-                  placeholder="+91 98765 43210"
-                  pattern="[0-9+\s-]*"
-                />
-              </div>
-            </div>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="group relative">
+            <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-600 to-purple-600 rounded-lg blur opacity-20 group-hover:opacity-60 transition duration-1000 group-hover:duration-200"></div>
+            <input
+              type="text"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              placeholder="YOUR FULL NAME"
+              className="relative w-full px-6 py-5 bg-gray-950 border border-gray-800 rounded-lg focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/50 text-gray-300 text-center tracking-widest uppercase outline-none placeholder-gray-600"
+              required
+            />
           </div>
 
-          {/* Academic Information Section */}
-          <div className="bg-white/5 rounded-lg p-6 border border-white/10">
-            <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
-              <span className="text-pink-300">●</span> Academic Information
-            </h3>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-white/90 text-sm font-medium mb-2">
-                  Current Class/Grade <span className="text-red-400">*</span>
-                </label>
-                <select
-                  value={formData.class}
-                  onChange={(e) => setFormData({ ...formData, class: e.target.value })}
-                  className="w-full bg-white/10 border border-white/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-auric-gold transition"
-                  required
-                >
-                  <option value="" className="bg-gray-900">Select your class</option>
-                  <option value="9" className="bg-gray-900">Class 9</option>
-                  <option value="10" className="bg-gray-900">Class 10</option>
-                  <option value="11" className="bg-gray-900">Class 11</option>
-                  <option value="12" className="bg-gray-900">Class 12</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-white/90 text-sm font-medium mb-2">
-                  School Name <span className="text-red-400">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={formData.schoolName}
-                  onChange={(e) => setFormData({ ...formData, schoolName: e.target.value })}
-                  className="w-full bg-white/10 border border-white/30 rounded-lg px-4 py-3 text-white placeholder-white/50 focus:outline-none focus:border-auric-gold transition"
-                  placeholder="Enter your school name"
-                  required
-                />
-              </div>
-            </div>
+          <div className="group relative">
+            <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-600 to-purple-600 rounded-lg blur opacity-20 group-hover:opacity-60 transition duration-1000 group-hover:duration-200"></div>
+            <input
+              type="date"
+              value={formData.dob}
+              onChange={(e) => setFormData({ ...formData, dob: e.target.value })}
+              className="relative w-full px-6 py-5 bg-gray-950 border border-gray-800 rounded-lg focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/50 text-gray-300 text-center tracking-widest uppercase outline-none"
+              style={{ colorScheme: 'dark' }}
+              required
+            />
           </div>
 
-          {/* Location Information Section */}
-          <div className="bg-white/5 rounded-lg p-6 border border-white/10">
-            <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
-              <span className="text-purple-400">●</span> Location Information
-            </h3>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-white/90 text-sm font-medium mb-2">
-                  City <span className="text-red-400">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={formData.city}
-                  onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                  className="w-full bg-white/10 border border-white/30 rounded-lg px-4 py-3 text-white placeholder-white/50 focus:outline-none focus:border-auric-gold transition"
-                  placeholder="Enter your city"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-white/90 text-sm font-medium mb-2">
-                  State/UT <span className="text-white/50 text-xs">(Optional)</span>
-                </label>
-                <select
-                  value={formData.state}
-                  onChange={(e) => setFormData({ ...formData, state: e.target.value })}
-                  className="w-full bg-white/10 border border-white/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-auric-gold transition"
-                >
-                  <option value="" className="bg-gray-900">Select your state</option>
-                  {indianStates.map((state) => (
-                    <option key={state} value={state} className="bg-gray-900">{state}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
+          <div className="group relative">
+            <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-600 to-purple-600 rounded-lg blur opacity-20 group-hover:opacity-60 transition duration-1000 group-hover:duration-200"></div>
+            <select
+              value={formData.class}
+              onChange={(e) => setFormData({ ...formData, class: e.target.value })}
+              className="relative w-full px-6 py-5 bg-gray-950 border border-gray-800 rounded-lg focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/50 text-gray-300 text-center tracking-widest uppercase outline-none"
+              required
+            >
+              <option value="" className="bg-gray-900">SELECT YOUR CLASS</option>
+              <option value="9" className="bg-gray-900">CLASS 9</option>
+              <option value="10" className="bg-gray-900">CLASS 10</option>
+              <option value="11" className="bg-gray-900">CLASS 11</option>
+              <option value="12" className="bg-gray-900">CLASS 12</option>
+            </select>
           </div>
 
-          <motion.button
+          <div className="group relative">
+            <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-600 to-purple-600 rounded-lg blur opacity-20 group-hover:opacity-60 transition duration-1000 group-hover:duration-200"></div>
+            <input
+              type="text"
+              value={formData.schoolName}
+              onChange={(e) => setFormData({ ...formData, schoolName: e.target.value })}
+              placeholder="YOUR SCHOOL NAME"
+              className="relative w-full px-6 py-5 bg-gray-950 border border-gray-800 rounded-lg focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/50 text-gray-300 text-center tracking-widest uppercase outline-none placeholder-gray-600"
+              required
+            />
+          </div>
+
+          <div className="group relative">
+            <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-600 to-purple-600 rounded-lg blur opacity-20 group-hover:opacity-60 transition duration-1000 group-hover:duration-200"></div>
+            <input
+              type="text"
+              value={formData.city}
+              onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+              placeholder="YOUR CITY"
+              className="relative w-full px-6 py-5 bg-gray-950 border border-gray-800 rounded-lg focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/50 text-gray-300 text-center tracking-widest uppercase outline-none placeholder-gray-600"
+              required
+            />
+          </div>
+
+          <div className="group relative">
+            <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-600 to-purple-600 rounded-lg blur opacity-20 group-hover:opacity-60 transition duration-1000 group-hover:duration-200"></div>
+            <input
+              type="email"
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              placeholder="YOUR EMAIL ADDRESS"
+              className="relative w-full px-6 py-5 bg-gray-950 border border-gray-800 rounded-lg focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/50 text-gray-300 text-center tracking-widest uppercase outline-none placeholder-gray-600"
+              required
+            />
+          </div>
+
+          <div className="group relative">
+            <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-600 to-purple-600 rounded-lg blur opacity-20 group-hover:opacity-60 transition duration-1000 group-hover:duration-200"></div>
+            <input
+              type="tel"
+              value={formData.phone}
+              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+              placeholder="YOUR PHONE NUMBER"
+              pattern="[0-9]{10}"
+              className="relative w-full px-6 py-5 bg-gray-950 border border-gray-800 rounded-lg focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/50 text-gray-300 text-center tracking-widest uppercase outline-none placeholder-gray-600"
+              required
+            />
+          </div>
+
+          <button
             type="submit"
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            className="w-full bg-gradient-to-r from-auric-gold to-yellow-500 text-gray-900 font-semibold py-4 rounded-lg shadow-lg hover:shadow-xl transition flex items-center justify-center gap-2"
+            className="w-full py-4 bg-gradient-to-r from-cyan-600 to-purple-600 hover:from-cyan-500 hover:to-purple-500 text-white font-bold rounded-lg transition-all duration-200 transform hover:scale-[1.02] shadow-lg shadow-cyan-500/20"
           >
-            Begin Assessment
-            <ArrowRight className="h-5 w-5" />
-          </motion.button>
-
-          <p className="text-white/50 text-xs text-center">
-            Fields marked with <span className="text-red-400">*</span> are required
-          </p>
+            INITIATE ANALYSIS
+          </button>
         </form>
 
-        <div className="mt-8 pt-6 border-t border-white/20">
+        <div className="mt-6 pt-6 border-t border-cyan-500/20">
+          <p className="text-center text-white/60 text-xs mb-4">Click on each pillar to learn more</p>
           <div className="grid grid-cols-3 gap-4 text-center">
-            <div>
-              <Brain className="h-6 w-6 text-auric-gold mx-auto mb-2" />
-              <p className="text-xs text-white/70">Personality</p>
+            <button
+              onClick={() => setShowModal('personality')}
+              className="p-3 rounded-lg hover:bg-cyan-500/10 transition-all cursor-pointer group"
+            >
+              <div className="relative inline-block">
+                <Brain className="h-6 w-6 text-cyan-400 mx-auto mb-2 group-hover:scale-110 transition-transform" />
+                <Info className="h-3 w-3 text-cyan-400/60 absolute -top-1 -right-1" />
+              </div>
+              <p className="text-xs text-white/70 font-medium">Personality</p>
               <p className="text-xs text-white/50 mt-1">Big Five Model</p>
-            </div>
-            <div>
-              <Target className="h-6 w-6 text-pink-300 mx-auto mb-2" />
-              <p className="text-xs text-white/70">Interests</p>
+            </button>
+            <button
+              onClick={() => setShowModal('interests')}
+              className="p-3 rounded-lg hover:bg-purple-500/10 transition-all cursor-pointer group"
+            >
+              <div className="relative inline-block">
+                <Target className="h-6 w-6 text-purple-400 mx-auto mb-2 group-hover:scale-110 transition-transform" />
+                <Info className="h-3 w-3 text-purple-400/60 absolute -top-1 -right-1" />
+              </div>
+              <p className="text-xs text-white/70 font-medium">Interests</p>
               <p className="text-xs text-white/50 mt-1">RIASEC Model</p>
-            </div>
-            <div>
-              <TrendingUp className="h-6 w-6 text-purple-400 mx-auto mb-2" />
-              <p className="text-xs text-white/70">Aptitude</p>
+            </button>
+            <button
+              onClick={() => setShowModal('aptitude')}
+              className="p-3 rounded-lg hover:bg-pink-500/10 transition-all cursor-pointer group"
+            >
+              <div className="relative inline-block">
+                <TrendingUp className="h-6 w-6 text-pink-400 mx-auto mb-2 group-hover:scale-110 transition-transform" />
+                <Info className="h-3 w-3 text-pink-400/60 absolute -top-1 -right-1" />
+              </div>
+              <p className="text-xs text-white/70 font-medium">Aptitude</p>
               <p className="text-xs text-white/50 mt-1">Math, Logic, Verbal</p>
-            </div>
+            </button>
           </div>
         </div>
+
+        {/* Info Modal */}
+        <AnimatePresence>
+          {showModal && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+              onClick={() => setShowModal(null)}
+            >
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                onClick={(e) => e.stopPropagation()}
+                className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-2xl p-6 max-w-2xl w-full border border-cyan-500/30 shadow-2xl max-h-[80vh] overflow-y-auto"
+              >
+                <div className="flex justify-between items-start mb-4">
+                  <h3 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-purple-400">
+                    {showModal === 'personality' && 'Big Five Personality Model'}
+                    {showModal === 'interests' && 'RIASEC Interest Model'}
+                    {showModal === 'aptitude' && 'Aptitude Assessment'}
+                  </h3>
+                  <button
+                    onClick={() => setShowModal(null)}
+                    className="text-white/60 hover:text-white transition-colors"
+                  >
+                    <X className="h-6 w-6" />
+                  </button>
+                </div>
+
+                {showModal === 'personality' && (
+                  <div className="space-y-4">
+                    <p className="text-white/80 text-sm">
+                      The Big Five (OCEAN) model measures five major dimensions of human personality. This scientifically validated framework helps understand your behavioral patterns, work preferences, and interpersonal style.
+                    </p>
+                    <div className="space-y-3">
+                      {Object.entries(BIG_FIVE_INFO).map(([key, info]) => (
+                        <div key={key} className="bg-cyan-500/10 rounded-lg p-4 border border-cyan-500/20">
+                          <h4 className="text-cyan-300 font-semibold mb-1">{info.title}</h4>
+                          <p className="text-white/70 text-xs">{info.description}</p>
+                        </div>
+                      ))}
+                    </div>
+                    <p className="text-amber-300 text-xs font-semibold mt-4">
+                      ⚠️ Answer honestly based on your actual behavior, not how you wish to be. This ensures accurate career recommendations.
+                    </p>
+                  </div>
+                )}
+
+                {showModal === 'interests' && (
+                  <div className="space-y-4">
+                    <p className="text-white/80 text-sm">
+                      The RIASEC model (Holland Codes) identifies your career interests across six dimensions. Developed by psychologist John Holland, it matches your interests with suitable career paths.
+                    </p>
+                    <div className="space-y-3">
+                      {Object.entries(RIASEC_INFO).map(([key, info]) => (
+                        <div key={key} className="bg-purple-500/10 rounded-lg p-4 border border-purple-500/20">
+                          <h4 className="text-purple-300 font-semibold mb-1">{info.title}</h4>
+                          <p className="text-white/70 text-xs mb-2">{info.description}</p>
+                          <p className="text-white/60 text-xs"><strong>Traits:</strong> {info.traits}</p>
+                          <p className="text-white/60 text-xs"><strong>Careers:</strong> {info.careers}</p>
+                        </div>
+                      ))}
+                    </div>
+                    <p className="text-amber-300 text-xs font-semibold mt-4">
+                      ⚠️ Choose activities you genuinely enjoy, not what others expect. Authentic responses lead to fulfilling career matches.
+                    </p>
+                  </div>
+                )}
+
+                {showModal === 'aptitude' && (
+                  <div className="space-y-4">
+                    <p className="text-white/80 text-sm">
+                      Aptitude tests measure your natural abilities and cognitive strengths across Mathematical Reasoning, Logical Thinking, and Verbal Comprehension. These scores help identify fields where you'll excel naturally.
+                    </p>
+                    <div className="space-y-3">
+                      <div className="bg-pink-500/10 rounded-lg p-4 border border-pink-500/20">
+                        <h4 className="text-pink-300 font-semibold mb-1">Mathematical Reasoning</h4>
+                        <p className="text-white/70 text-xs">Tests your ability to work with numbers, solve quantitative problems, and understand mathematical concepts. Critical for STEM careers.</p>
+                      </div>
+                      <div className="bg-pink-500/10 rounded-lg p-4 border border-pink-500/20">
+                        <h4 className="text-pink-300 font-semibold mb-1">Logical Thinking</h4>
+                        <p className="text-white/70 text-xs">Measures pattern recognition, analytical reasoning, and problem-solving abilities. Essential for careers in technology, research, and analysis.</p>
+                      </div>
+                      <div className="bg-pink-500/10 rounded-lg p-4 border border-pink-500/20">
+                        <h4 className="text-pink-300 font-semibold mb-1">Verbal Comprehension</h4>
+                        <p className="text-white/70 text-xs">Assesses language skills, reading comprehension, and communication abilities. Important for careers in law, media, education, and business.</p>
+                      </div>
+                    </div>
+                    <p className="text-amber-300 text-xs font-semibold mt-4">
+                      ⚠️ Work carefully but don't overthink. Your first instinct is often correct. Time yourself to get accurate results.
+                    </p>
+                  </div>
+                )}
+
+                <button
+                  onClick={() => setShowModal(null)}
+                  className="w-full mt-6 py-3 bg-gradient-to-r from-cyan-600 to-purple-600 hover:from-cyan-500 hover:to-purple-500 text-white font-semibold rounded-lg transition-all"
+                >
+                  Got It!
+                </button>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </motion.div>
     </div>
   );
@@ -742,35 +826,31 @@ function WelcomeScreen({ onSubmit }) {
 // ============================================================
 
 function PersonalityTestScreen({ answers, setAnswers, onComplete }) {
-  const [currentPage, setCurrentPage] = useState(0);
-  const questionsPerPage = 6;
-  const totalPages = Math.ceil(BIG_FIVE_QUESTIONS.length / questionsPerPage);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const totalQuestions = BIG_FIVE_QUESTIONS.length;
+  const currentQuestion = BIG_FIVE_QUESTIONS[currentQuestionIndex];
 
-  const currentQuestions = BIG_FIVE_QUESTIONS.slice(
-    currentPage * questionsPerPage,
-    (currentPage + 1) * questionsPerPage
-  );
+  const handleAnswer = (value) => {
+    const newAnswers = { ...answers, [currentQuestion.id]: value };
+    setAnswers(newAnswers);
 
-  const handleAnswer = (questionId, value) => {
-    setAnswers({ ...answers, [questionId]: value });
-  };
-
-  const handleNext = () => {
-    if (currentPage < totalPages - 1) {
-      setCurrentPage(currentPage + 1);
-    } else {
-      onComplete(answers);
-    }
+    // Auto-advance to next question
+    setTimeout(() => {
+      if (currentQuestionIndex < totalQuestions - 1) {
+        setCurrentQuestionIndex(currentQuestionIndex + 1);
+      } else {
+        onComplete(newAnswers);
+      }
+    }, 300);
   };
 
   const handlePrevious = () => {
-    if (currentPage > 0) {
-      setCurrentPage(currentPage - 1);
+    if (currentQuestionIndex > 0) {
+      setCurrentQuestionIndex(currentQuestionIndex - 1);
     }
   };
 
-  const allAnswered = currentQuestions.every(q => answers[q.id]);
-  const progress = ((currentPage + 1) / totalPages) * 100;
+  const progress = ((currentQuestionIndex + 1) / totalQuestions) * 100;
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -799,62 +879,68 @@ function PersonalityTestScreen({ answers, setAnswers, onComplete }) {
         <div className="mb-8">
           <div className="h-2 bg-white/10 rounded-full overflow-hidden">
             <motion.div
-              className="h-full bg-auric-gold"
+              className="h-full bg-gradient-to-r from-cyan-500 to-purple-500"
               initial={{ width: 0 }}
               animate={{ width: `${progress}%` }}
               transition={{ duration: 0.5 }}
             />
           </div>
           <p className="text-xs text-white/60 mt-2 text-center">
-            Page {currentPage + 1} of {totalPages} ({Object.keys(answers).length} / {BIG_FIVE_QUESTIONS.length} answered)
+            Question {currentQuestionIndex + 1} of {totalQuestions}
           </p>
         </div>
 
-        {/* Questions */}
-        <div className="space-y-6 mb-8">
-          {currentQuestions.map((question) => (
-            <div key={question.id} className="bg-white/5 rounded-lg p-4 border border-white/10">
-              <p className="text-white mb-4 font-medium">{question.text}</p>
-              <div className="flex justify-between items-center gap-2">
-                <span className="text-xs text-white/50 hidden sm:block">Strongly<br/>Disagree</span>
+        {/* Single Question */}
+        <motion.div
+          key={currentQuestion.id}
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -20 }}
+          transition={{ duration: 0.3 }}
+          className="mb-8"
+        >
+          <div className="bg-white/5 rounded-lg p-6 border border-white/10">
+            <p className="text-white text-lg mb-6 font-medium text-center">{currentQuestion.text}</p>
+            <div className="space-y-3">
+              <div className="flex justify-between items-center gap-2 mb-4">
+                <span className="text-xs text-white/50">Strongly Disagree</span>
+                <span className="text-xs text-white/50">Strongly Agree</span>
+              </div>
+              <div className="grid grid-cols-5 gap-3">
                 {[1, 2, 3, 4, 5].map((value) => (
                   <button
                     key={value}
-                    onClick={() => handleAnswer(question.id, value)}
-                    className={`flex-1 py-3 rounded-lg font-medium transition ${
-                      answers[question.id] === value
-                        ? 'bg-auric-gold text-gray-900'
+                    onClick={() => handleAnswer(value)}
+                    className={`py-4 rounded-lg font-bold text-lg transition-all transform hover:scale-105 ${
+                      answers[currentQuestion.id] === value
+                        ? 'bg-gradient-to-r from-cyan-500 to-purple-500 text-white shadow-lg'
                         : 'bg-white/10 text-white hover:bg-white/20'
                     }`}
                   >
                     {value}
                   </button>
                 ))}
-                <span className="text-xs text-white/50 hidden sm:block">Strongly<br/>Agree</span>
               </div>
             </div>
-          ))}
-        </div>
+          </div>
+        </motion.div>
 
         {/* Navigation */}
         <div className="flex justify-between items-center gap-4">
           <button
             onClick={handlePrevious}
-            disabled={currentPage === 0}
-            className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white px-6 py-3 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition"
+            disabled={currentQuestionIndex === 0}
+            className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white px-6 py-3 rounded-lg disabled:opacity-30 disabled:cursor-not-allowed transition"
           >
             <ArrowLeft className="h-4 w-4" />
             Previous
           </button>
 
-          <button
-            onClick={handleNext}
-            disabled={!allAnswered}
-            className="flex items-center gap-2 bg-gradient-to-r from-auric-gold to-yellow-500 text-gray-900 font-semibold px-6 py-3 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg transition"
-          >
-            {currentPage < totalPages - 1 ? 'Next' : 'Submit'}
-            <ArrowRight className="h-4 w-4" />
-          </button>
+          <div className="text-white/60 text-sm">
+            {answers[currentQuestion.id] ? '✓ Answered' : 'Select an option'}
+          </div>
+
+          <div className="w-24"></div>
         </div>
       </motion.div>
     </div>
@@ -866,9 +952,6 @@ function PersonalityTestScreen({ answers, setAnswers, onComplete }) {
 // ============================================================
 
 function InterestsTestScreen({ answers, setAnswers, onComplete }) {
-  const [currentPage, setCurrentPage] = useState(0);
-  const questionsPerPage = 12;
-
   // Select 6 random questions per type (total 36)
   const selectedQuestions = useMemo(() => {
     const types = ['R', 'I', 'A', 'S', 'E', 'C'];
@@ -884,33 +967,31 @@ function InterestsTestScreen({ answers, setAnswers, onComplete }) {
     return selected;
   }, []);
 
-  const totalPages = Math.ceil(selectedQuestions.length / questionsPerPage);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const totalQuestions = selectedQuestions.length;
+  const currentQuestion = selectedQuestions[currentQuestionIndex];
 
-  const currentQuestions = selectedQuestions.slice(
-    currentPage * questionsPerPage,
-    (currentPage + 1) * questionsPerPage
-  );
+  const handleAnswer = (value) => {
+    const newAnswers = { ...answers, [currentQuestion.id]: value };
+    setAnswers(newAnswers);
 
-  const handleAnswer = (questionId, value) => {
-    setAnswers({ ...answers, [questionId]: value });
-  };
-
-  const handleNext = () => {
-    if (currentPage < totalPages - 1) {
-      setCurrentPage(currentPage + 1);
-    } else {
-      onComplete(answers);
-    }
+    // Auto-advance to next question
+    setTimeout(() => {
+      if (currentQuestionIndex < totalQuestions - 1) {
+        setCurrentQuestionIndex(currentQuestionIndex + 1);
+      } else {
+        onComplete(newAnswers);
+      }
+    }, 300);
   };
 
   const handlePrevious = () => {
-    if (currentPage > 0) {
-      setCurrentPage(currentPage - 1);
+    if (currentQuestionIndex > 0) {
+      setCurrentQuestionIndex(currentQuestionIndex - 1);
     }
   };
 
-  const allAnswered = currentQuestions.every(q => answers[q.id]);
-  const progress = ((currentPage + 1) / totalPages) * 100;
+  const progress = ((currentQuestionIndex + 1) / totalQuestions) * 100;
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -939,64 +1020,67 @@ function InterestsTestScreen({ answers, setAnswers, onComplete }) {
         <div className="mb-8">
           <div className="h-2 bg-white/10 rounded-full overflow-hidden">
             <motion.div
-              className="h-full bg-pink-300"
+              className="h-full bg-gradient-to-r from-purple-500 to-pink-500"
               initial={{ width: 0 }}
               animate={{ width: `${progress}%` }}
               transition={{ duration: 0.5 }}
             />
           </div>
           <p className="text-xs text-white/60 mt-2 text-center">
-            Page {currentPage + 1} of {totalPages}
+            Question {currentQuestionIndex + 1} of {totalQuestions}
           </p>
         </div>
 
-        {/* Questions */}
-        <div className="space-y-4 mb-8">
-          {currentQuestions.map((question) => (
-            <div key={question.id} className="bg-white/5 rounded-lg p-4 border border-white/10">
-              <p className="text-white mb-3">{question.text}</p>
-              <div className="flex gap-3">
-                {[
-                  { value: 1, label: 'Dislike' },
-                  { value: 2, label: 'Neutral' },
-                  { value: 3, label: 'Like' }
-                ].map((option) => (
-                  <button
-                    key={option.value}
-                    onClick={() => handleAnswer(question.id, option.value)}
-                    className={`flex-1 py-2 rounded-lg text-sm font-medium transition ${
-                      answers[question.id] === option.value
-                        ? 'bg-pink-300 text-gray-900'
-                        : 'bg-white/10 text-white hover:bg-white/20'
-                    }`}
-                  >
-                    {option.label}
-                  </button>
-                ))}
-              </div>
+        {/* Single Question */}
+        <motion.div
+          key={currentQuestion.id}
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -20 }}
+          transition={{ duration: 0.3 }}
+          className="mb-8"
+        >
+          <div className="bg-white/5 rounded-lg p-6 border border-white/10">
+            <p className="text-white text-lg mb-6 font-medium text-center">{currentQuestion.text}</p>
+            <div className="grid grid-cols-3 gap-4">
+              {[
+                { value: 1, label: 'Dislike', emoji: '😐' },
+                { value: 2, label: 'Neutral', emoji: '😊' },
+                { value: 3, label: 'Like', emoji: '😍' }
+              ].map((option) => (
+                <button
+                  key={option.value}
+                  onClick={() => handleAnswer(option.value)}
+                  className={`py-6 rounded-lg text-sm font-medium transition-all transform hover:scale-105 ${
+                    answers[currentQuestion.id] === option.value
+                      ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg'
+                      : 'bg-white/10 text-white hover:bg-white/20'
+                  }`}
+                >
+                  <div className="text-3xl mb-2">{option.emoji}</div>
+                  <div>{option.label}</div>
+                </button>
+              ))}
             </div>
-          ))}
-        </div>
+          </div>
+        </motion.div>
 
         {/* Navigation */}
         <div className="flex justify-between items-center gap-4">
           <button
             onClick={handlePrevious}
-            disabled={currentPage === 0}
-            className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white px-6 py-3 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition"
+            disabled={currentQuestionIndex === 0}
+            className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white px-6 py-3 rounded-lg disabled:opacity-30 disabled:cursor-not-allowed transition"
           >
             <ArrowLeft className="h-4 w-4" />
             Previous
           </button>
 
-          <button
-            onClick={handleNext}
-            disabled={!allAnswered}
-            className="flex items-center gap-2 bg-gradient-to-r from-pink-300 to-purple-400 text-gray-900 font-semibold px-6 py-3 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg transition"
-          >
-            {currentPage < totalPages - 1 ? 'Next' : 'Submit'}
-            <ArrowRight className="h-4 w-4" />
-          </button>
+          <div className="text-white/60 text-sm">
+            {answers[currentQuestion.id] ? '✓ Answered' : 'Select an option'}
+          </div>
+
+          <div className="w-24"></div>
         </div>
       </motion.div>
     </div>
@@ -1157,6 +1241,7 @@ function AptitudeTestScreen({ answers, setAnswers, onComplete }) {
   const [currentSection, setCurrentSection] = useState('math'); // math, logic, verbal
   const [questionQueue, setQuestionQueue] = useState([]); // Queue of questions to ask
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(45); // 45 second timer
   const [sectionPerformance, setSectionPerformance] = useState({
     math: { easy: { correct: 0, total: 0 }, medium: { correct: 0, total: 0 }, hard: { correct: 0, total: 0 } },
     logic: { easy: { correct: 0, total: 0 }, medium: { correct: 0, total: 0 }, hard: { correct: 0, total: 0 } },
@@ -1171,7 +1256,28 @@ function AptitudeTestScreen({ answers, setAnswers, onComplete }) {
       .slice(0, 3);
     setQuestionQueue(easyQuestions);
     setCurrentQuestionIndex(0);
+    setTimeLeft(45); // Reset timer when section changes
   }, [currentSection]);
+
+  // Timer countdown
+  useEffect(() => {
+    if (timeLeft <= 0) {
+      // Auto-submit when timer runs out
+      handleNext();
+      return;
+    }
+
+    const timer = setInterval(() => {
+      setTimeLeft(prev => prev - 1);
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [timeLeft]);
+
+  // Reset timer when moving to next question
+  useEffect(() => {
+    setTimeLeft(45);
+  }, [currentQuestionIndex]);
 
   const currentQuestion = questionQueue[currentQuestionIndex];
   const totalQuestionsInSection = questionQueue.length;
@@ -1381,13 +1487,23 @@ function AptitudeTestScreen({ answers, setAnswers, onComplete }) {
             <span className="text-xs text-white/60">
               Question {currentQuestionIndex + 1} of {totalQuestionsInSection}
             </span>
-            <span className={`text-xs px-2 py-1 rounded ${
-              currentQuestion.difficulty === 'easy' ? 'bg-green-500/20 text-green-300' :
-              currentQuestion.difficulty === 'medium' ? 'bg-yellow-500/20 text-yellow-300' :
-              'bg-red-500/20 text-red-300'
-            }`}>
-              {currentQuestion.difficulty.toUpperCase()}
-            </span>
+            <div className="flex items-center gap-3">
+              <div className={`flex items-center gap-2 px-3 py-1 rounded-lg ${
+                timeLeft <= 10 ? 'bg-red-500/30 text-red-300 animate-pulse' :
+                timeLeft <= 20 ? 'bg-yellow-500/30 text-yellow-300' :
+                'bg-cyan-500/30 text-cyan-300'
+              }`}>
+                <Clock className="h-4 w-4" />
+                <span className="font-bold text-sm">{timeLeft}s</span>
+              </div>
+              <span className={`text-xs px-2 py-1 rounded ${
+                currentQuestion.difficulty === 'easy' ? 'bg-green-500/20 text-green-300' :
+                currentQuestion.difficulty === 'medium' ? 'bg-yellow-500/20 text-yellow-300' :
+                'bg-red-500/20 text-red-300'
+              }`}>
+                {currentQuestion.difficulty.toUpperCase()}
+              </span>
+            </div>
           </div>
 
           <p className="text-white text-lg mb-6 font-medium">{currentQuestion.question}</p>

@@ -9,7 +9,7 @@ import RudrakshaTab from '../Remedies/RudrakshaTab';
 import ChakraTab from '../Remedies/ChakraTab';
 import ShaktiBeejMantraTab from '../Remedies/ShaktiBeejMantraTab';
 
-const RemediesAndGuidanceTab = ({ report }) => {
+const RemediesAndGuidanceTab = ({ report, language = 'en' }) => {
     const [activeSubTab, setActiveSubTab] = useState('General');
     const hasFourOrEight = report.baseKundliGrid[4] > 0 || report.baseKundliGrid[8] > 0;
     
@@ -29,13 +29,13 @@ const RemediesAndGuidanceTab = ({ report }) => {
                 <button onClick={() => setActiveSubTab('Chakra')} className={`py-2 px-4 font-medium transition-colors duration-200 ${activeSubTab === 'Chakra' ? 'text-yellow-400 border-b-2 border-yellow-400' : 'text-yellow-200/70'}`}>Chakra Activation</button>
                 <button onClick={() => setActiveSubTab('Shakti')} className={`py-2 px-4 font-medium transition-colors duration-200 ${activeSubTab === 'Shakti' ? 'text-yellow-400 border-b-2 border-yellow-400' : 'text-yellow-200/70'}`}>Shakti Beej Mantra</button>
             </div>
-            {activeSubTab === 'General' && <GeneralRemediesTab report={report} />}
-            {activeSubTab === 'Advanced' && <AdvancedRemediesTab report={report} />}
-            {activeSubTab === 'Special' && <SpecialGuidanceTab report={report} />}
-            {activeSubTab === 'Mantras' && <MantrasTab report={report} />}
-            {activeSubTab === 'Rudraksha' && <RudrakshaTab report={report} />}
-            {activeSubTab === 'Chakra' && <ChakraTab report={report} />}
-            {activeSubTab === 'Shakti' && <ShaktiBeejMantraTab />}
+            {activeSubTab === 'General' && <GeneralRemediesTab report={report} language={language} />}
+            {activeSubTab === 'Advanced' && <AdvancedRemediesTab report={report} language={language} />}
+            {activeSubTab === 'Special' && <SpecialGuidanceTab report={report} language={language} />}
+            {activeSubTab === 'Mantras' && <MantrasTab report={report} language={language} />}
+            {activeSubTab === 'Rudraksha' && <RudrakshaTab report={report} language={language} />}
+            {activeSubTab === 'Chakra' && <ChakraTab report={report} language={language} />}
+            {activeSubTab === 'Shakti' && <ShaktiBeejMantraTab language={language} />}
         </div>
     );
 };

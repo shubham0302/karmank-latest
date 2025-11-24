@@ -30,7 +30,7 @@ const StatusIcon = ({ status, className = "w-5 h-5" }) => {
   }
 };
 
-const AssetVibrationCard = ({ report, userData }) => {
+const AssetVibrationCard = ({ report, userData, language = 'en' }) => {
   const [selectedAssetType, setSelectedAssetType] = useState('property');
   const [assetNumber, setAssetNumber] = useState('');
   const [compatibilityResult, setCompatibilityResult] = useState(null);
@@ -399,7 +399,7 @@ const AssetVibrationCard = ({ report, userData }) => {
                   {/* Description from DATA */}
                   <div className="bg-purple-900/30 border border-purple-400/20 rounded-lg p-4">
                     <p className="text-xs text-purple-200/80 leading-relaxed">
-                      {getText(DATA.assetCompatibility[destinyNumber].description, 'en')}
+                      {getText(DATA.assetCompatibility[destinyNumber].description, language)}
                     </p>
                   </div>
                 </motion.div>

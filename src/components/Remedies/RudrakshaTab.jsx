@@ -3,9 +3,7 @@ import Card from '../Card';
 import { DATA } from '../../data/data';
 import { getText } from '../../utils/helpers';
 
-const RudrakshaTab = ({ report }) => {
-    // Assuming 'language' prop will be passed, defaulting to 'en' for now
-    const language = 'en';
+const RudrakshaTab = ({ report, language = 'en' }) => {
 
     if (!report) {
         return <Card><p className="text-red-400">Report data is not available.</p></Card>;

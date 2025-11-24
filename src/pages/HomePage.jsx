@@ -72,8 +72,13 @@ export default function HomePage() {
               className="flex items-center gap-3"
             >
               <Crown className="h-8 w-8 text-auric-gold" />
-              <h1 className="text-3xl md:text-4xl font-serif font-bold text-white">
-                KarmAnk
+              <h1 className="text-3xl md:text-4xl font-serif font-bold">
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-cyan-400 to-blue-500">
+                  KarmAnk
+                </span>
+                <sup className="text-xl md:text-2xl -top-2 text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-cyan-400 to-blue-500">
+                  ™
+                </sup>
               </h1>
             </motion.div>
 
@@ -159,7 +164,7 @@ export default function HomePage() {
           >
             <p className="flex items-center justify-center gap-2">
               <Sparkles className="h-3 w-3" />© {new Date().getFullYear()}{" "}
-              KarmAnk - Sacred Technology
+              KarmAnk<sup className="text-[0.5rem] text-white/40">™</sup> - Sacred Technology
             </p>
           </motion.div>
         </div>

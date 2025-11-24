@@ -4,10 +4,8 @@ import SectionTitle from '../SectionTitle';
 import { DATA } from '../../data/data';
 import { getText } from '../../utils/helpers';
 
-const ChakraTab = ({ report }) => {
+const ChakraTab = ({ report, language = 'en' }) => {
     try {
-        // Assuming 'language' prop will be passed, defaulting to 'en' for now
-        const language = 'en';
 
         if (!report) {
             return (

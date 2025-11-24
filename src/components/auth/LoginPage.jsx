@@ -7,7 +7,7 @@ import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { GlassCard } from "../ui/glass-card";
-import { Sparkles, Crown, Mail, KeyRound } from "lucide-react";
+import { Sparkles, Mail, KeyRound, AlertCircle, MessageSquare } from "lucide-react";
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -17,6 +17,7 @@ export default function LoginPage() {
   const [message, setMessage] = useState(null);
   const [error, setError] = useState(null);
   const [step, setStep] = useState("email"); // 'email' or 'otp'
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const { user, signInWithOtp, verifyOtp } = useAuth();
 
   // Redirect to home if already authenticated
@@ -31,6 +32,13 @@ export default function LoginPage() {
     setLoading(true);
     setError(null);
     setMessage(null);
+
+    // Check terms acceptance
+    if (!acceptedTerms) {
+      setError("Please accept the Terms & Conditions to continue");
+      setLoading(false);
+      return;
+    }
 
     // Basic email validation
     if (!email || !email.includes("@")) {
@@ -101,6 +109,20 @@ export default function LoginPage() {
   return (
     <CosmicBackground density={180}>
       <div className="min-h-screen relative flex items-center justify-center p-4">
+        {/* Feedback Button - Fixed Position */}
+        <motion.button
+          onClick={() => navigate('/feedback')}
+          initial={{ opacity: 0, x: 100 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.8, delay: 1.5 }}
+          className="fixed top-6 right-6 z-50 flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 hover:from-cyan-500/30 hover:to-blue-500/30 backdrop-blur-md border border-cyan-400/30 rounded-full text-cyan-300 hover:text-cyan-200 transition-all duration-300 shadow-lg hover:shadow-cyan-500/50 group"
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          <MessageSquare className="h-4 w-4 group-hover:rotate-12 transition-transform duration-300" />
+          <span className="text-sm font-medium hidden sm:inline">Feedback</span>
+        </motion.button>
+
         <div className="container mx-auto max-w-7xl grid grid-cols-1 lg:grid-cols-2 gap-16 items-center relative z-10">
           {/* Branding */}
           <motion.div
@@ -117,16 +139,25 @@ export default function LoginPage() {
                 className="relative"
               >
                 <h1
-                  className="text-6xl lg:text-8xl font-serif font-bold leading-tight tracking-tight bg-clip-text text-transparent"
-                  style={{
-                    backgroundImage: 'linear-gradient(135deg, hsl(44, 91%, 69%), hsl(261, 100%, 75%))',
-                  }}
+                  className="text-6xl lg:text-8xl font-serif font-bold leading-tight tracking-tight"
                 >
-                  KarmAnk
+                  <span
+                    className="bg-clip-text text-transparent"
+                    style={{
+                      backgroundImage: 'linear-gradient(135deg, hsl(44, 91%, 69%), hsl(261, 100%, 75%))',
+                    }}
+                  >
+                    KarmAnk
+                  </span>
+                  <sup
+                    className="text-[2.75rem] lg:text-[3.75rem] -top-4 lg:-top-6 bg-clip-text text-transparent"
+                    style={{
+                      backgroundImage: 'linear-gradient(135deg, hsl(44, 91%, 69%), hsl(261, 100%, 75%))',
+                    }}
+                  >
+                    ™
+                  </sup>
                 </h1>
-                <div className="absolute -top-2 -right-2 lg:-top-4 lg:-right-4">
-                  <Crown className="h-8 w-8 lg:h-12 lg:w-12 text-auric-gold animate-pulse" />
-                </div>
               </motion.div>
 
               {/* Tagline */}
@@ -179,9 +210,11 @@ export default function LoginPage() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.6, delay: 1.8 }}
-              className="text-xs text-white/40 font-light"
+              className="text-center lg:text-left"
             >
-              © {new Date().getFullYear()} KarmAnk - Sacred Technology
+              <p className="text-xs text-white/40 font-light">
+                © {new Date().getFullYear()} KarmAnk<sup className="text-[0.5rem] text-white/40">™</sup> - All Rights Reserved
+              </p>
             </motion.div>
           </motion.div>
 
@@ -201,12 +234,24 @@ export default function LoginPage() {
               >
                 <div className="text-center space-y-4">
                   <motion.div
-                    className="flex justify-center"
-                    whileHover={{ scale: 1.1, rotate: 5 }}
+                    className="flex justify-center mb-2"
+                    whileHover={{ scale: 1.05 }}
                     transition={{ duration: 0.3 }}
                   >
-                    <div className="p-4 rounded-full bg-gradient-auric shadow-2xl shadow-auric-gold/50">
-                      <Crown className="h-8 w-8 text-cosmic-blue" />
+                    <div className="relative w-20 h-20 rounded-2xl overflow-hidden">
+                      {/* Ultra-subtle glass background */}
+                      <div className="absolute inset-0 bg-white/[0.02] backdrop-blur-md"></div>
+
+                      {/* Iridescent gradient border */}
+                      <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-cyan-400/30 via-purple-400/30 to-auric-gold/30 p-[1.5px]">
+                        <div className="absolute inset-[1.5px] rounded-2xl bg-gradient-to-br from-black/40 to-transparent backdrop-blur-xl"></div>
+                      </div>
+
+                      {/* Enhanced cosmic glow */}
+                      <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/20 via-purple-500/20 to-auric-gold/20 rounded-2xl blur-2xl"></div>
+
+                      {/* Favicon image */}
+                      <img src="/favicon.ico" alt="KarmAnk" className="w-full h-full object-cover relative z-10 rounded-2xl" />
                     </div>
                   </motion.div>
 
@@ -249,14 +294,44 @@ export default function LoginPage() {
                       {error && <p id="email-error" className="text-sm text-red-400 mt-1" role="alert">{error}</p>}
                     </div>
 
+                    {/* Terms & Conditions Checkbox */}
+                    <div className="flex items-start space-x-3 p-4 bg-white/5 rounded-lg border border-white/10">
+                      <input
+                        type="checkbox"
+                        id="terms"
+                        checked={acceptedTerms}
+                        onChange={(e) => setAcceptedTerms(e.target.checked)}
+                        className="mt-1 h-4 w-4 rounded border-white/30 bg-white/10 text-auric-gold focus:ring-2 focus:ring-auric-gold/50 cursor-pointer"
+                        disabled={loading}
+                      />
+                      <label htmlFor="terms" className="text-sm text-white/80 leading-relaxed cursor-pointer">
+                        I agree to the{" "}
+                        <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-auric-gold hover:text-auric-gold/80 underline font-semibold">
+                          Terms & Conditions
+                        </a>
+                        ,{" "}
+                        <a href="/privacy" target="_blank" rel="noopener noreferrer" className="text-auric-gold hover:text-auric-gold/80 underline font-semibold">
+                          Privacy Policy
+                        </a>
+                        ,{" "}
+                        <a href="/disclaimer" target="_blank" rel="noopener noreferrer" className="text-auric-gold hover:text-auric-gold/80 underline font-semibold">
+                          Disclaimer
+                        </a>
+                        , and{" "}
+                        <a href="/refund" target="_blank" rel="noopener noreferrer" className="text-auric-gold hover:text-auric-gold/80 underline font-semibold">
+                          Refund Policy
+                        </a>
+                      </label>
+                    </div>
+
                     <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                       <Button
                         type="submit"
-                        className="w-full h-14 hover:shadow-2xl hover:shadow-auric-gold/50 text-white font-bold text-lg relative overflow-hidden transition-all duration-300"
+                        className="w-full h-14 hover:shadow-2xl hover:shadow-auric-gold/50 text-white font-bold text-lg relative overflow-hidden transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                         style={{
                           background: 'linear-gradient(135deg, hsl(44, 85%, 50%), hsl(261, 85%, 55%))',
                         }}
-                        disabled={loading}
+                        disabled={loading || !acceptedTerms}
                       >
                         <motion.span
                           animate={loading ? { opacity: [1, 0.5, 1] } : {}}
@@ -275,10 +350,18 @@ export default function LoginPage() {
                       </Button>
                     </motion.div>
 
-                    <div className="text-center">
+                    <div className="text-center space-y-2">
                       <p className="text-white/60 text-sm">
                         We'll send you a 6-digit code to sign in
                       </p>
+                      <a
+                        href="/about"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-block text-xs text-cyan-400/60 hover:text-cyan-300 transition-colors underline"
+                      >
+                        About Us
+                      </a>
                     </div>
                   </form>
                 )}
@@ -352,12 +435,12 @@ export default function LoginPage() {
                         >
                           {loading ? (
                             <>
-                              <Crown className="h-5 w-5 animate-pulse" />
+                              <Sparkles className="h-5 w-5 animate-pulse" />
                               Verifying...
                             </>
                           ) : (
                             <>
-                              <Crown className="h-5 w-5" />
+                              <Sparkles className="h-5 w-5" />
                               Enter the Cosmos
                             </>
                           )}
