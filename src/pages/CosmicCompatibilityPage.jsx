@@ -7,6 +7,7 @@ import {
   Fingerprint, Wind, ArrowLeft, BookOpen, Hash, FileText
 } from 'lucide-react';
 import CosmicBackground from '../components/CosmicBackground';
+import FamilyMemberSelector from '../components/FamilyMemberSelector';
 import { useAuth } from '../contexts/AuthContext';
 
 // ============================================================
@@ -1009,6 +1010,8 @@ export default function CosmicCompatibilityPage() {
   const [activeTab, setActiveTab] = useState(null);
   const [viewMode, setViewMode] = useState('standard'); // 'standard' or 'detailed'
 
+  const [selectedP1Id, setSelectedP1Id] = useState(null);
+  const [selectedP2Id, setSelectedP2Id] = useState(null);
   const [p1, setP1] = useState({ name: '', dob: '', tob: '', city: '', lat: '', lng: '', tz: '' });
   const [p2, setP2] = useState({ name: '', dob: '', tob: '', city: '', lat: '', lng: '', tz: '' });
 
@@ -1020,9 +1023,37 @@ export default function CosmicCompatibilityPage() {
     navigate('/');
   };
 
+  const handleP1FamilyMemberSelect = (memberId) => {
+    setSelectedP1Id(memberId);
+  };
+
+  const handleP1DetailsChange = (details) => {
+    setP1(prev => ({
+      ...prev,
+      name: details.name,
+      dob: details.dob,
+      birthPlace: details.birthPlace,
+      birthTime: details.birthTime
+    }));
+  };
+
+  const handleP2FamilyMemberSelect = (memberId) => {
+    setSelectedP2Id(memberId);
+  };
+
+  const handleP2DetailsChange = (details) => {
+    setP2(prev => ({
+      ...prev,
+      name: details.name,
+      dob: details.dob,
+      birthPlace: details.birthPlace,
+      birthTime: details.birthTime
+    }));
+  };
+
   const calculate = () => {
-    if(!p1.dob || !p2.dob || !p1.name || !p2.name) {
-      alert("Please fill all required fields (Name & DOB)");
+    if(!selectedP1Id || !selectedP2Id || !p1.dob || !p2.dob || !p1.name || !p2.name) {
+      alert("Please select two different family members first");
       return;
     }
 
@@ -1127,8 +1158,8 @@ export default function CosmicCompatibilityPage() {
     <CosmicBackground density={140} useVideo={true}>
       <div className="min-h-screen relative px-4 md:px-6 py-6">
         <div className="max-w-6xl mx-auto relative z-10">
-          {/* Back Button */}
-          <div className="flex justify-end items-center mb-6">
+          {/* Back Button on Left */}
+          <div className="flex justify-start items-center mb-6">
             <button
               onClick={handleBackToHome}
               className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white border border-white/30 px-4 py-2 rounded-md text-sm font-medium transition duration-200"
@@ -1174,19 +1205,47 @@ export default function CosmicCompatibilityPage() {
 
           {screen === 'input' && (
             <div className="space-y-8 animate-in fade-in zoom-in duration-500">
-              <div className="grid md:grid-cols-2 gap-6">
-                <SmartInput title="Person 1" val={p1} set={setP1} color="text-cyan-400"/>
-                <SmartInput title="Person 2" val={p2} set={setP2} color="text-pink-400"/>
+              {/* Family Member Selectors - Required */}
+              <div className="p-4 bg-gradient-to-r from-cyan-500/10 to-blue-500/10 border border-cyan-400/30 rounded-lg">
+                <p className="text-sm text-cyan-300 mb-4 font-semibold">Select Two Different Family Members to Check Cosmic Compatibility:</p>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-xs text-cyan-300 mb-2">Person 1:</p>
+                    <FamilyMemberSelector
+                      selectedMemberId={selectedP1Id}
+                      onMemberSelect={handleP1FamilyMemberSelect}
+                      onDetailsChange={handleP1DetailsChange}
+                      label="Select First Person"
+                      excludeMemberId={selectedP2Id}
+                    />
+                  </div>
+                  <div>
+                    <p className="text-xs text-cyan-300 mb-2">Person 2:</p>
+                    <FamilyMemberSelector
+                      selectedMemberId={selectedP2Id}
+                      onMemberSelect={handleP2FamilyMemberSelect}
+                      onDetailsChange={handleP2DetailsChange}
+                      label="Select Second Person"
+                      excludeMemberId={selectedP1Id}
+                    />
+                  </div>
+                </div>
               </div>
 
-              <button
-                onClick={calculate}
-                disabled={loading}
-                className="w-full bg-gradient-to-r from-cyan-600 to-purple-600 hover:from-cyan-500 hover:to-purple-500 text-white font-bold py-4 rounded-xl shadow-lg shadow-cyan-500/20 transition-all flex items-center justify-center gap-2"
-              >
-                {loading ? <Activity className="animate-spin"/> : <Zap/>}
-                {loading ? "Analyzing 5 Dimensions..." : "Analyze Compatibility"}
-              </button>
+              {!selectedP1Id || !selectedP2Id ? (
+                <div className="p-4 bg-amber-500/10 border border-amber-500/30 rounded-lg text-center text-amber-300 text-sm">
+                  Please select two different family members from above to check their cosmic compatibility.
+                </div>
+              ) : (
+                <button
+                  onClick={calculate}
+                  disabled={loading}
+                  className="w-full bg-gradient-to-r from-cyan-600 to-purple-600 hover:from-cyan-500 hover:to-purple-500 text-white font-bold py-4 rounded-xl shadow-lg shadow-cyan-500/20 transition-all flex items-center justify-center gap-2"
+                >
+                  {loading ? <Activity className="animate-spin"/> : <Zap/>}
+                  {loading ? "Analyzing 5 Dimensions..." : "Analyze Compatibility"}
+                </button>
+              )}
             </div>
           )}
 

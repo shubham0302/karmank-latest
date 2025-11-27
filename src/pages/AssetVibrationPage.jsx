@@ -4,12 +4,14 @@ import { motion } from 'framer-motion';
 import {
   Home, Building2, Car, Briefcase, Landmark, TrendingUp, AlertCircle,
   CheckCircle, MinusCircle, XCircle, ArrowLeft, Crown, Phone, CreditCard,
-  Sparkles, Wand2, CheckCircle2, Star
+  Sparkles, Wand2, CheckCircle2, Star, ChevronDown
 } from 'lucide-react';
 import CosmicBackground from '../components/CosmicBackground';
 import { DATA } from '../data/data';
 import { getText } from '../utils/helpers';
 import { useAuth } from '../contexts/AuthContext';
+import { useFamilyMembers } from '../hooks/useFamilyMembers';
+import { useEffect } from 'react';
 
 // Enhanced Asset Data with Pythagorean Letter Values
 const ASSET_DATA = {
@@ -162,8 +164,10 @@ const StatusIcon = ({ status, className = "w-5 h-5" }) => {
 const AssetVibrationPage = () => {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
+  const { members, getFamilyMembersData } = useFamilyMembers();
 
   const [userData, setUserData] = useState({ dob: '', name: '' });
+  const [selectedFamilyMemberId, setSelectedFamilyMemberId] = useState(null);
   const [destinyNumber, setDestinyNumber] = useState(null);
   const [basicNumber, setBasicNumber] = useState(null);
   const [selectedAssetType, setSelectedAssetType] = useState('vehicle');
@@ -171,6 +175,53 @@ const AssetVibrationPage = () => {
   const [compatibilityResult, setCompatibilityResult] = useState(null);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [formError, setFormError] = useState('');
+  const [memberDropdownOpen, setMemberDropdownOpen] = useState(false);
+
+  // Fetch family members and auto-select first one
+  useEffect(() => {
+    const loadMembers = async () => {
+      const result = await getFamilyMembersData();
+      if (result.members && result.members.length > 0) {
+        const firstMember = result.members[0];
+        setSelectedFamilyMemberId(firstMember.id);
+        setUserData({
+          name: firstMember.name,
+          dob: firstMember.date_of_birth
+        });
+        // Auto-calculate numbers for first family member
+        try {
+          const date = new Date(firstMember.date_of_birth + 'T00:00:00');
+          const day = date.getDate();
+          const month = date.getMonth() + 1;
+          const year = date.getFullYear();
+
+          // Calculate Basic Number (from day)
+          let basic = day;
+          while (basic > 9) {
+            basic = String(basic)
+              .split('')
+              .reduce((acc, digit) => acc + parseInt(digit, 10), 0);
+          }
+
+          // Calculate Destiny Number (from full date)
+          let destiny = String(`${day}${month}${year}`)
+            .split('')
+            .reduce((acc, digit) => acc + parseInt(digit, 10), 0);
+          while (destiny > 9) {
+            destiny = String(destiny)
+              .split('')
+              .reduce((acc, digit) => acc + parseInt(digit, 10), 0);
+          }
+
+          setBasicNumber(basic);
+          setDestinyNumber(destiny);
+        } catch (error) {
+          console.error('Error calculating numbers for first member:', error);
+        }
+      }
+    };
+    loadMembers();
+  }, []);
 
   const handleSignOut = async () => {
     await signOut();
@@ -180,11 +231,22 @@ const AssetVibrationPage = () => {
     navigate('/');
   };
 
+  const handleFamilyMemberSelect = (memberId) => {
+    setSelectedFamilyMemberId(memberId);
+  };
+
+  const handleFamilyMemberDetailsChange = (details) => {
+    setUserData({
+      name: details.name,
+      dob: details.dob
+    });
+  };
+
   // Calculate numbers from DOB
   const handleCalculate = (e) => {
     e.preventDefault();
-    if (!userData.dob || !userData.name) {
-      setFormError('Please enter both name and date of birth.');
+    if (!selectedFamilyMemberId || !userData.dob || !userData.name) {
+      setFormError('Please select a family member first.');
       return;
     }
     setFormError('');
@@ -420,8 +482,8 @@ const AssetVibrationPage = () => {
     <CosmicBackground density={140} useVideo={true}>
       <div className="min-h-screen relative px-4 md:px-6 py-6">
         <div className="max-w-5xl mx-auto relative z-10">
-          {/* Back Button */}
-          <div className="flex justify-end items-center mb-6">
+          {/* Top Navigation - Back Button on Left, Controls on Right */}
+          <div className="flex justify-between items-center mb-6">
             <button
               onClick={handleBackToHome}
               className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white border border-white/30 px-4 py-2 rounded-md text-sm font-medium transition duration-200"
@@ -429,6 +491,72 @@ const AssetVibrationPage = () => {
               <ArrowLeft className="h-4 w-4" />
               Back
             </button>
+
+            <div className="flex items-center gap-4">
+              {/* Member Selector Dropdown */}
+              <div className="relative">
+                <button
+                  onClick={() => setMemberDropdownOpen(!memberDropdownOpen)}
+                  className="flex items-center gap-2 px-4 py-2 bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-400/50 rounded-lg text-cyan-300 text-sm font-medium transition"
+                >
+                  {selectedFamilyMemberId && members.find(m => m.id === selectedFamilyMemberId)?.name || 'Select Member'}
+                  <ChevronDown className="h-4 w-4" />
+                </button>
+                {memberDropdownOpen && (
+                  <div className="absolute top-full right-0 mt-2 bg-gray-900 border border-cyan-400/50 rounded-lg shadow-lg z-50 min-w-64">
+                    {members.map(member => (
+                      <button
+                        key={member.id}
+                        onClick={() => {
+                          setSelectedFamilyMemberId(member.id);
+                          setUserData({
+                            name: member.name,
+                            dob: member.date_of_birth
+                          });
+                          setMemberDropdownOpen(false);
+                          // Auto-calculate numbers when member is selected
+                          try {
+                            const date = new Date(member.date_of_birth + 'T00:00:00');
+                            const day = date.getDate();
+                            const month = date.getMonth() + 1;
+                            const year = date.getFullYear();
+
+                            // Calculate Basic Number (from day)
+                            let basic = day;
+                            while (basic > 9) {
+                              basic = String(basic)
+                                .split('')
+                                .reduce((acc, digit) => acc + parseInt(digit, 10), 0);
+                            }
+
+                            // Calculate Destiny Number (from full date)
+                            let destiny = String(`${day}${month}${year}`)
+                              .split('')
+                              .reduce((acc, digit) => acc + parseInt(digit, 10), 0);
+                            while (destiny > 9) {
+                              destiny = String(destiny)
+                                .split('')
+                                .reduce((acc, digit) => acc + parseInt(digit, 10), 0);
+                            }
+
+                            setBasicNumber(basic);
+                            setDestinyNumber(destiny);
+                          } catch (error) {
+                            console.error('Error calculating numbers:', error);
+                          }
+                        }}
+                        className={`w-full text-left px-4 py-3 hover:bg-cyan-400/10 transition ${
+                          selectedFamilyMemberId === member.id ? 'bg-cyan-400/20 border-l-2 border-l-cyan-400' : ''
+                        }`}
+                      >
+                        <div className="font-semibold text-white">{member.name}</div>
+                        <div className="text-xs text-white/60">{member.gender} • DOB: {new Date(member.date_of_birth).toLocaleDateString()}</div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
 
           {/* Futuristic Gate Header */}
@@ -469,44 +597,12 @@ const AssetVibrationPage = () => {
             /* Introduction Page */
             <div className="max-w-2xl mx-auto">
               <div className="bg-gray-900/60 backdrop-blur-md p-8 rounded-xl border border-cyan-500/20 shadow-2xl">
-                <h2 className="text-2xl font-bold text-center text-cyan-300 mb-6">
-                  Enter Your Details
-                </h2>
+                <h3 className="text-lg font-semibold text-center text-cyan-300 mb-4">
+                  {userData.name || 'Select a member to begin'}
+                </h3>
 
-                <div className="space-y-6">
-                  <div className="group relative">
-                    <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-600 to-purple-600 rounded-lg blur opacity-20 group-hover:opacity-60 transition duration-1000 group-hover:duration-200"></div>
-                    <input
-                      type="text"
-                      value={userData.name}
-                      onChange={(e) => setUserData({ ...userData, name: e.target.value })}
-                      placeholder="YOUR FULL NAME"
-                      className="relative w-full px-6 py-5 bg-gray-950 border border-gray-800 rounded-lg focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/50 text-gray-300 text-center tracking-widest uppercase outline-none placeholder-gray-600"
-                    />
-                  </div>
-
-                  <div className="group relative">
-                    <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-600 to-purple-600 rounded-lg blur opacity-20 group-hover:opacity-60 transition duration-1000 group-hover:duration-200"></div>
-                    <input
-                      type="date"
-                      value={userData.dob}
-                      onChange={(e) => setUserData({ ...userData, dob: e.target.value })}
-                      placeholder="DD-MM-YYYY"
-                      className="relative w-full px-6 py-5 bg-gray-950 border border-gray-800 rounded-lg focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/50 text-gray-300 text-center tracking-widest uppercase outline-none"
-                      style={{ colorScheme: 'dark' }}
-                    />
-                  </div>
-
-                  <button
-                    onClick={handleCalculate}
-                    className="w-full py-4 bg-gradient-to-r from-cyan-600 to-purple-600 hover:from-cyan-500 hover:to-purple-500 text-white font-bold rounded-lg transition-all duration-200 transform hover:scale-[1.02] shadow-lg shadow-cyan-500/20"
-                  >
-                    INITIATE ANALYSIS
-                  </button>
-
-                  {formError && (
-                    <p className="text-center text-red-400 text-sm">{formError}</p>
-                  )}
+                <div className="text-center text-white/70 text-sm">
+                  Loading your analysis...
                 </div>
               </div>
             </div>

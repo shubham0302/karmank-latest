@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Crown, Heart, Users, Info } from 'lucide-react';
 import CosmicBackground from '../components/CosmicBackground';
+import FamilyMemberSelector from '../components/FamilyMemberSelector';
 import { useAuth } from '../contexts/AuthContext';
 import { DATA } from '../data/data';
 import { reduceToSingleDigit, getText } from '../utils/helpers';
@@ -13,8 +14,10 @@ const CompatibilityPage = () => {
 
   const [person1Name, setPerson1Name] = useState("");
   const [person1DOB, setPerson1DOB] = useState("");
+  const [selectedPerson1Id, setSelectedPerson1Id] = useState(null);
   const [person2Name, setPerson2Name] = useState("");
   const [person2DOB, setPerson2DOB] = useState("");
+  const [selectedPerson2Id, setSelectedPerson2Id] = useState(null);
   const [compatibilityReport, setCompatibilityReport] = useState(null);
   const [error, setError] = useState("");
 
@@ -24,6 +27,24 @@ const CompatibilityPage = () => {
 
   const handleBackToHome = () => {
     navigate('/');
+  };
+
+  const handlePerson1FamilyMemberSelect = (memberId) => {
+    setSelectedPerson1Id(memberId);
+  };
+
+  const handlePerson1DetailsChange = (details) => {
+    setPerson1Name(details.name);
+    setPerson1DOB(details.dob.replace(/-/g, ''));
+  };
+
+  const handlePerson2FamilyMemberSelect = (memberId) => {
+    setSelectedPerson2Id(memberId);
+  };
+
+  const handlePerson2DetailsChange = (details) => {
+    setPerson2Name(details.name);
+    setPerson2DOB(details.dob.replace(/-/g, ''));
   };
 
   const calculateDestinyNumber = (dob) => {
@@ -102,8 +123,8 @@ const CompatibilityPage = () => {
 
   const handleAnalyzeCompatibility = (e) => {
     e.preventDefault();
-    if (!person1Name || !person1DOB || !person2Name || !person2DOB) {
-      setError("Please fill in all fields for both people.");
+    if (!selectedPerson1Id || !selectedPerson2Id || !person1Name || !person1DOB || !person2Name || !person2DOB) {
+      setError("Please select two different family members first.");
       setCompatibilityReport(null);
       return;
     }
@@ -212,84 +233,46 @@ const CompatibilityPage = () => {
                 Enter Details for Both People
               </h2>
               <form onSubmit={handleAnalyzeCompatibility} className="space-y-6">
-                <div className="grid md:grid-cols-2 gap-8">
-                  {/* Person 1 */}
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-yellow-300 flex items-center gap-2">
-                      <Users className="w-5 h-5" />
-                      First Person
-                    </h3>
+                {/* Family Member Selectors - Required */}
+                <div className="p-4 bg-gradient-to-r from-yellow-500/10 to-amber-500/10 border border-yellow-400/30 rounded-lg">
+                  <p className="text-sm text-yellow-300 mb-4 font-semibold">Select Two Different Family Members to Check Compatibility:</p>
+                  <div className="grid md:grid-cols-2 gap-4">
                     <div>
-                      <label htmlFor="person1Name" className="block text-sm font-medium text-yellow-500 mb-2">
-                        Full Name
-                      </label>
-                      <input
-                        type="text"
-                        id="person1Name"
-                        value={person1Name}
-                        onChange={e => setPerson1Name(e.target.value)}
-                        className="w-full px-4 py-3 bg-gray-700 border-gray-600 rounded-lg focus:ring-2 focus:ring-yellow-500 text-white"
-                        placeholder="Enter full name"
+                      <p className="text-xs text-yellow-300 mb-2">Person 1:</p>
+                      <FamilyMemberSelector
+                        selectedMemberId={selectedPerson1Id}
+                        onMemberSelect={handlePerson1FamilyMemberSelect}
+                        onDetailsChange={handlePerson1DetailsChange}
+                        label="Select First Person"
+                        excludeMemberId={selectedPerson2Id}
                       />
                     </div>
                     <div>
-                      <label htmlFor="person1DOB" className="block text-sm font-medium text-yellow-500 mb-2">
-                        Date of Birth (DDMMYYYY)
-                      </label>
-                      <input
-                        type="text"
-                        id="person1DOB"
-                        value={person1DOB}
-                        onChange={e => setPerson1DOB(e.target.value)}
-                        className="w-full px-4 py-3 bg-gray-700 border-gray-600 rounded-lg focus:ring-2 focus:ring-yellow-500 text-white"
-                        placeholder="e.g., 15011990"
-                        maxLength="8"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Person 2 */}
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-yellow-300 flex items-center gap-2">
-                      <Users className="w-5 h-5" />
-                      Second Person
-                    </h3>
-                    <div>
-                      <label htmlFor="person2Name" className="block text-sm font-medium text-yellow-500 mb-2">
-                        Full Name
-                      </label>
-                      <input
-                        type="text"
-                        id="person2Name"
-                        value={person2Name}
-                        onChange={e => setPerson2Name(e.target.value)}
-                        className="w-full px-4 py-3 bg-gray-700 border-gray-600 rounded-lg focus:ring-2 focus:ring-yellow-500 text-white"
-                        placeholder="Enter full name"
-                      />
-                    </div>
-                    <div>
-                      <label htmlFor="person2DOB" className="block text-sm font-medium text-yellow-500 mb-2">
-                        Date of Birth (DDMMYYYY)
-                      </label>
-                      <input
-                        type="text"
-                        id="person2DOB"
-                        value={person2DOB}
-                        onChange={e => setPerson2DOB(e.target.value)}
-                        className="w-full px-4 py-3 bg-gray-700 border-gray-600 rounded-lg focus:ring-2 focus:ring-yellow-500 text-white"
-                        placeholder="e.g., 20051992"
-                        maxLength="8"
+                      <p className="text-xs text-yellow-300 mb-2">Person 2:</p>
+                      <FamilyMemberSelector
+                        selectedMemberId={selectedPerson2Id}
+                        onMemberSelect={handlePerson2FamilyMemberSelect}
+                        onDetailsChange={handlePerson2DetailsChange}
+                        label="Select Second Person"
+                        excludeMemberId={selectedPerson1Id}
                       />
                     </div>
                   </div>
                 </div>
-                <button
-                  type="submit"
-                  className="w-full bg-yellow-500 text-indigo-900 font-bold px-8 py-3 rounded-lg hover:bg-yellow-600 transition duration-200 shadow-lg flex items-center justify-center gap-2"
-                >
-                  <Heart className="w-5 h-5" />
-                  Analyze Compatibility
-                </button>
+
+                {!selectedPerson1Id || !selectedPerson2Id ? (
+                  <div className="p-4 bg-amber-500/10 border border-amber-500/30 rounded-lg text-center text-amber-300 text-sm">
+                    Please select two different family members from above to check their compatibility.
+                  </div>
+                ) : (
+                  <button
+                    type="submit"
+                    className="w-full bg-yellow-500 text-indigo-900 font-bold px-8 py-3 rounded-lg hover:bg-yellow-600 transition duration-200 shadow-lg flex items-center justify-center gap-2"
+                  >
+                    <Heart className="w-5 h-5" />
+                    Analyze Compatibility
+                  </button>
+                )}
                 {error && <p className="text-center text-red-400 mt-4">{error}</p>}
               </form>
             </motion.div>

@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { combinationInsights, DATA } from './data/data';
 import { calculateNumerology, dashaCalculator } from './utils/calculators';
 import { useAuth } from './contexts/AuthContext';
+import { useFamilyMembers } from './hooks/useFamilyMembers';
 
 // --- UI Components ---
 import Card from './components/Card';
@@ -12,7 +13,8 @@ import SectionTitle from './components/SectionTitle';
 import StaticVedicKundli from './components/StaticVedicKundli';
 import NlgSummaryComponent from './components/NlgSummaryComponent';
 import CosmicBackground from './components/CosmicBackground';
-import { ArrowLeft } from 'lucide-react';
+import FamilyMemberSelector from './components/FamilyMemberSelector';
+import { ArrowLeft, ChevronDown } from 'lucide-react';
 
 // --- Main Tabs (Imported from sub-folders) ---
 import WelcomeTab from './components/tabs/WelcomeTab';
@@ -31,17 +33,52 @@ const PlaceholderTab = ({ name }) => (
 export default function KarmAnkApp() {
     const { user, signOut } = useAuth();
     const navigate = useNavigate();
+    const { members, loading: membersLoading, getFamilyMembersData } = useFamilyMembers();
     const [userData, setUserData] = useState({ dob: '', name: '', gender: 'Male' });
+    const [selectedFamilyMemberId, setSelectedFamilyMemberId] = useState(null);
     const [report, setReport] = useState(null);
     const [dashaReport, setDashaReport] = useState(null);
     const [activeTab, setActiveTab] = useState('Welcome');
     const [formError, setFormError] = useState('');
+    const [memberDropdownOpen, setMemberDropdownOpen] = useState(false);
 
     // Language state with localStorage persistence
     const [language, setLanguage] = useState(() => {
         const saved = localStorage.getItem('karmank-numerology-language');
         return saved || 'en';
     });
+
+    // Fetch family members and auto-select first one
+    useEffect(() => {
+        const loadMembers = async () => {
+            const result = await getFamilyMembersData();
+            if (result.members && result.members.length > 0) {
+                const firstMember = result.members[0];
+                setSelectedFamilyMemberId(firstMember.id);
+                setUserData({
+                    name: firstMember.name,
+                    dob: firstMember.date_of_birth,
+                    gender: firstMember.gender
+                });
+                // Auto-generate report for first family member
+                try {
+                    const mainReport = calculateNumerology(firstMember.date_of_birth);
+                    if (mainReport) {
+                        setReport({ ...mainReport, name: firstMember.name, dob: new Date(firstMember.date_of_birth + 'T00:00:00') });
+                        const maha = dashaCalculator.calculateMahaDasha(mainReport.dob, mainReport.basicNumber);
+                        const yearly = dashaCalculator.calculateYearlyDasha(mainReport.dob, mainReport.basicNumber);
+                        const monthly = dashaCalculator.calculateMonthlyDasha(yearly);
+                        const daily = dashaCalculator.calculateDailyDasha(monthly);
+                        setDashaReport({ mahaDashaTimeline: maha, yearlyDashaTimeline: yearly, monthlyDashaTimeline: monthly, dailyDashaTimeline: daily });
+                        setActiveTab('Welcome');
+                    }
+                } catch (error) {
+                    console.error('Error generating report for first member:', error);
+                }
+            }
+        };
+        loadMembers();
+    }, []);
 
     // Persist language preference
     useEffect(() => {
@@ -55,11 +92,23 @@ export default function KarmAnkApp() {
     const handleBackToHome = () => {
         navigate('/');
     };
-    
+
+    const handleFamilyMemberSelect = (memberId) => {
+        setSelectedFamilyMemberId(memberId);
+    };
+
+    const handleFamilyMemberDetailsChange = (details) => {
+        setUserData({
+            name: details.name,
+            dob: details.dob,
+            gender: details.gender
+        });
+    };
+
     const handleGenerate = (e) => {
         if (e) e.preventDefault();
-        if (!userData.dob || !userData.name) {
-            setFormError("Please enter a name and date of birth.");
+        if (!selectedFamilyMemberId || !userData.dob || !userData.name) {
+            setFormError("Please select a family member first.");
             return;
         }
         setFormError('');
@@ -130,43 +179,8 @@ export default function KarmAnkApp() {
         <CosmicBackground density={140} useVideo={true}>
             <div className="min-h-screen relative px-4 md:px-6 py-6">
                 <div className="max-w-5xl mx-auto relative z-10">
-                    {/* Back Button and Language Selector */}
+                    {/* Top Navigation - Back Button on Left, Controls on Right */}
                     <div className="flex justify-between items-center mb-6">
-                        {/* Language Selector */}
-                        <div className="flex gap-2">
-                            <button
-                                onClick={() => setLanguage('en')}
-                                className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all duration-200 ${
-                                    language === 'en'
-                                        ? 'bg-gradient-to-r from-cyan-600/30 to-purple-600/30 border border-cyan-400 text-cyan-300 shadow-lg shadow-cyan-500/20'
-                                        : 'text-white/60 hover:text-white bg-white/5 hover:bg-white/10 border border-transparent hover:border-white/20'
-                                }`}
-                            >
-                                EN
-                            </button>
-                            <button
-                                onClick={() => setLanguage('hi')}
-                                className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all duration-200 ${
-                                    language === 'hi'
-                                        ? 'bg-gradient-to-r from-cyan-600/30 to-purple-600/30 border border-cyan-400 text-cyan-300 shadow-lg shadow-cyan-500/20'
-                                        : 'text-white/60 hover:text-white bg-white/5 hover:bg-white/10 border border-transparent hover:border-white/20'
-                                }`}
-                            >
-                                HI
-                            </button>
-                            <button
-                                onClick={() => setLanguage('en-hi')}
-                                className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all duration-200 ${
-                                    language === 'en-hi'
-                                        ? 'bg-gradient-to-r from-cyan-600/30 to-purple-600/30 border border-cyan-400 text-cyan-300 shadow-lg shadow-cyan-500/20'
-                                        : 'text-white/60 hover:text-white bg-white/5 hover:bg-white/10 border border-transparent hover:border-white/20'
-                                }`}
-                            >
-                                EN-HI
-                            </button>
-                        </div>
-
-                        {/* Back Button */}
                         <button
                             onClick={handleBackToHome}
                             className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white border border-white/30 px-4 py-2 rounded-md text-sm font-medium transition duration-200"
@@ -174,6 +188,88 @@ export default function KarmAnkApp() {
                             <ArrowLeft className="h-4 w-4" />
                             Back
                         </button>
+
+                        <div className="flex items-center gap-4">
+                            {/* Language Selector */}
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={() => setLanguage('en')}
+                                    className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all duration-200 ${
+                                        language === 'en'
+                                            ? 'bg-gradient-to-r from-cyan-600/30 to-purple-600/30 border border-cyan-400 text-cyan-300 shadow-lg shadow-cyan-500/20'
+                                            : 'text-white/60 hover:text-white bg-white/5 hover:bg-white/10 border border-transparent hover:border-white/20'
+                                    }`}
+                                >
+                                    EN
+                                </button>
+                                <button
+                                    onClick={() => setLanguage('hi')}
+                                    className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all duration-200 ${
+                                        language === 'hi'
+                                            ? 'bg-gradient-to-r from-cyan-600/30 to-purple-600/30 border border-cyan-400 text-cyan-300 shadow-lg shadow-cyan-500/20'
+                                            : 'text-white/60 hover:text-white bg-white/5 hover:bg-white/10 border border-transparent hover:border-white/20'
+                                    }`}
+                                >
+                                    HI
+                                </button>
+                                <button
+                                    onClick={() => setLanguage('en-hi')}
+                                    className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all duration-200 ${
+                                        language === 'en-hi'
+                                            ? 'bg-gradient-to-r from-cyan-600/30 to-purple-600/30 border border-cyan-400 text-cyan-300 shadow-lg shadow-cyan-500/20'
+                                            : 'text-white/60 hover:text-white bg-white/5 hover:bg-white/10 border border-transparent hover:border-white/20'
+                                    }`}
+                                >
+                                    EN-HI
+                                </button>
+                            </div>
+
+                            {/* Member Selector Dropdown */}
+                            <div className="relative">
+                                <button
+                                    onClick={() => setMemberDropdownOpen(!memberDropdownOpen)}
+                                    className="flex items-center gap-2 px-4 py-2 bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-400/50 rounded-lg text-cyan-300 text-sm font-medium transition"
+                                >
+                                    {selectedFamilyMemberId && members.find(m => m.id === selectedFamilyMemberId)?.name || 'Select Member'}
+                                    <ChevronDown className="h-4 w-4" />
+                                </button>
+                                {memberDropdownOpen && (
+                                    <div className="absolute top-full right-0 mt-2 bg-gray-900 border border-cyan-400/50 rounded-lg shadow-lg z-50 min-w-64">
+                                        {members.map(member => (
+                                            <button
+                                                key={member.id}
+                                                onClick={() => {
+                                                    setSelectedFamilyMemberId(member.id);
+                                                    setUserData({
+                                                        name: member.name,
+                                                        dob: member.date_of_birth,
+                                                        gender: member.gender
+                                                    });
+                                                    setMemberDropdownOpen(false);
+                                                    // Auto-generate report when member is selected
+                                                    const mainReport = calculateNumerology(member.date_of_birth);
+                                                    if (mainReport) {
+                                                        setReport({ ...mainReport, name: member.name, dob: new Date(member.date_of_birth + 'T00:00:00') });
+                                                        const maha = dashaCalculator.calculateMahaDasha(mainReport.dob, mainReport.basicNumber);
+                                                        const yearly = dashaCalculator.calculateYearlyDasha(mainReport.dob, mainReport.basicNumber);
+                                                        const monthly = dashaCalculator.calculateMonthlyDasha(yearly);
+                                                        const daily = dashaCalculator.calculateDailyDasha(monthly);
+                                                        setDashaReport({ mahaDashaTimeline: maha, yearlyDashaTimeline: yearly, monthlyDashaTimeline: monthly, dailyDashaTimeline: daily });
+                                                        setActiveTab('Welcome');
+                                                    }
+                                                }}
+                                                className={`w-full text-left px-4 py-3 hover:bg-cyan-400/10 transition ${
+                                                    selectedFamilyMemberId === member.id ? 'bg-cyan-400/20 border-l-2 border-l-cyan-400' : ''
+                                                }`}
+                                            >
+                                                <div className="font-semibold text-white">{member.name}</div>
+                                                <div className="text-xs text-white/60">{member.gender} • DOB: {new Date(member.date_of_birth).toLocaleDateString()}</div>
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
                     </div>
 
                     {/* Futuristic Gate Header */}
@@ -214,56 +310,12 @@ export default function KarmAnkApp() {
                         /* Introduction Page */
                         <div className="max-w-2xl mx-auto">
                             <div className="bg-gray-900/60 backdrop-blur-md p-8 rounded-xl border border-cyan-500/20 shadow-2xl">
-                                <h2 className="text-2xl font-bold text-center text-cyan-300 mb-6">
-                                    Enter Your Details
-                                </h2>
+                                <h3 className="text-lg font-semibold text-center text-cyan-300 mb-4">
+                                    {userData.name || 'Select a member to begin'}
+                                </h3>
 
-                                <div className="space-y-6">
-                                    <div className="group relative">
-                                        <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-600 to-purple-600 rounded-lg blur opacity-20 group-hover:opacity-60 transition duration-1000 group-hover:duration-200"></div>
-                                        <input
-                                            type="text"
-                                            value={userData.name}
-                                            onChange={(e) => setUserData({ ...userData, name: e.target.value })}
-                                            placeholder="YOUR FULL NAME"
-                                            className="relative w-full px-6 py-5 bg-gray-950 border border-gray-800 rounded-lg focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/50 text-gray-300 text-center tracking-widest uppercase outline-none placeholder-gray-600"
-                                        />
-                                    </div>
-
-                                    <div className="group relative">
-                                        <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-600 to-purple-600 rounded-lg blur opacity-20 group-hover:opacity-60 transition duration-1000 group-hover:duration-200"></div>
-                                        <input
-                                            type="date"
-                                            value={userData.dob}
-                                            onChange={(e) => setUserData({ ...userData, dob: e.target.value })}
-                                            className="relative w-full px-6 py-5 bg-gray-950 border border-gray-800 rounded-lg focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/50 text-gray-300 text-center tracking-widest uppercase outline-none"
-                                            style={{ colorScheme: 'dark' }}
-                                        />
-                                    </div>
-
-                                    <div className="group relative">
-                                        <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-600 to-purple-600 rounded-lg blur opacity-20 group-hover:opacity-60 transition duration-1000 group-hover:duration-200"></div>
-                                        <select
-                                            value={userData.gender}
-                                            onChange={(e) => setUserData({ ...userData, gender: e.target.value })}
-                                            className="relative w-full px-6 py-5 bg-gray-950 border border-gray-800 rounded-lg focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/50 text-gray-300 text-center tracking-widest uppercase outline-none"
-                                        >
-                                            <option className="bg-gray-950 text-gray-300">Male</option>
-                                            <option className="bg-gray-950 text-gray-300">Female</option>
-                                            <option className="bg-gray-950 text-gray-300">Other</option>
-                                        </select>
-                                    </div>
-
-                                    <button
-                                        onClick={handleGenerate}
-                                        className="w-full py-4 bg-gradient-to-r from-cyan-600 to-purple-600 hover:from-cyan-500 hover:to-purple-500 text-white font-bold rounded-lg transition-all duration-200 transform hover:scale-[1.02] shadow-lg shadow-cyan-500/20"
-                                    >
-                                        INITIATE ANALYSIS
-                                    </button>
-
-                                    {formError && (
-                                        <p className="text-center text-red-400 text-sm">{formError}</p>
-                                    )}
+                                <div className="text-center text-white/70 text-sm">
+                                    Loading your analysis...
                                 </div>
                             </div>
                         </div>

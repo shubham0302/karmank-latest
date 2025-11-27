@@ -4,18 +4,21 @@ import { AuthProvider } from './contexts/AuthContext';
 import LoginPage from './components/auth/LoginPage';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import HomePage from './pages/HomePage';
+import OnboardingPage from './pages/OnboardingPage';
 import KarmAnkApp from './karmank';
 import NameAnalysisPage from './pages/NameAnalysisPage';
 import CosmicCompatibilityPage from './pages/CosmicCompatibilityPage';
 import GitaGyanPage from './pages/GitaGyanPage';
 import AssetVibrationPage from './pages/AssetVibrationPage';
 import CareerPathPage from './pages/CareerPathPage';
+import FamilyMembersPage from './pages/FamilyMembersPage';
 import TermsPage from './pages/TermsPage';
 import PrivacyPage from './pages/PrivacyPage';
 import RefundPage from './pages/RefundPage';
 import DisclaimerPage from './pages/DisclaimerPage';
 import AboutPage from './pages/AboutPage';
 import FeedbackPage from './pages/FeedbackPage';
+import ProfilePage from './pages/ProfilePage';
 
 const App = () => (
     <AuthProvider>
@@ -31,6 +34,14 @@ const App = () => (
                 <Route path="/disclaimer" element={<DisclaimerPage />} />
 
                 {/* Protected Routes */}
+                <Route
+                    path="/onboarding"
+                    element={
+                        <ProtectedRoute>
+                            <OnboardingPage />
+                        </ProtectedRoute>
+                    }
+                />
                 <Route
                     path="/"
                     element={
@@ -84,6 +95,22 @@ const App = () => (
                     element={
                         <ProtectedRoute>
                             <CareerPathPage />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/family-members"
+                    element={
+                        <ProtectedRoute>
+                            <FamilyMembersPage />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/profile"
+                    element={
+                        <ProtectedRoute>
+                            <ProfilePage />
                         </ProtectedRoute>
                     }
                 />
