@@ -1,5 +1,11 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
+import {
+  getOrCreateUserProfile,
+  getUserProfile,
+  markOnboardingComplete as markOnboardingCompleteDB,
+  checkOnboardingRequired as checkOnboardingRequiredDB
+} from '../lib/database'
 
 const AuthContext = createContext({})
 
@@ -13,7 +19,43 @@ export const useAuth = () => {
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null)
+  const [userProfile, setUserProfile] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [onboardingRequired, setOnboardingRequired] = useState(false)
+
+  // Load user profile when user changes
+  useEffect(() => {
+    const loadUserProfile = async () => {
+      if (!user?.id) {
+        setUserProfile(null)
+        setOnboardingRequired(false)
+        return
+      }
+
+      try {
+        // Get or create user profile
+        const { data: profile, error } = await getOrCreateUserProfile(
+          user.id,
+          user.email
+        )
+
+        if (error) {
+          console.error('Error loading user profile:', error)
+          setUserProfile(null)
+          setOnboardingRequired(true)
+        } else {
+          setUserProfile(profile)
+          setOnboardingRequired(!profile?.onboarding_completed)
+        }
+      } catch (err) {
+        console.error('Unexpected error loading user profile:', err)
+        setUserProfile(null)
+        setOnboardingRequired(true)
+      }
+    }
+
+    loadUserProfile()
+  }, [user?.id, user?.email])
 
   useEffect(() => {
     // Check active sessions and sets the user
@@ -57,12 +99,34 @@ export const AuthProvider = ({ children }) => {
     return { error }
   }
 
+  const markOnboardingComplete = async (userId) => {
+    try {
+      const { data, error } = await markOnboardingCompleteDB(userId)
+
+      if (error) {
+        console.error('Error marking onboarding complete:', error)
+        return { success: false, error }
+      }
+
+      // Update local state
+      setUserProfile(data)
+      setOnboardingRequired(false)
+      return { success: true, data, error: null }
+    } catch (err) {
+      console.error('Unexpected error marking onboarding complete:', err)
+      return { success: false, error: err }
+    }
+  }
+
   const value = {
     user,
+    userProfile,
     loading,
+    onboardingRequired,
     signInWithOtp,
     verifyOtp,
     signOut,
+    markOnboardingComplete,
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

@@ -169,10 +169,10 @@ export default function GitaGyanPage() {
     <CosmicBackground density={160} useVideo={true}>
       <div className="min-h-screen relative px-4 md:px-6 py-6 pb-20">
         <div className="relative z-10 max-w-7xl mx-auto">
-          {/* Back Button */}
-          <div className="flex justify-end items-center mb-6">
+          {/* Back Button on Left */}
+          <div className="flex justify-start items-center mb-6">
             <motion.button
-              initial={{ opacity: 0, x: 20 }}
+              initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6 }}
               onClick={() => navigate("/")}

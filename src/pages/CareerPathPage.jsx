@@ -2,7 +2,10 @@ import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import CosmicBackground from '../components/CosmicBackground';
-import { Crown, ArrowLeft, ArrowRight, GraduationCap, Sparkles, Brain, Target, TrendingUp, Info, X, Clock } from 'lucide-react';
+import FamilyMemberSelector from '../components/FamilyMemberSelector';
+import { useFamilyMembers } from '../hooks/useFamilyMembers';
+import { useAuth } from '../contexts/AuthContext';
+import { Crown, ArrowLeft, ArrowRight, GraduationCap, Sparkles, Brain, Target, TrendingUp, Info, X, Clock, ChevronDown } from 'lucide-react';
 import {
   BIG_FIVE_QUESTIONS,
   RIASEC_QUESTIONS,
@@ -109,9 +112,13 @@ function BarChart({ data, options }) {
 
 export default function CareerPathPage() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const { members, getFamilyMembersData } = useFamilyMembers();
 
   // Core state
   const [currentScreen, setCurrentScreen] = useState(0);
+  const [selectedFamilyMemberId, setSelectedFamilyMemberId] = useState(null);
+  const [memberDropdownOpen, setMemberDropdownOpen] = useState(false);
   const [userData, setUserData] = useState({
     name: '',
     dob: '',
@@ -134,6 +141,36 @@ export default function CareerPathPage() {
   const [riasecScores, setRiasecScores] = useState(null);
   const [aptitudeScores, setAptitudeScores] = useState(null);
   const [numerologyReport, setNumerologyReport] = useState(null);
+
+  // Fetch family members and auto-select first one
+  useEffect(() => {
+    const loadMembers = async () => {
+      const result = await getFamilyMembersData();
+      if (result.members && result.members.length > 0) {
+        const firstMember = result.members[0];
+        setSelectedFamilyMemberId(firstMember.id);
+        const memberData = {
+          name: firstMember.name,
+          dob: firstMember.date_of_birth,
+          class: '',
+          schoolName: '',
+          city: '',
+          state: '',
+          email: '',
+          phone: ''
+        };
+        setUserData(memberData);
+        // Auto-generate numerology report for first family member
+        try {
+          const numReport = calculateNumerology(firstMember.date_of_birth);
+          setNumerologyReport(numReport);
+        } catch (error) {
+          console.error('Error generating numerology report for first member:', error);
+        }
+      }
+    };
+    loadMembers();
+  }, []);
 
   // ============================================================
   // SCREEN CONFIGURATIONS
@@ -175,6 +212,18 @@ export default function CareerPathPage() {
     } else {
       navigate('/');
     }
+  };
+
+  const handleFamilyMemberSelect = (memberId) => {
+    setSelectedFamilyMemberId(memberId);
+  };
+
+  const handleFamilyMemberDetailsChange = (details) => {
+    setUserData(prev => ({
+      ...prev,
+      name: details.name,
+      dob: details.dob
+    }));
   };
 
   const handleWelcomeSubmit = (formData) => {
@@ -317,7 +366,14 @@ export default function CareerPathPage() {
   const renderScreen = () => {
     switch (currentScreenName) {
       case 'welcome':
-        return <WelcomeScreen onSubmit={handleWelcomeSubmit} />;
+        return (
+          <WelcomeScreen
+            onSubmit={handleWelcomeSubmit}
+            selectedFamilyMemberId={selectedFamilyMemberId}
+            onFamilyMemberSelect={handleFamilyMemberSelect}
+            onFamilyMemberDetailsChange={handleFamilyMemberDetailsChange}
+          />
+        );
 
       case 'personality':
         return (
@@ -396,19 +452,65 @@ export default function CareerPathPage() {
     <CosmicBackground density={140} useVideo={true}>
       <div className="min-h-screen relative px-4 md:px-6 py-6 overflow-hidden">
         <div className="relative z-10 max-w-6xl mx-auto">
-          {/* Back Button */}
-          <div className="flex justify-end items-center mb-6">
-            <motion.button
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6 }}
+          {/* Top Navigation - Back Button on Left, Controls on Right */}
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6 }}
+            className="flex justify-between items-center mb-6"
+          >
+            <button
               onClick={handleBack}
               className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white border border-white/30 px-4 py-2 rounded-md text-sm font-medium transition duration-200"
             >
               <ArrowLeft className="h-4 w-4" />
               Back
-            </motion.button>
-          </div>
+            </button>
+
+            <div className="flex items-center gap-4">
+              {/* Member Selector Dropdown */}
+              <div className="relative">
+                <button
+                  onClick={() => setMemberDropdownOpen(!memberDropdownOpen)}
+                  className="flex items-center gap-2 px-4 py-2 bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-400/50 rounded-lg text-cyan-300 text-sm font-medium transition"
+                >
+                  {selectedFamilyMemberId && members.find(m => m.id === selectedFamilyMemberId)?.name || 'Select Member'}
+                  <ChevronDown className="h-4 w-4" />
+                </button>
+                {memberDropdownOpen && (
+                  <div className="absolute top-full right-0 mt-2 bg-gray-900 border border-cyan-400/50 rounded-lg shadow-lg z-50 min-w-64">
+                    {members.map(member => (
+                      <button
+                        key={member.id}
+                        onClick={() => {
+                          setSelectedFamilyMemberId(member.id);
+                          setUserData(prev => ({
+                            ...prev,
+                            name: member.name,
+                            dob: member.date_of_birth
+                          }));
+                          setMemberDropdownOpen(false);
+                          // Auto-generate numerology report when member is selected
+                          try {
+                            const numReport = calculateNumerology(member.date_of_birth);
+                            setNumerologyReport(numReport);
+                          } catch (error) {
+                            console.error('Error generating numerology report:', error);
+                          }
+                        }}
+                        className={`w-full text-left px-4 py-3 hover:bg-cyan-400/10 transition ${
+                          selectedFamilyMemberId === member.id ? 'bg-cyan-400/20 border-l-2 border-l-cyan-400' : ''
+                        }`}
+                      >
+                        <div className="font-semibold text-white">{member.name}</div>
+                        <div className="text-xs text-white/60">{member.gender} • DOB: {new Date(member.date_of_birth).toLocaleDateString()}</div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </motion.div>
 
           {/* Futuristic Gate Header */}
           <div className="relative w-full h-40 mb-8 overflow-hidden rounded-xl border border-cyan-500/20">
@@ -487,7 +589,7 @@ export default function CareerPathPage() {
 // WELCOME SCREEN (Screen 0)
 // ============================================================
 
-function WelcomeScreen({ onSubmit }) {
+function WelcomeScreen({ onSubmit, selectedFamilyMemberId, onFamilyMemberSelect, onFamilyMemberDetailsChange }) {
   const [formData, setFormData] = useState({
     name: '',
     dob: '',
@@ -502,9 +604,24 @@ function WelcomeScreen({ onSubmit }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (formData.name && formData.dob && formData.class && formData.schoolName && formData.city && formData.email && formData.phone) {
-      onSubmit(formData);
+    if (!selectedFamilyMemberId || !formData.name || !formData.dob || !formData.class || !formData.schoolName || !formData.city || !formData.email || !formData.phone) {
+      alert('Please select a family member and fill in all fields');
+      return;
     }
+    onSubmit(formData);
+  };
+
+  const handleFamilyMemberSelect = (memberId) => {
+    onFamilyMemberSelect(memberId);
+  };
+
+  const handleFamilyMemberDetailsChange = (details) => {
+    setFormData(prev => ({
+      ...prev,
+      name: details.name,
+      dob: details.dob
+    }));
+    onFamilyMemberDetailsChange(details);
   };
 
   const indianStates = [
@@ -574,101 +691,96 @@ function WelcomeScreen({ onSubmit }) {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="group relative">
-            <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-600 to-purple-600 rounded-lg blur opacity-20 group-hover:opacity-60 transition duration-1000 group-hover:duration-200"></div>
-            <input
-              type="text"
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              placeholder="YOUR FULL NAME"
-              className="relative w-full px-6 py-5 bg-gray-950 border border-gray-800 rounded-lg focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/50 text-gray-300 text-center tracking-widest uppercase outline-none placeholder-gray-600"
-              required
+          {/* Family Member Selector - Required */}
+          <div className="p-4 bg-gradient-to-r from-cyan-500/10 to-blue-500/10 border border-cyan-400/30 rounded-lg">
+            <p className="text-sm text-cyan-300 mb-3 font-semibold">Select a Family Member to Begin Career Guidance:</p>
+            <FamilyMemberSelector
+              selectedMemberId={selectedFamilyMemberId}
+              onMemberSelect={handleFamilyMemberSelect}
+              onDetailsChange={handleFamilyMemberDetailsChange}
+              label="Select Family Member"
             />
           </div>
 
-          <div className="group relative">
-            <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-600 to-purple-600 rounded-lg blur opacity-20 group-hover:opacity-60 transition duration-1000 group-hover:duration-200"></div>
-            <input
-              type="date"
-              value={formData.dob}
-              onChange={(e) => setFormData({ ...formData, dob: e.target.value })}
-              className="relative w-full px-6 py-5 bg-gray-950 border border-gray-800 rounded-lg focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/50 text-gray-300 text-center tracking-widest uppercase outline-none"
-              style={{ colorScheme: 'dark' }}
-              required
-            />
-          </div>
+          {!selectedFamilyMemberId ? (
+            <div className="p-4 bg-amber-500/10 border border-amber-500/30 rounded-lg text-center text-amber-300 text-sm">
+              Please select a family member from above to proceed with career guidance.
+            </div>
+          ) : (
+            <div className="space-y-6">
+              <div className="group relative">
+                <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-600 to-purple-600 rounded-lg blur opacity-20 group-hover:opacity-60 transition duration-1000 group-hover:duration-200"></div>
+                <select
+                  value={formData.class}
+                  onChange={(e) => setFormData({ ...formData, class: e.target.value })}
+                  className="relative w-full px-6 py-5 bg-gray-950 border border-gray-800 rounded-lg focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/50 text-gray-300 text-center tracking-widest uppercase outline-none"
+                  required
+                >
+                  <option value="" className="bg-gray-900">SELECT YOUR CLASS</option>
+                  <option value="9" className="bg-gray-900">CLASS 9</option>
+                  <option value="10" className="bg-gray-900">CLASS 10</option>
+                  <option value="11" className="bg-gray-900">CLASS 11</option>
+                  <option value="12" className="bg-gray-900">CLASS 12</option>
+                </select>
+              </div>
 
-          <div className="group relative">
-            <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-600 to-purple-600 rounded-lg blur opacity-20 group-hover:opacity-60 transition duration-1000 group-hover:duration-200"></div>
-            <select
-              value={formData.class}
-              onChange={(e) => setFormData({ ...formData, class: e.target.value })}
-              className="relative w-full px-6 py-5 bg-gray-950 border border-gray-800 rounded-lg focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/50 text-gray-300 text-center tracking-widest uppercase outline-none"
-              required
-            >
-              <option value="" className="bg-gray-900">SELECT YOUR CLASS</option>
-              <option value="9" className="bg-gray-900">CLASS 9</option>
-              <option value="10" className="bg-gray-900">CLASS 10</option>
-              <option value="11" className="bg-gray-900">CLASS 11</option>
-              <option value="12" className="bg-gray-900">CLASS 12</option>
-            </select>
-          </div>
+              <div className="group relative">
+                <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-600 to-purple-600 rounded-lg blur opacity-20 group-hover:opacity-60 transition duration-1000 group-hover:duration-200"></div>
+                <input
+                  type="text"
+                  value={formData.schoolName}
+                  onChange={(e) => setFormData({ ...formData, schoolName: e.target.value })}
+                  placeholder="YOUR SCHOOL NAME"
+                  className="relative w-full px-6 py-5 bg-gray-950 border border-gray-800 rounded-lg focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/50 text-gray-300 text-center tracking-widest uppercase outline-none placeholder-gray-600"
+                  required
+                />
+              </div>
 
-          <div className="group relative">
-            <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-600 to-purple-600 rounded-lg blur opacity-20 group-hover:opacity-60 transition duration-1000 group-hover:duration-200"></div>
-            <input
-              type="text"
-              value={formData.schoolName}
-              onChange={(e) => setFormData({ ...formData, schoolName: e.target.value })}
-              placeholder="YOUR SCHOOL NAME"
-              className="relative w-full px-6 py-5 bg-gray-950 border border-gray-800 rounded-lg focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/50 text-gray-300 text-center tracking-widest uppercase outline-none placeholder-gray-600"
-              required
-            />
-          </div>
+              <div className="group relative">
+                <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-600 to-purple-600 rounded-lg blur opacity-20 group-hover:opacity-60 transition duration-1000 group-hover:duration-200"></div>
+                <input
+                  type="text"
+                  value={formData.city}
+                  onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                  placeholder="YOUR CITY"
+                  className="relative w-full px-6 py-5 bg-gray-950 border border-gray-800 rounded-lg focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/50 text-gray-300 text-center tracking-widest uppercase outline-none placeholder-gray-600"
+                  required
+                />
+              </div>
 
-          <div className="group relative">
-            <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-600 to-purple-600 rounded-lg blur opacity-20 group-hover:opacity-60 transition duration-1000 group-hover:duration-200"></div>
-            <input
-              type="text"
-              value={formData.city}
-              onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-              placeholder="YOUR CITY"
-              className="relative w-full px-6 py-5 bg-gray-950 border border-gray-800 rounded-lg focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/50 text-gray-300 text-center tracking-widest uppercase outline-none placeholder-gray-600"
-              required
-            />
-          </div>
+              <div className="group relative">
+                <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-600 to-purple-600 rounded-lg blur opacity-20 group-hover:opacity-60 transition duration-1000 group-hover:duration-200"></div>
+                <input
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  placeholder="YOUR EMAIL ADDRESS"
+                  className="relative w-full px-6 py-5 bg-gray-950 border border-gray-800 rounded-lg focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/50 text-gray-300 text-center tracking-widest uppercase outline-none placeholder-gray-600"
+                  required
+                />
+              </div>
 
-          <div className="group relative">
-            <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-600 to-purple-600 rounded-lg blur opacity-20 group-hover:opacity-60 transition duration-1000 group-hover:duration-200"></div>
-            <input
-              type="email"
-              value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              placeholder="YOUR EMAIL ADDRESS"
-              className="relative w-full px-6 py-5 bg-gray-950 border border-gray-800 rounded-lg focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/50 text-gray-300 text-center tracking-widest uppercase outline-none placeholder-gray-600"
-              required
-            />
-          </div>
+              <div className="group relative">
+                <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-600 to-purple-600 rounded-lg blur opacity-20 group-hover:opacity-60 transition duration-1000 group-hover:duration-200"></div>
+                <input
+                  type="tel"
+                  value={formData.phone}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  placeholder="YOUR PHONE NUMBER"
+                  pattern="[0-9]{10}"
+                  className="relative w-full px-6 py-5 bg-gray-950 border border-gray-800 rounded-lg focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/50 text-gray-300 text-center tracking-widest uppercase outline-none placeholder-gray-600"
+                  required
+                />
+              </div>
 
-          <div className="group relative">
-            <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-600 to-purple-600 rounded-lg blur opacity-20 group-hover:opacity-60 transition duration-1000 group-hover:duration-200"></div>
-            <input
-              type="tel"
-              value={formData.phone}
-              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-              placeholder="YOUR PHONE NUMBER"
-              pattern="[0-9]{10}"
-              className="relative w-full px-6 py-5 bg-gray-950 border border-gray-800 rounded-lg focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/50 text-gray-300 text-center tracking-widest uppercase outline-none placeholder-gray-600"
-              required
-            />
-          </div>
-
-          <button
-            type="submit"
-            className="w-full py-4 bg-gradient-to-r from-cyan-600 to-purple-600 hover:from-cyan-500 hover:to-purple-500 text-white font-bold rounded-lg transition-all duration-200 transform hover:scale-[1.02] shadow-lg shadow-cyan-500/20"
-          >
-            INITIATE ANALYSIS
-          </button>
+              <button
+                type="submit"
+                className="w-full py-4 bg-gradient-to-r from-cyan-600 to-purple-600 hover:from-cyan-500 hover:to-purple-500 text-white font-bold rounded-lg transition-all duration-200 transform hover:scale-[1.02] shadow-lg shadow-cyan-500/20"
+              >
+                INITIATE ANALYSIS
+              </button>
+            </div>
+          )}
         </form>
 
         <div className="mt-6 pt-6 border-t border-cyan-500/20">

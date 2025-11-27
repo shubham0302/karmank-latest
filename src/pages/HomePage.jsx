@@ -3,15 +3,13 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import CosmicBackground from "../components/CosmicBackground";
 import HoloDestinyCard from "../components/ui/HoloDestinyCard";
-import { useAuth } from "../contexts/AuthContext";
-import { Crown, Sparkles } from "lucide-react";
+import { Crown, Sparkles, User } from "lucide-react";
 
 export default function HomePage() {
   const navigate = useNavigate();
-  const { user, signOut } = useAuth();
 
-  const handleSignOut = async () => {
-    await signOut();
+  const handleProfileClick = () => {
+    navigate("/profile");
   };
 
   const modules = [
@@ -88,14 +86,12 @@ export default function HomePage() {
               transition={{ duration: 0.6 }}
               className="flex items-center gap-3"
             >
-              <span className="text-sm text-white/70 hidden md:block">
-                {user?.email}
-              </span>
               <button
-                onClick={handleSignOut}
-                className="bg-red-500/20 hover:bg-red-500/30 text-red-300 border border-red-500/50 px-4 py-2 rounded-md text-sm font-medium transition duration-200"
+                onClick={handleProfileClick}
+                className="p-2 rounded-full bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/50 transition duration-200"
+                title="Go to Profile"
               >
-                Sign Out
+                <User className="h-6 w-6" />
               </button>
             </motion.div>
           </div>
