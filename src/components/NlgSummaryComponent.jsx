@@ -13,28 +13,39 @@ const NlgSummaryComponent = ({ prompt, title }) => {
             setIsLoading(true);
             setError('');
             try {
-                let chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
-                const payload = { contents: chatHistory };
                 const apiKey = import.meta.env.VITE_GEMINI_API_KEY || "";
 
                 if (!apiKey) {
                     throw new Error('Gemini API key is not configured. Please add VITE_GEMINI_API_KEY to your .env file.');
                 }
 
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
-        
+                const payload = {
+                    contents: [{
+                        role: "user",
+                        parts: [{ text: prompt }]
+                    }]
+                };
+
+                const apiUrl = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash-001:generateContent?key=${apiKey}`;
+
+                console.log("Calling Gemini API with URL:", apiUrl);
+
                 const response = await fetch(apiUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
 
+                console.log("Response status:", response.status);
+                const result = await response.json();
+                console.log("API Response:", result);
+
                 if (!response.ok) {
-                    throw new Error(`API call failed with status: ${response.status}`);
+                    const errorMsg = result.error?.message || `API call failed with status: ${response.status}`;
+                    throw new Error(errorMsg);
                 }
 
-                const result = await response.json();
-                if (result.candidates && result.candidates.length > 0 && result.candidates[0].content.parts.length > 0) {
+                if (result.candidates && result.candidates.length > 0 && result.candidates[0].content?.parts?.[0]?.text) {
                     const text = result.candidates[0].content.parts[0].text;
                     setSummary(text);
                 } else {

@@ -1014,6 +1014,7 @@ export default function CosmicCompatibilityPage() {
   const [selectedP2Id, setSelectedP2Id] = useState(null);
   const [p1, setP1] = useState({ name: '', dob: '', tob: '', city: '', lat: '', lng: '', tz: '' });
   const [p2, setP2] = useState({ name: '', dob: '', tob: '', city: '', lat: '', lng: '', tz: '' });
+  const [p2InputMode, setP2InputMode] = useState('family'); // 'family' or 'manual'
 
   const handleSignOut = async () => {
     await signOut();
@@ -1052,8 +1053,24 @@ export default function CosmicCompatibilityPage() {
   };
 
   const calculate = () => {
-    if(!selectedP1Id || !selectedP2Id || !p1.dob || !p2.dob || !p1.name || !p2.name) {
-      alert("Please select two different family members first");
+    // Validate Person 1
+    if(!selectedP1Id || !p1.dob || !p1.name) {
+      alert("Please select a family member for Person 1 and ensure their details are loaded");
+      return;
+    }
+
+    // Validate Person 2 - either selected from family or manually entered
+    const hasP2FromFamily = selectedP2Id !== null;
+    const hasP2Manual = p2.name && p2.dob;
+
+    if(!hasP2FromFamily && !hasP2Manual) {
+      alert("Please either select Person 2 from your family or enter their details manually");
+      return;
+    }
+
+    // Ensure P1 and P2 are different (if both from family)
+    if(hasP2FromFamily && selectedP1Id === selectedP2Id) {
+      alert("Please select two different people");
       return;
     }
 
@@ -1205,36 +1222,103 @@ export default function CosmicCompatibilityPage() {
 
           {screen === 'input' && (
             <div className="space-y-8 animate-in fade-in zoom-in duration-500">
-              {/* Family Member Selectors - Required */}
+              {/* Person 1 - Required from Family */}
               <div className="p-4 bg-gradient-to-r from-cyan-500/10 to-blue-500/10 border border-cyan-400/30 rounded-lg">
-                <p className="text-sm text-cyan-300 mb-4 font-semibold">Select Two Different Family Members to Check Cosmic Compatibility:</p>
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-xs text-cyan-300 mb-2">Person 1:</p>
-                    <FamilyMemberSelector
-                      selectedMemberId={selectedP1Id}
-                      onMemberSelect={handleP1FamilyMemberSelect}
-                      onDetailsChange={handleP1DetailsChange}
-                      label="Select First Person"
-                      excludeMemberId={selectedP2Id}
-                    />
-                  </div>
-                  <div>
-                    <p className="text-xs text-cyan-300 mb-2">Person 2:</p>
-                    <FamilyMemberSelector
-                      selectedMemberId={selectedP2Id}
-                      onMemberSelect={handleP2FamilyMemberSelect}
-                      onDetailsChange={handleP2DetailsChange}
-                      label="Select Second Person"
-                      excludeMemberId={selectedP1Id}
-                    />
-                  </div>
-                </div>
+                <p className="text-sm text-cyan-300 mb-4 font-semibold">Person 1 (Required):</p>
+                <FamilyMemberSelector
+                  selectedMemberId={selectedP1Id}
+                  onMemberSelect={handleP1FamilyMemberSelect}
+                  onDetailsChange={handleP1DetailsChange}
+                  label="Select First Person from Family"
+                  excludeMemberId={selectedP2Id}
+                />
               </div>
 
-              {!selectedP1Id || !selectedP2Id ? (
+              {/* Person 2 - Optional, can be from family or manual */}
+              <div className="p-4 bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-400/30 rounded-lg">
+                <p className="text-sm text-purple-300 mb-4 font-semibold">Person 2 (Optional - Choose One):</p>
+
+                {/* Toggle Buttons */}
+                <div className="flex gap-2 mb-4">
+                  <button
+                    onClick={() => {
+                      setP2InputMode('family');
+                      setSelectedP2Id(null);
+                      setP2({ name: '', dob: '', tob: '', city: '', lat: '', lng: '', tz: '' });
+                    }}
+                    className={`flex-1 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                      p2InputMode === 'family'
+                        ? 'bg-purple-500/40 border border-purple-400 text-purple-200'
+                        : 'bg-white/10 border border-white/20 text-white/60 hover:bg-white/20'
+                    }`}
+                  >
+                    From Family
+                  </button>
+                  <button
+                    onClick={() => {
+                      setP2InputMode('manual');
+                      setSelectedP2Id(null);
+                    }}
+                    className={`flex-1 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                      p2InputMode === 'manual'
+                        ? 'bg-purple-500/40 border border-purple-400 text-purple-200'
+                        : 'bg-white/10 border border-white/20 text-white/60 hover:bg-white/20'
+                    }`}
+                  >
+                    Manual Entry
+                  </button>
+                </div>
+
+                {/* Family Selection Mode */}
+                {p2InputMode === 'family' && (
+                  <FamilyMemberSelector
+                    selectedMemberId={selectedP2Id}
+                    onMemberSelect={handleP2FamilyMemberSelect}
+                    onDetailsChange={handleP2DetailsChange}
+                    label="Select Second Person"
+                    excludeMemberId={selectedP1Id}
+                  />
+                )}
+
+                {/* Manual Entry Mode */}
+                {p2InputMode === 'manual' && (
+                  <div className="space-y-3">
+                    <input
+                      type="text"
+                      placeholder="Full Name"
+                      value={p2.name}
+                      onChange={(e) => setP2(prev => ({ ...prev, name: e.target.value }))}
+                      className="w-full px-4 py-2 bg-white/5 border border-white/20 rounded-lg text-white placeholder-white/40 focus:border-purple-400 focus:outline-none"
+                    />
+                    <input
+                      type="date"
+                      value={p2.dob}
+                      onChange={(e) => setP2(prev => ({ ...prev, dob: e.target.value }))}
+                      className="w-full px-4 py-2 bg-white/5 border border-white/20 rounded-lg text-white focus:border-purple-400 focus:outline-none"
+                    />
+                    <input
+                      type="time"
+                      value={p2.tob}
+                      onChange={(e) => setP2(prev => ({ ...prev, tob: e.target.value }))}
+                      className="w-full px-4 py-2 bg-white/5 border border-white/20 rounded-lg text-white focus:border-purple-400 focus:outline-none"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Birth City (optional)"
+                      value={p2.city}
+                      onChange={(e) => setP2(prev => ({ ...prev, city: e.target.value }))}
+                      className="w-full px-4 py-2 bg-white/5 border border-white/20 rounded-lg text-white placeholder-white/40 focus:border-purple-400 focus:outline-none"
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* Validation Message */}
+              {!selectedP1Id || (p2InputMode === 'family' && !selectedP2Id && !p2.name) ? (
                 <div className="p-4 bg-amber-500/10 border border-amber-500/30 rounded-lg text-center text-amber-300 text-sm">
-                  Please select two different family members from above to check their cosmic compatibility.
+                  {!selectedP1Id
+                    ? "Please select Person 1 from your family"
+                    : "Please select Person 2 from family or enter their details manually"}
                 </div>
               ) : (
                 <button
