@@ -1,14 +1,32 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import React, { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import {
-  Sparkles, MapPin, Activity, Moon, Sun, RotateCcw, Globe, Zap,
-  Heart, Brain, Dumbbell, Briefcase, Gem, ClipboardList, User,
-  Fingerprint, Wind, ArrowLeft, BookOpen, Hash, FileText
-} from 'lucide-react';
-import CosmicBackground from '../components/CosmicBackground';
-import FamilyMemberSelector from '../components/FamilyMemberSelector';
-import { useAuth } from '../contexts/AuthContext';
+  Sparkles,
+  MapPin,
+  Activity,
+  Moon,
+  Sun,
+  RotateCcw,
+  Globe,
+  Zap,
+  Heart,
+  Brain,
+  Dumbbell,
+  Briefcase,
+  Gem,
+  ClipboardList,
+  User,
+  Fingerprint,
+  Wind,
+  ArrowLeft,
+  BookOpen,
+  Hash,
+  FileText,
+} from "lucide-react";
+import CosmicBackground from "../components/CosmicBackground";
+import FamilyMemberSelector from "../components/FamilyMemberSelector";
+import { useAuth } from "../contexts/AuthContext";
 
 // ============================================================
 // COSMIC ONCE REPORT COMPONENT
@@ -19,7 +37,7 @@ import { useAuth } from '../contexts/AuthContext';
  * - Detailed PDF-exportable cosmic compatibility report
  * - Props: report (object) — transformed from main compatibility analysis
  */
-const ASSET_URL = 'KarmAnk Cosmic Compatibility System';
+const ASSET_URL = "KarmAnk Cosmic Compatibility System";
 
 function CosmicOnceReport({ report, onBack }) {
   const rootRef = useRef(null);
@@ -31,7 +49,7 @@ function CosmicOnceReport({ report, onBack }) {
     const loadScript = (src) => {
       return new Promise((resolve, reject) => {
         if (document.querySelector(`script[src="${src}"]`)) return resolve();
-        const script = document.createElement('script');
+        const script = document.createElement("script");
         script.src = src;
         script.onload = resolve;
         script.onerror = reject;
@@ -40,9 +58,15 @@ function CosmicOnceReport({ report, onBack }) {
     };
 
     Promise.all([
-      loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js'),
-      loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js')
-    ]).then(() => setLibsLoaded(true)).catch(e => console.warn("PDF libs failed to load", e));
+      loadScript(
+        "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"
+      ),
+      loadScript(
+        "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"
+      ),
+    ])
+      .then(() => setLibsLoaded(true))
+      .catch((e) => console.warn("PDF libs failed to load", e));
   }, []);
 
   if (!report) {
@@ -52,7 +76,9 @@ function CosmicOnceReport({ report, onBack }) {
           <Sparkles size={28} className="text-indigo-400" />
           <div>
             <h3 className="text-xl font-bold">Cosmic Report</h3>
-            <div className="text-sm text-slate-300">Provide a report object to render the cosmic outcome.</div>
+            <div className="text-sm text-slate-300">
+              Provide a report object to render the cosmic outcome.
+            </div>
           </div>
         </div>
       </div>
@@ -60,14 +86,33 @@ function CosmicOnceReport({ report, onBack }) {
   }
 
   const total = report.scores?.total ?? 0;
-  const confidence = Math.round((total >= 90 ? 95 : total >= 75 ? 88 : total >= 60 ? 75 : total >= 45 ? 60 : 45));
-  const title = total >= 85 ? 'A Celestial Confluence' : total >= 65 ? 'A Strong Constellation' : total >= 40 ? 'A Work-in-Progress Constellation' : 'A Transformative Challenge';
+  const confidence = Math.round(
+    total >= 90
+      ? 95
+      : total >= 75
+      ? 88
+      : total >= 60
+      ? 75
+      : total >= 45
+      ? 60
+      : 45
+  );
+  const title =
+    total >= 85
+      ? "A Celestial Confluence"
+      : total >= 65
+      ? "A Strong Constellation"
+      : total >= 40
+      ? "A Work-in-Progress Constellation"
+      : "A Transformative Challenge";
 
   // PDF export
   const exportPDF = async () => {
     if (!rootRef.current) return;
     if (!libsLoaded) {
-      alert("PDF libraries are initializing. Please try again in a few seconds.");
+      alert(
+        "PDF libraries are initializing. Please try again in a few seconds."
+      );
       return;
     }
     setExporting(true);
@@ -77,13 +122,17 @@ function CosmicOnceReport({ report, onBack }) {
 
       const element = rootRef.current;
       const scale = 2;
-      const canvas = await html2canvas(element, { scale, useCORS: true, backgroundColor: '#0b1220' });
+      const canvas = await html2canvas(element, {
+        scale,
+        useCORS: true,
+        backgroundColor: "#0b1220",
+      });
 
-      const imgData = canvas.toDataURL('image/jpeg', 0.9);
+      const imgData = canvas.toDataURL("image/jpeg", 0.9);
       const pdf = new jsPDF({
-        orientation: 'portrait',
-        unit: 'pt',
-        format: 'a4'
+        orientation: "portrait",
+        unit: "pt",
+        format: "a4",
       });
 
       const pageWidth = pdf.internal.pageSize.getWidth();
@@ -94,16 +143,33 @@ function CosmicOnceReport({ report, onBack }) {
       const imgScaledWidth = imgWidth * ratio;
       const imgScaledHeight = imgHeight * ratio;
 
-      pdf.addImage(imgData, 'JPEG', (pageWidth - imgScaledWidth) / 2, 20, imgScaledWidth, imgScaledHeight);
+      pdf.addImage(
+        imgData,
+        "JPEG",
+        (pageWidth - imgScaledWidth) / 2,
+        20,
+        imgScaledWidth,
+        imgScaledHeight
+      );
       pdf.setFontSize(10);
       pdf.setTextColor(150);
       pdf.text(`Generated by: ${ASSET_URL}`, 20, pageHeight - 30);
-      pdf.text(`Cosmic Score: ${total}% • Confidence: ${confidence}%`, pageWidth - 260, pageHeight - 30);
+      pdf.text(
+        `Cosmic Score: ${total}% • Confidence: ${confidence}%`,
+        pageWidth - 260,
+        pageHeight - 30
+      );
 
-      pdf.save(`Cosmic-Report-${report.p1?.name || 'A'}-vs-${report.p2?.name || 'B'}.pdf`);
+      pdf.save(
+        `Cosmic-Report-${report.p1?.name || "A"}-vs-${
+          report.p2?.name || "B"
+        }.pdf`
+      );
     } catch (err) {
-      console.error('Export failed', err);
-      alert('PDF export initiated. If this fails, please ensure html2canvas and jsPDF are loaded.');
+      console.error("Export failed", err);
+      alert(
+        "PDF export initiated. If this fails, please ensure html2canvas and jsPDF are loaded."
+      );
     } finally {
       setExporting(false);
     }
@@ -126,8 +192,12 @@ function CosmicOnceReport({ report, onBack }) {
       <div className="flex-1">
         <div className="flex justify-between items-start">
           <div>
-            <div className="text-sm text-slate-300 uppercase tracking-wide">{title}</div>
-            <div className="text-lg font-semibold text-white mt-1">{value}/{max}</div>
+            <div className="text-sm text-slate-300 uppercase tracking-wide">
+              {title}
+            </div>
+            <div className="text-lg font-semibold text-white mt-1">
+              {value}/{max}
+            </div>
           </div>
           <div className="text-xs text-slate-400 ml-2">{note}</div>
         </div>
@@ -144,19 +214,22 @@ function CosmicOnceReport({ report, onBack }) {
     const cosmicScore = report.scores?.cosmic ?? 0;
     const elemScore = report.scores?.element ?? report.scores?.elem ?? 0;
 
-    const p1Name = report.p1?.name || 'Person 1';
-    const p2Name = report.p2?.name || 'Person 2';
-    const p1Nak = report.p1?.nak || report.details?.p1Nak || 'Unknown';
-    const p2Nak = report.p2?.nak || report.details?.p2Nak || 'Unknown';
-    const p1Rashi = report.p1?.rashi || report.details?.p1Rashi || '';
-    const p2Rashi = report.p2?.rashi || report.details?.p2Rashi || '';
+    const p1Name = report.p1?.name || "Person 1";
+    const p2Name = report.p2?.name || "Person 2";
+    const p1Nak = report.p1?.nak || report.details?.p1Nak || "Unknown";
+    const p2Nak = report.p2?.nak || report.details?.p2Nak || "Unknown";
+    const p1Rashi = report.p1?.rashi || report.details?.p1Rashi || "";
+    const p2Rashi = report.p2?.rashi || report.details?.p2Rashi || "";
 
     let narrative = `# THE COSMIC CHRONICLE: ${p1Name.toUpperCase()} & ${p2Name.toUpperCase()}\n\n`;
 
     narrative += `## 🌟 CELESTIAL INTRODUCTION\n\n`;
     narrative += `When ${p1Name} (${p1Nak} Nakshatra, ${p1Rashi}) encounters ${p2Name} (${p2Nak} Nakshatra, ${p2Rashi}), the universe orchestrates a profound meeting. This union scores ${total}% on the cosmic compatibility scale, representing ${title.toLowerCase()}.\n\n`;
 
-    narrative += `${report.verdict?.desc || 'The stars align in a unique pattern for this relationship.'}\n\n`;
+    narrative += `${
+      report.verdict?.desc ||
+      "The stars align in a unique pattern for this relationship."
+    }\n\n`;
 
     narrative += `## 🔮 VEDIC WISDOM: THE ANCIENT PERSPECTIVE (${vedicScore}/50)\n\n`;
     if (vedicScore >= 36) {
@@ -171,25 +244,69 @@ function CosmicOnceReport({ report, onBack }) {
 
     if (report.details?.vedic?.raw?.details) {
       narrative += `### The Eight Sacred Gates (Ashta Koot Breakdown):\n\n`;
-      report.details.vedic.raw.details.forEach(guna => {
+      report.details.vedic.raw.details.forEach((guna) => {
         const percent = Math.round((guna.score / guna.max) * 100);
         narrative += `**${guna.name}** (${guna.score}/${guna.max} - ${percent}%): `;
 
-        if (guna.name === 'Varna') narrative += percent === 100 ? 'Perfect spiritual compatibility. You share similar life philosophies and ego structures.\n' : 'Different ego levels require mutual respect and understanding.\n';
-        else if (guna.name === 'Vashya') narrative += percent >= 50 ? 'Good power dynamics. You can influence and support each other constructively.\n' : 'Be mindful of control issues. Cultivate mutual respect.\n';
-        else if (guna.name === 'Tara') narrative += percent >= 50 ? 'Favorable destiny alignment. Your life paths support each other.\n' : 'Different life trajectories require compassionate navigation.\n';
-        else if (guna.name === 'Yoni') narrative += percent === 100 ? 'Exceptional physical and sexual compatibility. Deep biological harmony.\n' : percent >= 50 ? 'Decent intimacy potential. Focus on emotional connection.\n' : 'Physical chemistry needs conscious nurturing and patience.\n';
-        else if (guna.name === 'Graha Maitri') narrative += percent === 100 ? 'Planetary friendship is perfect. Mental and emotional wavelengths match beautifully.\n' : percent >= 60 ? 'Good mental compatibility. You understand each other well.\n' : 'Mental friction exists. Practice active listening and empathy.\n';
-        else if (guna.name === 'Gana') narrative += percent === 100 ? 'Identical temperaments create effortless understanding and peace.\n' : percent === 0 ? 'GANA DOSHA detected: Temperamental differences are significant. Requires remedies and patience.\n' : 'Moderate temperamental harmony. Flexibility is key.\n';
-        else if (guna.name === 'Bhakoot') narrative += percent === 100 ? 'Perfect Rashi (zodiac) harmony. Material prosperity and family life are blessed.\n' : percent === 0 ? 'BHAKOOT DOSHA present: Financial/family stress possible. Plan finances together carefully.\n' : 'Decent material compatibility. Joint goals will help.\n';
-        else if (guna.name === 'Nadi') narrative += percent === 100 ? 'NADI compatibility is excellent. Health, progeny, and genetic harmony are assured.\n' : percent === 0 ? 'NADI DOSHA: Critical issue for health and children. REMEDIES ESSENTIAL (consult Vedic astrologer).\n' : 'Acceptable Nadi match. Health awareness recommended.\n';
+        if (guna.name === "Varna")
+          narrative +=
+            percent === 100
+              ? "Perfect spiritual compatibility. You share similar life philosophies and ego structures.\n"
+              : "Different ego levels require mutual respect and understanding.\n";
+        else if (guna.name === "Vashya")
+          narrative +=
+            percent >= 50
+              ? "Good power dynamics. You can influence and support each other constructively.\n"
+              : "Be mindful of control issues. Cultivate mutual respect.\n";
+        else if (guna.name === "Tara")
+          narrative +=
+            percent >= 50
+              ? "Favorable destiny alignment. Your life paths support each other.\n"
+              : "Different life trajectories require compassionate navigation.\n";
+        else if (guna.name === "Yoni")
+          narrative +=
+            percent === 100
+              ? "Exceptional physical and sexual compatibility. Deep biological harmony.\n"
+              : percent >= 50
+              ? "Decent intimacy potential. Focus on emotional connection.\n"
+              : "Physical chemistry needs conscious nurturing and patience.\n";
+        else if (guna.name === "Graha Maitri")
+          narrative +=
+            percent === 100
+              ? "Planetary friendship is perfect. Mental and emotional wavelengths match beautifully.\n"
+              : percent >= 60
+              ? "Good mental compatibility. You understand each other well.\n"
+              : "Mental friction exists. Practice active listening and empathy.\n";
+        else if (guna.name === "Gana")
+          narrative +=
+            percent === 100
+              ? "Identical temperaments create effortless understanding and peace.\n"
+              : percent === 0
+              ? "GANA DOSHA detected: Temperamental differences are significant. Requires remedies and patience.\n"
+              : "Moderate temperamental harmony. Flexibility is key.\n";
+        else if (guna.name === "Bhakoot")
+          narrative +=
+            percent === 100
+              ? "Perfect Rashi (zodiac) harmony. Material prosperity and family life are blessed.\n"
+              : percent === 0
+              ? "BHAKOOT DOSHA present: Financial/family stress possible. Plan finances together carefully.\n"
+              : "Decent material compatibility. Joint goals will help.\n";
+        else if (guna.name === "Nadi")
+          narrative +=
+            percent === 100
+              ? "NADI compatibility is excellent. Health, progeny, and genetic harmony are assured.\n"
+              : percent === 0
+              ? "NADI DOSHA: Critical issue for health and children. REMEDIES ESSENTIAL (consult Vedic astrologer).\n"
+              : "Acceptable Nadi match. Health awareness recommended.\n";
       });
       narrative += `\n`;
     }
 
     narrative += `## 🔢 NUMEROLOGY: THE MATHEMATICS OF DESTINY (${numScore}/15)\n\n`;
-    const dest1 = report.details?.numerology?.destiny1 || report.details?.num?.d1 || '?';
-    const dest2 = report.details?.numerology?.destiny2 || report.details?.num?.d2 || '?';
+    const dest1 =
+      report.details?.numerology?.destiny1 || report.details?.num?.d1 || "?";
+    const dest2 =
+      report.details?.numerology?.destiny2 || report.details?.num?.d2 || "?";
     narrative += `${p1Name}'s Destiny Number is ${dest1}, while ${p2Name} carries ${dest2}. `;
 
     if (numScore >= 12) {
@@ -203,8 +320,8 @@ function CosmicOnceReport({ report, onBack }) {
     }
 
     narrative += `## ✍️ NAME VIBRATIONS: THE POWER OF SOUND (${nameScore}/10)\n\n`;
-    const name1Num = report.details?.name?.num1 || '?';
-    const name2Num = report.details?.name?.num2 || '?';
+    const name1Num = report.details?.name?.num1 || "?";
+    const name2Num = report.details?.name?.num2 || "?";
     narrative += `The Pythagorean analysis of your names reveals expression numbers ${name1Num} and ${name2Num}. `;
 
     if (nameScore >= 8) {
@@ -225,8 +342,10 @@ function CosmicOnceReport({ report, onBack }) {
     }
 
     narrative += `## 🔥 ELEMENTAL ALCHEMY: THE FIVE ELEMENTS (${elemScore}/10)\n\n`;
-    const elem1 = report.details?.element?.e1 || report.details?.elem?.e1 || '?';
-    const elem2 = report.details?.element?.e2 || report.details?.elem?.e2 || '?';
+    const elem1 =
+      report.details?.element?.e1 || report.details?.elem?.e1 || "?";
+    const elem2 =
+      report.details?.element?.e2 || report.details?.elem?.e2 || "?";
     narrative += `${p1Name} embodies ${elem1} energy, while ${p2Name} radiates ${elem2}. `;
 
     if (elemScore === 10) {
@@ -242,14 +361,18 @@ function CosmicOnceReport({ report, onBack }) {
     narrative += `\n## 💫 THE FIVE DIMENSIONS: HOLISTIC COMPATIBILITY\n\n`;
 
     if (report.domains) {
-      report.domains.forEach(domain => {
+      report.domains.forEach((domain) => {
         narrative += `### ${domain.name} Domain (${domain.score}%)\n\n`;
         narrative += `${domain.summary}\n\n`;
 
-        if (domain.score >= 85) narrative += `This dimension shows EXCEPTIONAL strength. Celebrate and nurture this aspect—it's a core pillar of your relationship.\n\n`;
-        else if (domain.score >= 70) narrative += `STRONG performance here. This area will be a reliable source of connection and joy.\n\n`;
-        else if (domain.score >= 50) narrative += `MODERATE compatibility. With attention and effort, this dimension can grow significantly.\n\n`;
-        else narrative += `This area needs CONSCIOUS WORK. Don't ignore it—address it with compassion, therapy, or spiritual guidance.\n\n`;
+        if (domain.score >= 85)
+          narrative += `This dimension shows EXCEPTIONAL strength. Celebrate and nurture this aspect—it's a core pillar of your relationship.\n\n`;
+        else if (domain.score >= 70)
+          narrative += `STRONG performance here. This area will be a reliable source of connection and joy.\n\n`;
+        else if (domain.score >= 50)
+          narrative += `MODERATE compatibility. With attention and effort, this dimension can grow significantly.\n\n`;
+        else
+          narrative += `This area needs CONSCIOUS WORK. Don't ignore it—address it with compassion, therapy, or spiritual guidance.\n\n`;
       });
     }
 
@@ -295,7 +418,9 @@ function CosmicOnceReport({ report, onBack }) {
     narrative += `- Surprise acts of love: small gestures maintain cosmic connection\n\n`;
 
     narrative += `## 🎯 FINAL VERDICT\n\n`;
-    narrative += `With an overall cosmic compatibility score of **${total}%**, this relationship is classified as: **${report.verdict?.text || 'Unique'}**.\n\n`;
+    narrative += `With an overall cosmic compatibility score of **${total}%**, this relationship is classified as: **${
+      report.verdict?.text || "Unique"
+    }**.\n\n`;
 
     if (total >= 85) {
       narrative += `This is a RARE and BLESSED union. The cosmos has woven your paths together with golden thread. Honor this gift with consciousness, gratitude, and continuous nurturing. You have the cosmic support to create something truly extraordinary together.\n\n`;
@@ -316,22 +441,33 @@ function CosmicOnceReport({ report, onBack }) {
 
   return (
     <div className="p-0 bg-black min-h-screen">
-      <div ref={rootRef} className="min-h-screen" style={{ background: 'linear-gradient(180deg, #000000 0%, #0a0a1a 20%, #0f0520 40%, #1a0a2e 60%, #0a0520 80%, #000000 100%)', color: 'white' }}>
+      <div
+        ref={rootRef}
+        className="min-h-screen"
+        style={{
+          background:
+            "linear-gradient(180deg, #000000 0%, #0a0a1a 20%, #0f0520 40%, #1a0a2e 60%, #0a0520 80%, #000000 100%)",
+          color: "white",
+        }}
+      >
         {/* Animated Starfield Background */}
         <div className="fixed inset-0 pointer-events-none opacity-30">
-          <div style={{
-            position: 'absolute', inset: 0,
-            backgroundImage:
-              'radial-gradient(2px 2px at 20% 30%, white, transparent),' +
-              'radial-gradient(2px 2px at 60% 70%, white, transparent),' +
-              'radial-gradient(1px 1px at 50% 50%, white, transparent),' +
-              'radial-gradient(1px 1px at 80% 10%, white, transparent),' +
-              'radial-gradient(2px 2px at 90% 60%, white, transparent),' +
-              'radial-gradient(1px 1px at 33% 80%, white, transparent),' +
-              'radial-gradient(1px 1px at 15% 15%, white, transparent)',
-            backgroundSize: '200% 200%',
-            animation: 'twinkle 8s ease-in-out infinite'
-          }} />
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              backgroundImage:
+                "radial-gradient(2px 2px at 20% 30%, white, transparent)," +
+                "radial-gradient(2px 2px at 60% 70%, white, transparent)," +
+                "radial-gradient(1px 1px at 50% 50%, white, transparent)," +
+                "radial-gradient(1px 1px at 80% 10%, white, transparent)," +
+                "radial-gradient(2px 2px at 90% 60%, white, transparent)," +
+                "radial-gradient(1px 1px at 33% 80%, white, transparent)," +
+                "radial-gradient(1px 1px at 15% 15%, white, transparent)",
+              backgroundSize: "200% 200%",
+              animation: "twinkle 8s ease-in-out infinite",
+            }}
+          />
         </div>
 
         {/* Hero Section */}
@@ -341,7 +477,10 @@ function CosmicOnceReport({ report, onBack }) {
             <div className="text-center mb-12 relative">
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-purple-600/10 rounded-full blur-3xl"></div>
 
-              <button onClick={onBack} className="absolute top-0 left-0 bg-slate-800/50 hover:bg-slate-700/50 backdrop-blur-md transition-colors text-white px-4 py-2 rounded-lg flex items-center gap-2 font-medium border border-slate-600/30">
+              <button
+                onClick={onBack}
+                className="absolute top-0 left-0 bg-slate-800/50 hover:bg-slate-700/50 backdrop-blur-md transition-colors text-white px-4 py-2 rounded-lg flex items-center gap-2 font-medium border border-slate-600/30"
+              >
                 <ArrowLeft size={16} /> Back
               </button>
 
@@ -362,8 +501,10 @@ function CosmicOnceReport({ report, onBack }) {
               </h2>
 
               <p className="text-lg text-slate-300 max-w-3xl mx-auto leading-relaxed">
-                This comprehensive cosmic dossier synthesizes ancient Vedic wisdom, numerological destiny patterns,
-                name vibrations, Western biorhythm science, and elemental temperaments to reveal the hidden architecture of your cosmic connection.
+                This comprehensive cosmic dossier synthesizes ancient Vedic
+                wisdom, numerological destiny patterns, name vibrations, Western
+                biorhythm science, and elemental temperaments to reveal the
+                hidden architecture of your cosmic connection.
               </p>
             </div>
 
@@ -373,29 +514,50 @@ function CosmicOnceReport({ report, onBack }) {
                 <div className="w-48 h-48 rounded-full flex items-center justify-center bg-gradient-to-tr from-cyan-600 via-purple-600 to-pink-600 shadow-2xl shadow-purple-500/50 relative overflow-hidden">
                   <div className="absolute inset-1 rounded-full bg-black/90"></div>
                   <div className="text-center relative z-10">
-                    <div className="text-6xl font-black text-transparent bg-clip-text bg-gradient-to-br from-cyan-300 to-pink-300">{total}%</div>
-                    <div className="text-xs text-slate-400 uppercase tracking-widest mt-2">Cosmic Score</div>
+                    <div className="text-6xl font-black text-transparent bg-clip-text bg-gradient-to-br from-cyan-300 to-pink-300">
+                      {total}%
+                    </div>
+                    <div className="text-xs text-slate-400 uppercase tracking-widest mt-2">
+                      Cosmic Score
+                    </div>
                   </div>
                 </div>
                 <div className="absolute -inset-4 bg-gradient-to-r from-cyan-500/20 to-pink-500/20 rounded-full blur-2xl -z-10"></div>
               </div>
 
               <div className="text-center md:text-left space-y-2">
-                <div className="text-xl font-semibold text-slate-300">Confidence Level</div>
-                <div className="text-4xl font-bold text-white">{confidence}%</div>
-                <div className="text-sm text-slate-400">Cosmic Certainty (Heuristic)</div>
-                <div className={`inline-block px-6 py-3 rounded-full text-2xl font-bold ${report.verdict?.color || 'text-white'} bg-white/5 border border-white/10 mt-4`}>
-                  {report.verdict?.text || 'Unique Union'}
+                <div className="text-xl font-semibold text-slate-300">
+                  Confidence Level
+                </div>
+                <div className="text-4xl font-bold text-white">
+                  {confidence}%
+                </div>
+                <div className="text-sm text-slate-400">
+                  Cosmic Certainty (Heuristic)
+                </div>
+                <div
+                  className={`inline-block px-6 py-3 rounded-full text-2xl font-bold ${
+                    report.verdict?.color || "text-white"
+                  } bg-white/5 border border-white/10 mt-4`}
+                >
+                  {report.verdict?.text || "Unique Union"}
                 </div>
               </div>
             </div>
 
             {/* Action Buttons */}
             <div className="flex flex-wrap justify-center gap-4 mb-12">
-              <button onClick={exportPDF} disabled={exporting} className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white px-6 py-3 rounded-xl flex items-center gap-2 font-bold shadow-lg shadow-purple-500/30 transition-all">
-                {exporting ? 'Preparing PDF...' : '📄 Download as PDF'}
+              <button
+                onClick={exportPDF}
+                disabled={exporting}
+                className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white px-6 py-3 rounded-xl flex items-center gap-2 font-bold shadow-lg shadow-purple-500/30 transition-all"
+              >
+                {exporting ? "Preparing PDF..." : "📄 Download as PDF"}
               </button>
-              <button onClick={() => window.print()} className="bg-slate-800/50 hover:bg-slate-700/50 backdrop-blur-md text-white px-6 py-3 rounded-xl font-bold border border-slate-600/30 transition-all">
+              <button
+                onClick={() => window.print()}
+                className="bg-slate-800/50 hover:bg-slate-700/50 backdrop-blur-md text-white px-6 py-3 rounded-xl font-bold border border-slate-600/30 transition-all"
+              >
                 🖨️ Print Report
               </button>
             </div>
@@ -410,11 +572,20 @@ function CosmicOnceReport({ report, onBack }) {
               <div className="relative z-10">
                 <div className="flex items-center gap-3 mb-4">
                   <User size={24} className="text-cyan-400" />
-                  <div className="text-xs text-cyan-300/60 uppercase tracking-widest">Person 1</div>
+                  <div className="text-xs text-cyan-300/60 uppercase tracking-widest">
+                    Person 1
+                  </div>
                 </div>
-                <div className="text-3xl font-bold text-white mb-2">{report.p1?.name || 'Unknown'}</div>
-                <div className="text-lg text-cyan-200">{report.p1?.nak || report.details?.p1Nak || 'Unknown'} Nakshatra</div>
-                <div className="text-md text-cyan-300/70">{report.p1?.rashi || report.details?.p1Rashi || ''}</div>
+                <div className="text-3xl font-bold text-white mb-2">
+                  {report.p1?.name || "Unknown"}
+                </div>
+                <div className="text-lg text-cyan-200">
+                  {report.p1?.nak || report.details?.p1Nak || "Unknown"}{" "}
+                  Nakshatra
+                </div>
+                <div className="text-md text-cyan-300/70">
+                  {report.p1?.rashi || report.details?.p1Rashi || ""}
+                </div>
               </div>
             </div>
 
@@ -423,11 +594,20 @@ function CosmicOnceReport({ report, onBack }) {
               <div className="relative z-10">
                 <div className="flex items-center gap-3 mb-4">
                   <User size={24} className="text-pink-400" />
-                  <div className="text-xs text-pink-300/60 uppercase tracking-widest">Person 2</div>
+                  <div className="text-xs text-pink-300/60 uppercase tracking-widest">
+                    Person 2
+                  </div>
                 </div>
-                <div className="text-3xl font-bold text-white mb-2">{report.p2?.name || 'Unknown'}</div>
-                <div className="text-lg text-pink-200">{report.p2?.nak || report.details?.p2Nak || 'Unknown'} Nakshatra</div>
-                <div className="text-md text-pink-300/70">{report.p2?.rashi || report.details?.p2Rashi || ''}</div>
+                <div className="text-3xl font-bold text-white mb-2">
+                  {report.p2?.name || "Unknown"}
+                </div>
+                <div className="text-lg text-pink-200">
+                  {report.p2?.nak || report.details?.p2Nak || "Unknown"}{" "}
+                  Nakshatra
+                </div>
+                <div className="text-md text-pink-300/70">
+                  {report.p2?.rashi || report.details?.p2Rashi || ""}
+                </div>
               </div>
             </div>
           </div>
@@ -441,23 +621,68 @@ function CosmicOnceReport({ report, onBack }) {
             </h3>
             <div className="grid md:grid-cols-5 gap-4">
               {[
-                { label: 'Vedic', score: Math.round(report.scores?.vedic ?? 0), max: 50, icon: Moon, color: 'from-cyan-500 to-blue-500' },
-                { label: 'Numerology', score: report.scores?.numerology ?? report.scores?.num ?? 0, max: 15, icon: Hash, color: 'from-purple-500 to-pink-500' },
-                { label: 'Name', score: report.scores?.name ?? 0, max: 10, icon: User, color: 'from-blue-500 to-cyan-500' },
-                { label: 'Cosmic', score: report.scores?.cosmic ?? 0, max: 15, icon: Globe, color: 'from-pink-500 to-fuchsia-500' },
-                { label: 'Element', score: report.scores?.element ?? report.scores?.elem ?? 0, max: 10, icon: Wind, color: 'from-green-500 to-emerald-500' }
+                {
+                  label: "Vedic",
+                  score: Math.round(report.scores?.vedic ?? 0),
+                  max: 50,
+                  icon: Moon,
+                  color: "from-cyan-500 to-blue-500",
+                },
+                {
+                  label: "Numerology",
+                  score: report.scores?.numerology ?? report.scores?.num ?? 0,
+                  max: 15,
+                  icon: Hash,
+                  color: "from-purple-500 to-pink-500",
+                },
+                {
+                  label: "Name",
+                  score: report.scores?.name ?? 0,
+                  max: 10,
+                  icon: User,
+                  color: "from-blue-500 to-cyan-500",
+                },
+                {
+                  label: "Cosmic",
+                  score: report.scores?.cosmic ?? 0,
+                  max: 15,
+                  icon: Globe,
+                  color: "from-pink-500 to-fuchsia-500",
+                },
+                {
+                  label: "Element",
+                  score: report.scores?.element ?? report.scores?.elem ?? 0,
+                  max: 10,
+                  icon: Wind,
+                  color: "from-green-500 to-emerald-500",
+                },
               ].map((dim, i) => {
                 const Icon = dim.icon;
                 const percent = Math.round((dim.score / dim.max) * 100);
                 return (
-                  <div key={i} className="bg-slate-900/50 border border-slate-700/50 p-6 rounded-2xl backdrop-blur-sm hover:border-slate-600 transition-all">
+                  <div
+                    key={i}
+                    className="bg-slate-900/50 border border-slate-700/50 p-6 rounded-2xl backdrop-blur-sm hover:border-slate-600 transition-all"
+                  >
                     <div className="flex flex-col items-center text-center">
                       <Icon size={32} className="text-slate-400 mb-3" />
-                      <div className="text-sm text-slate-400 uppercase tracking-wider mb-2">{dim.label}</div>
-                      <div className="text-3xl font-bold text-white mb-1">{dim.score}<span className="text-lg text-slate-500">/{dim.max}</span></div>
-                      <div className="text-xs text-slate-500 mb-3">{percent}%</div>
+                      <div className="text-sm text-slate-400 uppercase tracking-wider mb-2">
+                        {dim.label}
+                      </div>
+                      <div className="text-3xl font-bold text-white mb-1">
+                        {dim.score}
+                        <span className="text-lg text-slate-500">
+                          /{dim.max}
+                        </span>
+                      </div>
+                      <div className="text-xs text-slate-500 mb-3">
+                        {percent}%
+                      </div>
                       <div className="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
-                        <div className={`h-full bg-gradient-to-r ${dim.color} transition-all duration-1000`} style={{ width: `${percent}%` }}></div>
+                        <div
+                          className={`h-full bg-gradient-to-r ${dim.color} transition-all duration-1000`}
+                          style={{ width: `${percent}%` }}
+                        ></div>
                       </div>
                     </div>
                   </div>
@@ -482,7 +707,7 @@ function CosmicOnceReport({ report, onBack }) {
                 className="prose prose-invert prose-lg max-w-none"
                 style={{
                   lineHeight: 1.8,
-                  fontSize: '1.05rem'
+                  fontSize: "1.05rem",
                 }}
               >
                 <style>{`
@@ -496,18 +721,20 @@ function CosmicOnceReport({ report, onBack }) {
                   .prose hr { border-color: #475569; margin: 2rem 0; }
                   .prose em { color: #e0e7ff; font-style: italic; }
                 `}</style>
-                <div dangerouslySetInnerHTML={{
-                  __html: generateElaborateNarrative()
-                    .replace(/\n/g, '<br/>')
-                    .replace(/#{3} (.+?)<br\/>/g, '<h3>$1</h3>')
-                    .replace(/#{2} (.+?)<br\/>/g, '<h2>$1</h2>')
-                    .replace(/#{1} (.+?)<br\/>/g, '<h1>$1</h1>')
-                    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-                    .replace(/\*(.+?)\*/g, '<em>$1</em>')
-                    .replace(/- (.+?)<br\/>/g, '<li>$1</li>')
-                    .replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>')
-                    .replace(/---<br\/>/g, '<hr/>')
-                }} />
+                <div
+                  dangerouslySetInnerHTML={{
+                    __html: generateElaborateNarrative()
+                      .replace(/\n/g, "<br/>")
+                      .replace(/#{3} (.+?)<br\/>/g, "<h3>$1</h3>")
+                      .replace(/#{2} (.+?)<br\/>/g, "<h2>$1</h2>")
+                      .replace(/#{1} (.+?)<br\/>/g, "<h1>$1</h1>")
+                      .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+                      .replace(/\*(.+?)\*/g, "<em>$1</em>")
+                      .replace(/- (.+?)<br\/>/g, "<li>$1</li>")
+                      .replace(/(<li>.*<\/li>)/s, "<ul>$1</ul>")
+                      .replace(/---<br\/>/g, "<hr/>"),
+                  }}
+                />
               </div>
             </div>
           </div>
@@ -518,13 +745,17 @@ function CosmicOnceReport({ report, onBack }) {
           <div className="max-w-7xl mx-auto text-center">
             <div className="flex items-center justify-center gap-2 mb-4">
               <Sparkles size={20} className="text-cyan-400" />
-              <div className="text-lg font-semibold text-slate-300">Generated by {ASSET_URL}</div>
+              <div className="text-lg font-semibold text-slate-300">
+                Generated by {ASSET_URL}
+              </div>
               <Sparkles size={20} className="text-pink-400" />
             </div>
             <div className="text-sm text-slate-500">
-              This report is heuristic and advisory. Cosmic compatibility is a guide, not a guarantee.
+              This report is heuristic and advisory. Cosmic compatibility is a
+              guide, not a guarantee.
               <br />
-              Free will, love, and conscious effort can transform any cosmic pattern. 🙏✨
+              Free will, love, and conscious effort can transform any cosmic
+              pattern. 🙏✨
             </div>
           </div>
         </div>
@@ -545,11 +776,21 @@ function CosmicOnceReport({ report, onBack }) {
 // ============================================================
 
 const MOCK_CITIES = [
-  { description: "Mumbai, Maharashtra, India", lat: 19.0760, lng: 72.8777, tz: 5.5 },
-  { description: "Delhi, India", lat: 28.6139, lng: 77.2090, tz: 5.5 },
-  { description: "New York, NY, USA", lat: 40.7128, lng: -74.0060, tz: -5.0 },
+  {
+    description: "Mumbai, Maharashtra, India",
+    lat: 19.076,
+    lng: 72.8777,
+    tz: 5.5,
+  },
+  { description: "Delhi, India", lat: 28.6139, lng: 77.209, tz: 5.5 },
+  { description: "New York, NY, USA", lat: 40.7128, lng: -74.006, tz: -5.0 },
   { description: "London, UK", lat: 51.5074, lng: -0.1278, tz: 0.0 },
-  { description: "Los Angeles, CA, USA", lat: 34.0522, lng: -118.2437, tz: -8.0 },
+  {
+    description: "Los Angeles, CA, USA",
+    lat: 34.0522,
+    lng: -118.2437,
+    tz: -8.0,
+  },
   { description: "Sydney, Australia", lat: -33.8688, lng: 151.2093, tz: 10.0 },
   { description: "Paris, France", lat: 48.8566, lng: 2.3522, tz: 1.0 },
   { description: "Tokyo, Japan", lat: 35.6762, lng: 139.6503, tz: 9.0 },
@@ -562,7 +803,7 @@ const DESTINY_COMPATIBILITY = {
     not: [1, 2],
     avoid: [],
     neutral: [4, 5, 7, 9],
-    desc: "As a Leader, you seek partners who complement your drive. You find harmony with the creative, the nurturing, and the ambitious."
+    desc: "As a Leader, you seek partners who complement your drive. You find harmony with the creative, the nurturing, and the ambitious.",
   },
   2: {
     archetype: "The Mediator",
@@ -570,7 +811,7 @@ const DESTINY_COMPATIBILITY = {
     not: [1],
     avoid: [4, 5],
     neutral: [],
-    desc: "As a Mediator, you need emotional security. You connect well with most, but the forceful Leader can be overwhelming."
+    desc: "As a Mediator, you need emotional security. You connect well with most, but the forceful Leader can be overwhelming.",
   },
   3: {
     archetype: "The Creator",
@@ -578,7 +819,7 @@ const DESTINY_COMPATIBILITY = {
     not: [],
     avoid: [],
     neutral: [1, 2, 4, 6, 8],
-    desc: "As a Creator, you thrive on expression and intellect. You have joyful connections with other Creators, Adventurers, and Seekers."
+    desc: "As a Creator, you thrive on expression and intellect. You have joyful connections with other Creators, Adventurers, and Seekers.",
   },
   4: {
     archetype: "The Builder",
@@ -586,7 +827,7 @@ const DESTINY_COMPATIBILITY = {
     not: [5],
     avoid: [2],
     neutral: [1, 9],
-    desc: "As a Builder, you value stability. You form strong bonds with Creators and Nurturers. The restless Adventurer is a volatile match."
+    desc: "As a Builder, you value stability. You form strong bonds with Creators and Nurturers. The restless Adventurer is a volatile match.",
   },
   5: {
     archetype: "The Adventurer",
@@ -594,7 +835,7 @@ const DESTINY_COMPATIBILITY = {
     not: [4],
     avoid: [2],
     neutral: [1, 6],
-    desc: "As an Adventurer, you seek excitement and freedom. The structured Builder can feel restrictive."
+    desc: "As an Adventurer, you seek excitement and freedom. The structured Builder can feel restrictive.",
   },
   6: {
     archetype: "The Nurturer",
@@ -602,7 +843,7 @@ const DESTINY_COMPATIBILITY = {
     not: [],
     avoid: [],
     neutral: [3, 4, 5, 8, 9],
-    desc: "As a Nurturer, your focus is on love and family. Your adaptable nature allows you to get along with almost anyone."
+    desc: "As a Nurturer, your focus is on love and family. Your adaptable nature allows you to get along with almost anyone.",
   },
   7: {
     archetype: "The Seeker",
@@ -610,7 +851,7 @@ const DESTINY_COMPATIBILITY = {
     not: [],
     avoid: [],
     neutral: [2, 4, 6, 8],
-    desc: "As a Seeker, you desire a deep, intellectual connection. Your partnership is based on spiritual understanding."
+    desc: "As a Seeker, you desire a deep, intellectual connection. Your partnership is based on spiritual understanding.",
   },
   8: {
     archetype: "The Powerhouse",
@@ -618,7 +859,7 @@ const DESTINY_COMPATIBILITY = {
     not: [],
     avoid: [],
     neutral: [4, 6],
-    desc: "As a Powerhouse, you are ambitious. You form a successful team with Leaders and Creators who support your drive."
+    desc: "As a Powerhouse, you are ambitious. You form a successful team with Leaders and Creators who support your drive.",
   },
   9: {
     archetype: "The Humanitarian",
@@ -626,229 +867,394 @@ const DESTINY_COMPATIBILITY = {
     not: [],
     avoid: [],
     neutral: [2, 4, 6, 8],
-    desc: "As a Humanitarian, you are compassionate and idealistic. You connect deeply with Leaders and Creators."
-  }
+    desc: "As a Humanitarian, you are compassionate and idealistic. You connect deeply with Leaders and Creators.",
+  },
 };
 
 const PYTHAGOREAN = {
-  1: ['A','J','S'], 2: ['B','K','T'], 3: ['C','L','U'], 4: ['D','M','V'],
-  5: ['E','N','W'], 6: ['F','O','X'], 7: ['G','P','Y'], 8: ['H','Q','Z'], 9: ['I','R']
+  1: ["A", "J", "S"],
+  2: ["B", "K", "T"],
+  3: ["C", "L", "U"],
+  4: ["D", "M", "V"],
+  5: ["E", "N", "W"],
+  6: ["F", "O", "X"],
+  7: ["G", "P", "Y"],
+  8: ["H", "Q", "Z"],
+  9: ["I", "R"],
 };
 
-const NAKSHATRAS = ["Ashwini", "Bharani", "Krittika", "Rohini", "Mrigashira", "Ardra", "Punarvasu", "Pushya", "Ashlesha", "Magha", "Purva Phalguni", "Uttara Phalguni", "Hasta", "Chitra", "Swati", "Vishakha", "Anuradha", "Jyeshtha", "Mula", "Purva Ashadha", "Uttara Ashadha", "Shravana", "Dhanishta", "Shatabhisha", "Purva Bhadrapada", "Uttara Bhadrapada", "Revati"];
+const NAKSHATRAS = [
+  "Ashwini",
+  "Bharani",
+  "Krittika",
+  "Rohini",
+  "Mrigashira",
+  "Ardra",
+  "Punarvasu",
+  "Pushya",
+  "Ashlesha",
+  "Magha",
+  "Purva Phalguni",
+  "Uttara Phalguni",
+  "Hasta",
+  "Chitra",
+  "Swati",
+  "Vishakha",
+  "Anuradha",
+  "Jyeshtha",
+  "Mula",
+  "Purva Ashadha",
+  "Uttara Ashadha",
+  "Shravana",
+  "Dhanishta",
+  "Shatabhisha",
+  "Purva Bhadrapada",
+  "Uttara Bhadrapada",
+  "Revati",
+];
 
 const RASHI_LORDS = [1, 2, 3, 4, 5, 3, 2, 1, 9, 10, 10, 9];
 const RASHI_TYPE = [0, 0, 1, 2, 3, 1, 1, 4, 1, 0, 1, 2];
-const NAK_GANA = [1,2,3,2,1,2,1,1,3, 3,2,2,1,3,1,3,1,3, 3,2,2,1,3,3,2,2,1];
-const NAK_NADI = [1,2,3,3,2,1,2,2,3, 3,2,1,1,2,3,3,2,1, 1,2,3,1,2,3,1,2,3];
-const NAK_YONI = [0,1,2,3,3,4,5,2,5, 6,6,7,8,9,8,9,10,10, 4,11,12,11,13,0,13,7,1];
-const YONI_MATRIX = [[4,2,2,2,2,1,1,2,0,2,2,2,2,2],[2,4,2,2,2,2,2,2,2,2,2,2,2,0],[2,2,4,2,1,2,2,2,2,1,2,0,2,2],[2,2,2,4,2,2,2,2,2,2,2,2,0,2],[2,2,1,2,4,1,2,2,2,1,0,2,2,2],[1,2,2,2,1,4,0,2,2,2,2,2,2,2],[1,2,2,2,2,0,4,2,2,2,2,2,2,2],[2,2,2,2,2,2,2,4,2,0,2,2,2,2],[0,2,2,2,2,2,2,2,4,2,2,2,2,3],[2,2,1,2,1,2,2,0,2,4,2,2,2,2],[2,2,2,2,0,2,2,2,2,2,4,2,2,2],[2,2,0,2,2,2,2,2,2,2,2,4,2,2],[2,2,2,0,2,2,2,2,2,2,2,2,4,2],[2,0,2,2,2,2,2,2,2,3,2,2,2,4]];
-const PLANET_RELATION = { 1: {1:0, 2:0, 3:-1, 4:1, 5:1, 9:1, 10:0}, 2: {1:0, 2:0, 3:1, 4:-1, 5:-1, 9:0, 10:1}, 3: {1:0, 2:1, 3:0, 4:-1, 5:1, 9:0, 10:0}, 4: {1:0, 2:0, 3:1, 4:0, 5:1, 9:0, 10:0}, 5: {1:1, 2:-1, 3:0, 4:1, 5:0, 9:1, 10:-1}, 9: {1:1, 2:-1, 3:-1, 4:1, 5:1, 9:0, 10:0}, 10: {1:-1, 2:1, 3:1, 4:-1, 5:-1, 9:0, 10:0}};
+const NAK_GANA = [
+  1, 2, 3, 2, 1, 2, 1, 1, 3, 3, 2, 2, 1, 3, 1, 3, 1, 3, 3, 2, 2, 1, 3, 3, 2, 2,
+  1,
+];
+const NAK_NADI = [
+  1, 2, 3, 3, 2, 1, 2, 2, 3, 3, 2, 1, 1, 2, 3, 3, 2, 1, 1, 2, 3, 1, 2, 3, 1, 2,
+  3,
+];
+const NAK_YONI = [
+  0, 1, 2, 3, 3, 4, 5, 2, 5, 6, 6, 7, 8, 9, 8, 9, 10, 10, 4, 11, 12, 11, 13, 0,
+  13, 7, 1,
+];
+const YONI_MATRIX = [
+  [4, 2, 2, 2, 2, 1, 1, 2, 0, 2, 2, 2, 2, 2],
+  [2, 4, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0],
+  [2, 2, 4, 2, 1, 2, 2, 2, 2, 1, 2, 0, 2, 2],
+  [2, 2, 2, 4, 2, 2, 2, 2, 2, 2, 2, 2, 0, 2],
+  [2, 2, 1, 2, 4, 1, 2, 2, 2, 1, 0, 2, 2, 2],
+  [1, 2, 2, 2, 1, 4, 0, 2, 2, 2, 2, 2, 2, 2],
+  [1, 2, 2, 2, 2, 0, 4, 2, 2, 2, 2, 2, 2, 2],
+  [2, 2, 2, 2, 2, 2, 2, 4, 2, 0, 2, 2, 2, 2],
+  [0, 2, 2, 2, 2, 2, 2, 2, 4, 2, 2, 2, 2, 3],
+  [2, 2, 1, 2, 1, 2, 2, 0, 2, 4, 2, 2, 2, 2],
+  [2, 2, 2, 2, 0, 2, 2, 2, 2, 2, 4, 2, 2, 2],
+  [2, 2, 0, 2, 2, 2, 2, 2, 2, 2, 2, 4, 2, 2],
+  [2, 2, 2, 0, 2, 2, 2, 2, 2, 2, 2, 2, 4, 2],
+  [2, 0, 2, 2, 2, 2, 2, 2, 2, 3, 2, 2, 2, 4],
+];
+const PLANET_RELATION = {
+  1: { 1: 0, 2: 0, 3: -1, 4: 1, 5: 1, 9: 1, 10: 0 },
+  2: { 1: 0, 2: 0, 3: 1, 4: -1, 5: -1, 9: 0, 10: 1 },
+  3: { 1: 0, 2: 1, 3: 0, 4: -1, 5: 1, 9: 0, 10: 0 },
+  4: { 1: 0, 2: 0, 3: 1, 4: 0, 5: 1, 9: 0, 10: 0 },
+  5: { 1: 1, 2: -1, 3: 0, 4: 1, 5: 0, 9: 1, 10: -1 },
+  9: { 1: 1, 2: -1, 3: -1, 4: 1, 5: 1, 9: 0, 10: 0 },
+  10: { 1: -1, 2: 1, 3: 1, 4: -1, 5: -1, 9: 0, 10: 0 },
+};
 
 // ============================================================
 // CALCULATION ENGINE
 // ============================================================
 
 const AstroMath = {
-  normalize: (deg) => { let d = deg % 360; return d < 0 ? d + 360 : d; },
+  normalize: (deg) => {
+    let d = deg % 360;
+    return d < 0 ? d + 360 : d;
+  },
   getSiderealMoon: (dob, tob, offset) => {
-    const [yr, mo, dy] = dob.split('-').map(Number);
-    const [hr, mn] = (tob || "12:00").split(':').map(Number);
+    const [yr, mo, dy] = dob.split("-").map(Number);
+    const [hr, mn] = (tob || "12:00").split(":").map(Number);
     const safeOffset = offset || 0;
     const utcHr = hr - Math.floor(safeOffset);
-    const utcMn = mn - ((safeOffset % 1) * 60);
+    const utcMn = mn - (safeOffset % 1) * 60;
     const date = new Date(Date.UTC(yr, mo - 1, dy, utcHr, utcMn));
-    const JD = (date.getTime() / 86400000) + 2440587.5;
+    const JD = date.getTime() / 86400000 + 2440587.5;
     const T = (JD - 2451545.0) / 36525;
     const L = AstroMath.normalize(218.316 + 481267.881 * T);
     const M = AstroMath.normalize(134.963 + 477198.868 * T);
-    const long = L + 6.289 * Math.sin(M * Math.PI/180);
-    const ayanamsa = 23.85 + (0.0139 * (yr - 2000));
+    const long = L + 6.289 * Math.sin((M * Math.PI) / 180);
+    const ayanamsa = 23.85 + 0.0139 * (yr - 2000);
     return AstroMath.normalize(long - ayanamsa);
-  }
+  },
 };
 
 const performAshtakoot = (n1, n2, r1, r2) => {
-  let total = 0, details = [];
+  let total = 0,
+    details = [];
 
   // Varna
-  const getVarna = (r) => [3,7,11].includes(r)?4 : [0,4,8].includes(r)?3 : [2,6,10].includes(r)?2 : 1;
-  const vScore = (getVarna(r1) >= getVarna(r2)) ? 1 : 0;
+  const getVarna = (r) =>
+    [3, 7, 11].includes(r)
+      ? 4
+      : [0, 4, 8].includes(r)
+      ? 3
+      : [2, 6, 10].includes(r)
+      ? 2
+      : 1;
+  const vScore = getVarna(r1) >= getVarna(r2) ? 1 : 0;
   total += vScore;
-  details.push({name: "Varna (Ego)", score: vScore, max: 1, desc: "Spiritual compatibility"});
+  details.push({
+    name: "Varna (Ego)",
+    score: vScore,
+    max: 1,
+    desc: "Spiritual compatibility",
+  });
 
   // Vashya
-  let vashya=0; const t1=RASHI_TYPE[r1], t2=RASHI_TYPE[r2];
-  if(t1===t2) vashya=2;
-  else if((t1===1 && t2===0)||(t1===0 && t2===1)) vashya=1;
-  else if((r1===5 && r2===10) || (r1===10 && r2===5)) vashya=0.5;
-  else if((t1===1 && t2===2)||(t1===2 && t2===1)) vashya=0.5;
+  let vashya = 0;
+  const t1 = RASHI_TYPE[r1],
+    t2 = RASHI_TYPE[r2];
+  if (t1 === t2) vashya = 2;
+  else if ((t1 === 1 && t2 === 0) || (t1 === 0 && t2 === 1)) vashya = 1;
+  else if ((r1 === 5 && r2 === 10) || (r1 === 10 && r2 === 5)) vashya = 0.5;
+  else if ((t1 === 1 && t2 === 2) || (t1 === 2 && t2 === 1)) vashya = 0.5;
   total += vashya;
-  details.push({name: "Vashya (Power)", score: vashya, max: 2, desc: "Mutual attraction/control"});
+  details.push({
+    name: "Vashya (Power)",
+    score: vashya,
+    max: 2,
+    desc: "Mutual attraction/control",
+  });
 
   // Tara
-  const s1=[3,5,7].includes((n1-n2+27)%9)?0:1.5;
-  const s2=[3,5,7].includes((n2-n1+27)%9)?0:1.5;
-  total += (s1+s2);
-  details.push({name: "Tara (Fate)", score: s1+s2, max: 3, desc: "Destiny alignment"});
+  const s1 = [3, 5, 7].includes((n1 - n2 + 27) % 9) ? 0 : 1.5;
+  const s2 = [3, 5, 7].includes((n2 - n1 + 27) % 9) ? 0 : 1.5;
+  total += s1 + s2;
+  details.push({
+    name: "Tara (Fate)",
+    score: s1 + s2,
+    max: 3,
+    desc: "Destiny alignment",
+  });
 
   // Yoni
   const yoni = YONI_MATRIX[NAK_YONI[n1]][NAK_YONI[n2]];
   total += yoni;
-  details.push({name: "Yoni (Intimacy)", score: yoni, max: 4, desc: "Biological compatibility"});
+  details.push({
+    name: "Yoni (Intimacy)",
+    score: yoni,
+    max: 4,
+    desc: "Biological compatibility",
+  });
 
   // Graha Maitri
-  let maitri=0; const l1=RASHI_LORDS[r1], l2=RASHI_LORDS[r2];
-  if(l1===l2) maitri=5;
+  let maitri = 0;
+  const l1 = RASHI_LORDS[r1],
+    l2 = RASHI_LORDS[r2];
+  if (l1 === l2) maitri = 5;
   else {
-    const rA=PLANET_RELATION[l1][l2], rB=PLANET_RELATION[l2][l1];
-    if(rA===1 && rB===1) maitri=5;
-    else if(rA+rB===1) maitri=4;
-    else if(rA===0 && rB===0) maitri=3;
-    else if(rA+rB===0) maitri=1;
-    else if(rA+rB===-1) maitri=0.5;
-    else maitri=0;
+    const rA = PLANET_RELATION[l1][l2],
+      rB = PLANET_RELATION[l2][l1];
+    if (rA === 1 && rB === 1) maitri = 5;
+    else if (rA + rB === 1) maitri = 4;
+    else if (rA === 0 && rB === 0) maitri = 3;
+    else if (rA + rB === 0) maitri = 1;
+    else if (rA + rB === -1) maitri = 0.5;
+    else maitri = 0;
   }
   total += maitri;
-  details.push({name: "Maitri (Friendship)", score: maitri, max: 5, desc: "Mental compatibility"});
+  details.push({
+    name: "Maitri (Friendship)",
+    score: maitri,
+    max: 5,
+    desc: "Mental compatibility",
+  });
 
   // Gana
-  let gana=0; const g1=NAK_GANA[n1], g2=NAK_GANA[n2];
-  if(g1===g2) gana=6;
-  else if((g1===1 && g2===2)||(g1===2 && g2===1)) gana=6;
-  else if(g1===3 && g2===3) gana=6;
-  else gana=0;
+  let gana = 0;
+  const g1 = NAK_GANA[n1],
+    g2 = NAK_GANA[n2];
+  if (g1 === g2) gana = 6;
+  else if ((g1 === 1 && g2 === 2) || (g1 === 2 && g2 === 1)) gana = 6;
+  else if (g1 === 3 && g2 === 3) gana = 6;
+  else gana = 0;
   total += gana;
-  details.push({name: "Gana (Temperament)", score: gana, max: 6, desc: "Daily behavior match"});
+  details.push({
+    name: "Gana (Temperament)",
+    score: gana,
+    max: 6,
+    desc: "Daily behavior match",
+  });
 
   // Bhakoota
-  let bhakoota=7;
-  const rDiff=(r1-r2+12)%12;
-  if([1,11,5,7,4,8].includes(rDiff)) bhakoota=0;
-  if(bhakoota===0 && maitri >= 4) bhakoota = 7;
+  let bhakoota = 7;
+  const rDiff = (r1 - r2 + 12) % 12;
+  if ([1, 11, 5, 7, 4, 8].includes(rDiff)) bhakoota = 0;
+  if (bhakoota === 0 && maitri >= 4) bhakoota = 7;
   total += bhakoota;
-  details.push({name: "Bhakoota (Flow)", score: bhakoota, max: 7, desc: "Emotional connection"});
+  details.push({
+    name: "Bhakoota (Flow)",
+    score: bhakoota,
+    max: 7,
+    desc: "Emotional connection",
+  });
 
   // Nadi
-  let nadi = (NAK_NADI[n1]===NAK_NADI[n2]) ? 0 : 8;
+  let nadi = NAK_NADI[n1] === NAK_NADI[n2] ? 0 : 8;
   if (nadi === 0 && (maitri >= 4 || l1 === l2)) nadi = 8;
   total += nadi;
-  details.push({name: "Nadi (Genes)", score: nadi, max: 8, desc: "Health & genetics"});
+  details.push({
+    name: "Nadi (Genes)",
+    score: nadi,
+    max: 8,
+    desc: "Health & genetics",
+  });
 
   return { total, details };
 };
 
 const Calculator = {
   reduce: (n) => {
-    while(n > 9) n = String(n).split('').reduce((a,b)=>a+Number(b),0);
+    while (n > 9)
+      n = String(n)
+        .split("")
+        .reduce((a, b) => a + Number(b), 0);
     return n;
   },
 
   getDestiny: (dob) => {
-    if(!dob) return 0;
-    const [y,m,d] = dob.split('-').map(Number);
-    return Calculator.reduce(Calculator.reduce(y)+Calculator.reduce(m)+Calculator.reduce(d));
+    if (!dob) return 0;
+    const [y, m, d] = dob.split("-").map(Number);
+    return Calculator.reduce(
+      Calculator.reduce(y) + Calculator.reduce(m) + Calculator.reduce(d)
+    );
   },
 
   getNumerologyScore: (d1, d2) => {
     d1 = Calculator.reduce(d1);
     d2 = Calculator.reduce(d2);
     const data = DESTINY_COMPATIBILITY[d1];
-    if(!data) return 10;
-    if(data.good.includes(d2)) return 15;
-    if(data.not.includes(d2)) return 5;
-    if(data.avoid && data.avoid.includes(d2)) return 2;
+    if (!data) return 10;
+    if (data.good.includes(d2)) return 15;
+    if (data.not.includes(d2)) return 5;
+    if (data.avoid && data.avoid.includes(d2)) return 2;
     return 10;
   },
 
   getNameNumbers: (name) => {
-    let expr=0;
+    let expr = 0;
     const safeName = name || "";
-    safeName.toUpperCase().replace(/[^A-Z]/g,'').split('').forEach(char => {
-      let val = 0;
-      for(let k in PYTHAGOREAN) if(PYTHAGOREAN[k].includes(char)) val = Number(k);
-      expr += val;
-    });
+    safeName
+      .toUpperCase()
+      .replace(/[^A-Z]/g, "")
+      .split("")
+      .forEach((char) => {
+        let val = 0;
+        for (let k in PYTHAGOREAN)
+          if (PYTHAGOREAN[k].includes(char)) val = Number(k);
+        expr += val;
+      });
     return { expr: Calculator.reduce(expr) };
   },
 
   getNameScore: (n1, n2) => {
     const diff = Math.abs(n1.expr - n2.expr);
-    if(diff === 0) return 10;
-    if([1,3,5,7].includes(diff)) return 8;
+    if (diff === 0) return 10;
+    if ([1, 3, 5, 7].includes(diff)) return 8;
     return 5;
   },
 
   getCosmicScore: (dob1, dob2) => {
     const d1 = new Date(dob1).getTime();
     const d2 = new Date(dob2).getTime();
-    if(!d1 || !d2) return 7.5;
+    if (!d1 || !d2) return 7.5;
     const diff = Math.abs(d1 - d2) / (1000 * 3600 * 24);
-    const phy = Math.cos(2 * Math.PI * diff / 23);
-    const emo = Math.cos(2 * Math.PI * diff / 28);
-    const int = Math.cos(2 * Math.PI * diff / 33);
+    const phy = Math.cos((2 * Math.PI * diff) / 23);
+    const emo = Math.cos((2 * Math.PI * diff) / 28);
+    const int = Math.cos((2 * Math.PI * diff) / 33);
     const avg = (phy + emo + int + 3) / 6;
 
     const details = [
-      { name: "Physical", score: Math.round(((phy+1)/2)*100) },
-      { name: "Emotional", score: Math.round(((emo+1)/2)*100) },
-      { name: "Intellectual", score: Math.round(((int+1)/2)*100) }
+      { name: "Physical", score: Math.round(((phy + 1) / 2) * 100) },
+      { name: "Emotional", score: Math.round(((emo + 1) / 2) * 100) },
+      { name: "Intellectual", score: Math.round(((int + 1) / 2) * 100) },
     ];
 
-    return { score: Math.round(avg * 15), percent: Math.round(avg * 100), details };
+    return {
+      score: Math.round(avg * 15),
+      percent: Math.round(avg * 100),
+      details,
+    };
   },
 
   getZodiac: (dob) => {
-    if(!dob) return "Aries";
-    const [y,m,d] = dob.split('-').map(Number);
-    const dates = [20,19,21,20,21,21,23,23,23,23,22,22];
-    const signs = ["Capricorn","Aquarius","Pisces","Aries","Taurus","Gemini","Cancer","Leo","Virgo","Libra","Scorpio","Sagittarius"];
-    let idx = m-1;
-    if(d < dates[idx]) idx = (idx-1+12)%12;
+    if (!dob) return "Aries";
+    const [y, m, d] = dob.split("-").map(Number);
+    const dates = [20, 19, 21, 20, 21, 21, 23, 23, 23, 23, 22, 22];
+    const signs = [
+      "Capricorn",
+      "Aquarius",
+      "Pisces",
+      "Aries",
+      "Taurus",
+      "Gemini",
+      "Cancer",
+      "Leo",
+      "Virgo",
+      "Libra",
+      "Scorpio",
+      "Sagittarius",
+    ];
+    let idx = m - 1;
+    if (d < dates[idx]) idx = (idx - 1 + 12) % 12;
     return signs[idx];
   },
 
   getElementScore: (z1, z2) => {
     const els = {
-      Fire: ["Aries","Leo","Sagittarius"],
-      Earth: ["Taurus","Virgo","Capricorn"],
-      Air: ["Gemini","Libra","Aquarius"],
-      Water: ["Cancer","Scorpio","Pisces"]
+      Fire: ["Aries", "Leo", "Sagittarius"],
+      Earth: ["Taurus", "Virgo", "Capricorn"],
+      Air: ["Gemini", "Libra", "Aquarius"],
+      Water: ["Cancer", "Scorpio", "Pisces"],
     };
-    const getEl = (z) => Object.keys(els).find(k => els[k].includes(z));
-    const e1 = getEl(z1), e2 = getEl(z2);
+    const getEl = (z) => Object.keys(els).find((k) => els[k].includes(z));
+    const e1 = getEl(z1),
+      e2 = getEl(z2);
 
-    if(e1 === e2) return 10;
-    if((e1==='Fire' && e2==='Air') || (e1==='Air' && e2==='Fire')) return 9;
-    if((e1==='Water' && e2==='Earth') || (e1==='Earth' && e2==='Water')) return 9;
-    if((e1==='Fire' && e2==='Water') || (e1==='Water' && e2==='Fire')) return 4;
-    if((e1==='Fire' && e2==='Earth') || (e1==='Earth' && e2==='Fire')) return 4;
-    if((e1==='Air' && e2==='Water') || (e1==='Water' && e2==='Air')) return 4;
-    if((e1==='Air' && e2==='Earth') || (e1==='Earth' && e2==='Air')) return 4;
+    if (e1 === e2) return 10;
+    if ((e1 === "Fire" && e2 === "Air") || (e1 === "Air" && e2 === "Fire"))
+      return 9;
+    if (
+      (e1 === "Water" && e2 === "Earth") ||
+      (e1 === "Earth" && e2 === "Water")
+    )
+      return 9;
+    if ((e1 === "Fire" && e2 === "Water") || (e1 === "Water" && e2 === "Fire"))
+      return 4;
+    if ((e1 === "Fire" && e2 === "Earth") || (e1 === "Earth" && e2 === "Fire"))
+      return 4;
+    if ((e1 === "Air" && e2 === "Water") || (e1 === "Water" && e2 === "Air"))
+      return 4;
+    if ((e1 === "Air" && e2 === "Earth") || (e1 === "Earth" && e2 === "Air"))
+      return 4;
     return 6;
-  }
+  },
 };
 
 const generateVerdict = (total) => {
-  if (total >= 85) return {
-    text: "Soulmate Synergy",
-    color: "text-fuchsia-400",
-    desc: "Rare and powerful alignment across all dimensions. The cosmos strongly favors this union."
-  };
-  if (total >= 70) return {
-    text: "Excellent Match",
-    color: "text-green-400",
-    desc: "Strong foundation with minor friction points. This relationship has great potential."
-  };
-  if (total >= 50) return {
-    text: "Average Match",
-    color: "text-yellow-400",
-    desc: "Requires conscious effort and adjustment to succeed. Compatibility is moderate."
-  };
+  if (total >= 85)
+    return {
+      text: "Soulmate Synergy",
+      color: "text-fuchsia-400",
+      desc: "Rare and powerful alignment across all dimensions. The cosmos strongly favors this union.",
+    };
+  if (total >= 70)
+    return {
+      text: "Excellent Match",
+      color: "text-green-400",
+      desc: "Strong foundation with minor friction points. This relationship has great potential.",
+    };
+  if (total >= 50)
+    return {
+      text: "Average Match",
+      color: "text-yellow-400",
+      desc: "Requires conscious effort and adjustment to succeed. Compatibility is moderate.",
+    };
   return {
     text: "Challenging Match",
     color: "text-red-400",
-    desc: "Significant karmic and temperamental blocks detected. Proceed with awareness."
+    desc: "Significant karmic and temperamental blocks detected. Proceed with awareness.",
   };
 };
 
@@ -859,11 +1265,11 @@ const generateVerdict = (total) => {
 const RadarChart = ({ scores }) => {
   const normalize = (val, max) => (val / max) * 100;
   const points = [
-    { val: normalize(scores.vedic, 50), angle: 0, label: 'Vedic' },
-    { val: normalize(scores.cosmic, 15), angle: 72, label: 'Cosmic' },
-    { val: normalize(scores.num, 15), angle: 144, label: 'Destiny' },
-    { val: normalize(scores.name, 10), angle: 216, label: 'Name' },
-    { val: normalize(scores.elem, 10), angle: 288, label: 'Element' }
+    { val: normalize(scores.vedic, 50), angle: 0, label: "Vedic" },
+    { val: normalize(scores.cosmic, 15), angle: 72, label: "Cosmic" },
+    { val: normalize(scores.num, 15), angle: 144, label: "Destiny" },
+    { val: normalize(scores.name, 10), angle: 216, label: "Name" },
+    { val: normalize(scores.elem, 10), angle: 288, label: "Element" },
   ];
 
   const getCoords = (val, angle) => {
@@ -872,22 +1278,58 @@ const RadarChart = ({ scores }) => {
     return `${50 + r * Math.cos(rad)},${50 + r * Math.sin(rad)}`;
   };
 
-  const polyPoints = points.map(p => getCoords(p.val, p.angle)).join(" ");
-  const bgPoly = points.map(p => getCoords(100, p.angle)).join(" ");
+  const polyPoints = points.map((p) => getCoords(p.val, p.angle)).join(" ");
+  const bgPoly = points.map((p) => getCoords(100, p.angle)).join(" ");
 
   return (
     <div className="relative w-64 h-64 mx-auto">
-      <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-[0_0_15px_rgba(139,92,246,0.6)]">
-        <polygon points={bgPoly} fill="none" stroke="#334155" strokeWidth="0.5" strokeDasharray="4" />
-        <polygon points={points.map(p => getCoords(66, p.angle)).join(" ")} fill="none" stroke="#334155" strokeWidth="0.5" strokeDasharray="2"/>
-        <polygon points={points.map(p => getCoords(33, p.angle)).join(" ")} fill="none" stroke="#334155" strokeWidth="0.5" strokeDasharray="2"/>
-        <polygon points={polyPoints} fill="rgba(139, 92, 246, 0.2)" stroke="#a78bfa" strokeWidth="2" />
+      <svg
+        viewBox="0 0 100 100"
+        className="w-full h-full drop-shadow-[0_0_15px_rgba(139,92,246,0.6)]"
+      >
+        <polygon
+          points={bgPoly}
+          fill="none"
+          stroke="#334155"
+          strokeWidth="0.5"
+          strokeDasharray="4"
+        />
+        <polygon
+          points={points.map((p) => getCoords(66, p.angle)).join(" ")}
+          fill="none"
+          stroke="#334155"
+          strokeWidth="0.5"
+          strokeDasharray="2"
+        />
+        <polygon
+          points={points.map((p) => getCoords(33, p.angle)).join(" ")}
+          fill="none"
+          stroke="#334155"
+          strokeWidth="0.5"
+          strokeDasharray="2"
+        />
+        <polygon
+          points={polyPoints}
+          fill="rgba(139, 92, 246, 0.2)"
+          stroke="#a78bfa"
+          strokeWidth="2"
+        />
         <circle cx="50" cy="50" r="2" fill="#fff" />
-        <text x="50" y="5" fontSize="4" fill="#a78bfa" textAnchor="middle">Vedic</text>
-        <text x="95" y="35" fontSize="4" fill="#f472b6" textAnchor="middle">Cosmic</text>
-        <text x="80" y="95" fontSize="4" fill="#c084fc" textAnchor="middle">Destiny</text>
-        <text x="20" y="95" fontSize="4" fill="#60a5fa" textAnchor="middle">Name</text>
-        <text x="5" y="35" fontSize="4" fill="#4ade80" textAnchor="middle">Elem</text>
+        <text x="50" y="5" fontSize="4" fill="#a78bfa" textAnchor="middle">
+          Vedic
+        </text>
+        <text x="95" y="35" fontSize="4" fill="#f472b6" textAnchor="middle">
+          Cosmic
+        </text>
+        <text x="80" y="95" fontSize="4" fill="#c084fc" textAnchor="middle">
+          Destiny
+        </text>
+        <text x="20" y="95" fontSize="4" fill="#60a5fa" textAnchor="middle">
+          Name
+        </text>
+        <text x="5" y="35" fontSize="4" fill="#4ade80" textAnchor="middle">
+          Elem
+        </text>
       </svg>
     </div>
   );
@@ -902,28 +1344,34 @@ const SmartInput = ({ title, val, set, color }) => {
 
   const handleSearch = (e) => {
     const q = e.target.value;
-    set({...val, city: q});
-    if(q.length > 1) {
-      setSuggestions(MOCK_CITIES.filter(c => c.description.toLowerCase().includes(q.toLowerCase())));
+    set({ ...val, city: q });
+    if (q.length > 1) {
+      setSuggestions(
+        MOCK_CITIES.filter((c) =>
+          c.description.toLowerCase().includes(q.toLowerCase())
+        )
+      );
     } else {
       setSuggestions([]);
     }
   };
 
   const selectCity = (c) => {
-    set({...val, city: c.description, lat: c.lat, lng: c.lng, tz: c.tz});
+    set({ ...val, city: c.description, lat: c.lat, lng: c.lng, tz: c.tz });
     setSuggestions([]);
   };
 
   return (
     <div className="bg-gray-900/50 border border-cyan-500/20 p-6 rounded-xl space-y-4 backdrop-blur-md">
-      <h3 className={`font-bold text-sm uppercase tracking-wider ${color} flex items-center gap-2`}>
+      <h3
+        className={`font-bold text-sm uppercase tracking-wider ${color} flex items-center gap-2`}
+      >
         <User size={16} /> {title}
       </h3>
 
       <input
         value={val.name}
-        onChange={e=>set({...val, name:e.target.value})}
+        onChange={(e) => set({ ...val, name: e.target.value })}
         placeholder="Full Name"
         className="w-full bg-gray-950 border border-cyan-500/30 rounded-lg px-4 py-3 text-white outline-none focus:border-cyan-500 transition-colors"
       />
@@ -932,16 +1380,16 @@ const SmartInput = ({ title, val, set, color }) => {
         <input
           type="date"
           value={val.dob}
-          onChange={e=>set({...val, dob:e.target.value})}
+          onChange={(e) => set({ ...val, dob: e.target.value })}
           className="bg-gray-950 border border-cyan-500/30 rounded-lg px-4 py-3 text-white outline-none focus:border-cyan-500 transition-colors"
-          style={{ colorScheme: 'dark' }}
+          style={{ colorScheme: "dark" }}
         />
         <input
           type="time"
           value={val.tob}
-          onChange={e=>set({...val, tob:e.target.value})}
+          onChange={(e) => set({ ...val, tob: e.target.value })}
           className="bg-gray-950 border border-cyan-500/30 rounded-lg px-4 py-3 text-white outline-none focus:border-cyan-500 transition-colors"
-          style={{ colorScheme: 'dark' }}
+          style={{ colorScheme: "dark" }}
         />
       </div>
 
@@ -955,10 +1403,10 @@ const SmartInput = ({ title, val, set, color }) => {
         />
         {suggestions.length > 0 && (
           <div className="absolute z-10 w-full bg-gray-900 border border-cyan-500/30 mt-2 rounded-lg shadow-xl max-h-48 overflow-y-auto">
-            {suggestions.map((c,i) => (
+            {suggestions.map((c, i) => (
               <div
                 key={i}
-                onClick={()=>selectCity(c)}
+                onClick={() => selectCity(c)}
                 className="px-4 py-3 hover:bg-cyan-900/30 cursor-pointer text-sm text-gray-300 border-b border-gray-700 last:border-0"
               >
                 {c.description}
@@ -975,24 +1423,36 @@ const SmartInput = ({ title, val, set, color }) => {
 // METRIC CARD COMPONENT
 // ============================================================
 
-const MetricCard = ({ title, score, max, color, icon: Icon, desc, onClick }) => (
+const MetricCard = ({
+  title,
+  score,
+  max,
+  color,
+  icon: Icon,
+  desc,
+  onClick,
+}) => (
   <div
     onClick={onClick}
     className="bg-gray-900/50 border border-cyan-500/20 p-5 rounded-xl flex items-center justify-between hover:border-cyan-500/50 transition-all cursor-pointer group backdrop-blur-md"
   >
     <div className="flex items-center gap-4">
-      <div className={`w-12 h-12 rounded-full flex items-center justify-center ${color} bg-opacity-20 text-white group-hover:scale-110 transition-transform`}>
+      <div
+        className={`w-12 h-12 rounded-full flex items-center justify-center ${color} bg-opacity-20 text-white group-hover:scale-110 transition-transform`}
+      >
         <Icon size={24} />
       </div>
       <div>
-        <h4 className="font-bold text-cyan-200 group-hover:text-cyan-100 transition-colors">{title}</h4>
+        <h4 className="font-bold text-cyan-200 group-hover:text-cyan-100 transition-colors">
+          {title}
+        </h4>
         <p className="text-xs text-gray-400">{desc}</p>
       </div>
     </div>
-    <div className="text-right">
-      <div className="text-3xl font-bold text-white">{Math.round(score)}</div>
-      <div className="text-[10px] text-gray-500 uppercase">Out of {max}</div>
-    </div>
+    {/* <div className="text-right"> */}
+    {/* <div className="text-3xl font-bold text-white">{Math.round(score)}</div>
+      <div className="text-[10px] text-gray-500 uppercase">Out of {max}</div> */}
+    {/* </div> */}
   </div>
 );
 
@@ -1004,24 +1464,40 @@ export default function CosmicCompatibilityPage() {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
 
-  const [screen, setScreen] = useState('input');
+  const [screen, setScreen] = useState("input");
   const [loading, setLoading] = useState(false);
   const [report, setReport] = useState(null);
   const [activeTab, setActiveTab] = useState(null);
-  const [viewMode, setViewMode] = useState('standard'); // 'standard' or 'detailed'
+  const [viewMode, setViewMode] = useState("standard"); // 'standard' or 'detailed'
 
   const [selectedP1Id, setSelectedP1Id] = useState(null);
   const [selectedP2Id, setSelectedP2Id] = useState(null);
-  const [p1, setP1] = useState({ name: '', dob: '', tob: '', city: '', lat: '', lng: '', tz: '' });
-  const [p2, setP2] = useState({ name: '', dob: '', tob: '', city: '', lat: '', lng: '', tz: '' });
-  const [p2InputMode, setP2InputMode] = useState('family'); // 'family' or 'manual'
+  const [p1, setP1] = useState({
+    name: "",
+    dob: "",
+    tob: "",
+    city: "",
+    lat: "",
+    lng: "",
+    tz: "",
+  });
+  const [p2, setP2] = useState({
+    name: "",
+    dob: "",
+    tob: "",
+    city: "",
+    lat: "",
+    lng: "",
+    tz: "",
+  });
+  const [p2InputMode, setP2InputMode] = useState("family"); // 'family' or 'manual'
 
   const handleSignOut = async () => {
     await signOut();
   };
 
   const handleBackToHome = () => {
-    navigate('/');
+    navigate("/");
   };
 
   const handleP1FamilyMemberSelect = (memberId) => {
@@ -1029,12 +1505,12 @@ export default function CosmicCompatibilityPage() {
   };
 
   const handleP1DetailsChange = (details) => {
-    setP1(prev => ({
+    setP1((prev) => ({
       ...prev,
       name: details.name,
       dob: details.dob,
       birthPlace: details.birthPlace,
-      birthTime: details.birthTime
+      birthTime: details.birthTime,
     }));
   };
 
@@ -1043,19 +1519,21 @@ export default function CosmicCompatibilityPage() {
   };
 
   const handleP2DetailsChange = (details) => {
-    setP2(prev => ({
+    setP2((prev) => ({
       ...prev,
       name: details.name,
       dob: details.dob,
       birthPlace: details.birthPlace,
-      birthTime: details.birthTime
+      birthTime: details.birthTime,
     }));
   };
 
   const calculate = () => {
     // Validate Person 1
-    if(!selectedP1Id || !p1.dob || !p1.name) {
-      alert("Please select a family member for Person 1 and ensure their details are loaded");
+    if (!selectedP1Id || !p1.dob || !p1.name) {
+      alert(
+        "Please select a family member for Person 1 and ensure their details are loaded"
+      );
       return;
     }
 
@@ -1063,13 +1541,15 @@ export default function CosmicCompatibilityPage() {
     const hasP2FromFamily = selectedP2Id !== null;
     const hasP2Manual = p2.name && p2.dob;
 
-    if(!hasP2FromFamily && !hasP2Manual) {
-      alert("Please either select Person 2 from your family or enter their details manually");
+    if (!hasP2FromFamily && !hasP2Manual) {
+      alert(
+        "Please either select Person 2 from your family or enter their details manually"
+      );
       return;
     }
 
     // Ensure P1 and P2 are different (if both from family)
-    if(hasP2FromFamily && selectedP1Id === selectedP2Id) {
+    if (hasP2FromFamily && selectedP1Id === selectedP2Id) {
       alert("Please select two different people");
       return;
     }
@@ -1082,16 +1562,16 @@ export default function CosmicCompatibilityPage() {
       const lng1 = p1.lng || 72.87;
       const tz1 = p1.tz || 5.5;
       const lat2 = p2.lat || 28.61;
-      const lng2 = p2.lng || 77.20;
+      const lng2 = p2.lng || 77.2;
       const tz2 = p2.tz || 5.5;
 
       // Vedic Calculation
       const d1 = AstroMath.getSiderealMoon(p1.dob, p1.tob, parseFloat(tz1));
       const d2 = AstroMath.getSiderealMoon(p2.dob, p2.tob, parseFloat(tz2));
-      const n1 = Math.floor(d1/13.333333);
-      const n2 = Math.floor(d2/13.333333);
-      const r1 = Math.floor(d1/30);
-      const r2 = Math.floor(d2/30);
+      const n1 = Math.floor(d1 / 13.333333);
+      const n2 = Math.floor(d2 / 13.333333);
+      const r1 = Math.floor(d1 / 30);
+      const r2 = Math.floor(d2 / 30);
       const vedicRaw = performAshtakoot(n1, n2, r1, r2);
       const vedicScore = (vedicRaw.total / 36) * 50;
 
@@ -1099,8 +1579,14 @@ export default function CosmicCompatibilityPage() {
       const dest1 = Calculator.getDestiny(p1.dob);
       const dest2 = Calculator.getDestiny(p2.dob);
       const numScore = Calculator.getNumerologyScore(dest1, dest2);
-      const destInfo1 = DESTINY_COMPATIBILITY[dest1] || { archetype: "Unknown", desc: "" };
-      const destInfo2 = DESTINY_COMPATIBILITY[dest2] || { archetype: "Unknown", desc: "" };
+      const destInfo1 = DESTINY_COMPATIBILITY[dest1] || {
+        archetype: "Unknown",
+        desc: "",
+      };
+      const destInfo2 = DESTINY_COMPATIBILITY[dest2] || {
+        archetype: "Unknown",
+        desc: "",
+      };
 
       // Name Analysis
       const name1 = Calculator.getNameNumbers(p1.name);
@@ -1115,25 +1601,51 @@ export default function CosmicCompatibilityPage() {
       const z2 = Calculator.getZodiac(p2.dob);
       const elemScore = Calculator.getElementScore(z1, z2);
       const els = {
-        Fire: ["Aries","Leo","Sagittarius"],
-        Earth: ["Taurus","Virgo","Capricorn"],
-        Air: ["Gemini","Libra","Aquarius"],
-        Water: ["Cancer","Scorpio","Pisces"]
+        Fire: ["Aries", "Leo", "Sagittarius"],
+        Earth: ["Taurus", "Virgo", "Capricorn"],
+        Air: ["Gemini", "Libra", "Aquarius"],
+        Water: ["Cancer", "Scorpio", "Pisces"],
       };
-      const getEl = (z) => Object.keys(els).find(k => els[k].includes(z));
+      const getEl = (z) => Object.keys(els).find((k) => els[k].includes(z));
       const e1 = getEl(z1);
       const e2 = getEl(z2);
 
       // Total Score
-      const totalScore = Math.round(vedicScore + numScore + nameScore + cosmic.score + elemScore);
+      const totalScore = Math.round(
+        vedicScore + numScore + nameScore + cosmic.score + elemScore
+      );
       const verdict = generateVerdict(totalScore);
 
       // Domain Scores
-      const emotional = Math.min(100, Math.round(((vedicRaw.details[6].score + vedicRaw.details[7].score) / 15) * 70 + 30));
-      const intellectual = Math.min(100, Math.round((vedicRaw.details[4].score/5 * 60) + (nameScore/10 * 40)));
-      const spiritual = Math.min(100, Math.round((numScore/15 * 50) + (vedicRaw.details[5].score/6 * 30) + (elemScore/10 * 20)));
-      const physical = Math.min(100, Math.round(((vedicRaw.details[3].score / 4) * 60) + ((elemScore/10) * 40)));
-      const practical = Math.min(100, Math.round((vedicRaw.details[0].score/1 * 30) + (cosmic.score/15 * 70)));
+      const emotional = Math.min(
+        100,
+        Math.round(
+          ((vedicRaw.details[6].score + vedicRaw.details[7].score) / 15) * 70 +
+            30
+        )
+      );
+      const intellectual = Math.min(
+        100,
+        Math.round((vedicRaw.details[4].score / 5) * 60 + (nameScore / 10) * 40)
+      );
+      const spiritual = Math.min(
+        100,
+        Math.round(
+          (numScore / 15) * 50 +
+            (vedicRaw.details[5].score / 6) * 30 +
+            (elemScore / 10) * 20
+        )
+      );
+      const physical = Math.min(
+        100,
+        Math.round((vedicRaw.details[3].score / 4) * 60 + (elemScore / 10) * 40)
+      );
+      const practical = Math.min(
+        100,
+        Math.round(
+          (vedicRaw.details[0].score / 1) * 30 + (cosmic.score / 15) * 70
+        )
+      );
 
       setReport({
         scores: {
@@ -1142,7 +1654,7 @@ export default function CosmicCompatibilityPage() {
           name: nameScore,
           cosmic: cosmic.score,
           elem: elemScore,
-          total: totalScore
+          total: totalScore,
         },
         details: {
           vedic: vedicRaw.details,
@@ -1151,23 +1663,48 @@ export default function CosmicCompatibilityPage() {
           num: { d1: dest1, d2: dest2, info1: destInfo1, info2: destInfo2 },
           name: { num1: name1.expr, num2: name2.expr },
           cosmic: cosmic,
-          elem: { e1, e2, z1, z2 }
+          elem: { e1, e2, z1, z2 },
         },
         domains: [
-          { name: 'Emotional', icon: Heart, score: emotional, summary: 'Based on Moon Phase & Bhakoota.' },
-          { name: 'Intellectual', icon: Brain, score: intellectual, summary: 'Planetary Friendship & Name Rhythm.' },
-          { name: 'Spiritual', icon: Gem, score: spiritual, summary: 'Destiny Numbers, Gana & Elements.' },
-          { name: 'Physical', icon: Dumbbell, score: physical, summary: 'Yoni (Biology) & Elemental Attraction.' },
-          { name: 'Practical', icon: ClipboardList, score: practical, summary: 'Work Ethic (Varna) & Biorhythms.' }
+          {
+            name: "Emotional",
+            icon: Heart,
+            score: emotional,
+            summary: "Based on Moon Phase & Bhakoota.",
+          },
+          {
+            name: "Intellectual",
+            icon: Brain,
+            score: intellectual,
+            summary: "Planetary Friendship & Name Rhythm.",
+          },
+          {
+            name: "Spiritual",
+            icon: Gem,
+            score: spiritual,
+            summary: "Destiny Numbers, Gana & Elements.",
+          },
+          {
+            name: "Physical",
+            icon: Dumbbell,
+            score: physical,
+            summary: "Yoni (Biology) & Elemental Attraction.",
+          },
+          {
+            name: "Practical",
+            icon: ClipboardList,
+            score: practical,
+            summary: "Work Ethic (Varna) & Biorhythms.",
+          },
         ],
         verdict,
         p1: { ...p1, nak: NAKSHATRAS[n1] },
-        p2: { ...p2, nak: NAKSHATRAS[n2] }
+        p2: { ...p2, nak: NAKSHATRAS[n2] },
       });
 
       setLoading(false);
-      setScreen('report');
-      setViewMode('standard'); // Reset to standard view when new report is generated
+      setScreen("report");
+      setViewMode("standard"); // Reset to standard view when new report is generated
     }, 2000);
   };
 
@@ -1189,15 +1726,18 @@ export default function CosmicCompatibilityPage() {
           {/* Futuristic Gate Header */}
           <div className="relative w-full h-40 mb-8 overflow-hidden rounded-xl border border-cyan-500/20">
             <div className="absolute inset-0 bg-gradient-to-b from-cyan-950/40 via-gray-950 to-black" />
-            <div className="absolute inset-0" style={{
-              backgroundImage: `
+            <div
+              className="absolute inset-0"
+              style={{
+                backgroundImage: `
                 linear-gradient(to right, rgba(34, 211, 238, 0.1) 1px, transparent 1px),
                 linear-gradient(to bottom, rgba(34, 211, 238, 0.1) 1px, transparent 1px)
               `,
-              backgroundSize: '40px 40px',
-              transform: 'perspective(500px) rotateX(60deg)',
-              transformOrigin: 'center bottom'
-            }} />
+                backgroundSize: "40px 40px",
+                transform: "perspective(500px) rotateX(60deg)",
+                transformOrigin: "center bottom",
+              }}
+            />
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="text-center space-y-2 relative z-10">
                 <div className="text-4xl font-bold">
@@ -1220,11 +1760,13 @@ export default function CosmicCompatibilityPage() {
             </div>
           </div>
 
-          {screen === 'input' && (
+          {screen === "input" && (
             <div className="space-y-8 animate-in fade-in zoom-in duration-500">
               {/* Person 1 - Required from Family */}
               <div className="p-4 bg-gradient-to-r from-cyan-500/10 to-blue-500/10 border border-cyan-400/30 rounded-lg">
-                <p className="text-sm text-cyan-300 mb-4 font-semibold">Person 1 (Required):</p>
+                <p className="text-sm text-cyan-300 mb-4 font-semibold">
+                  Person 1 (Required):
+                </p>
                 <FamilyMemberSelector
                   selectedMemberId={selectedP1Id}
                   onMemberSelect={handleP1FamilyMemberSelect}
@@ -1236,33 +1778,43 @@ export default function CosmicCompatibilityPage() {
 
               {/* Person 2 - Optional, can be from family or manual */}
               <div className="p-4 bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-400/30 rounded-lg">
-                <p className="text-sm text-purple-300 mb-4 font-semibold">Person 2 (Optional - Choose One):</p>
+                <p className="text-sm text-purple-300 mb-4 font-semibold">
+                  Person 2 (Optional - Choose One):
+                </p>
 
                 {/* Toggle Buttons */}
                 <div className="flex gap-2 mb-4">
                   <button
                     onClick={() => {
-                      setP2InputMode('family');
+                      setP2InputMode("family");
                       setSelectedP2Id(null);
-                      setP2({ name: '', dob: '', tob: '', city: '', lat: '', lng: '', tz: '' });
+                      setP2({
+                        name: "",
+                        dob: "",
+                        tob: "",
+                        city: "",
+                        lat: "",
+                        lng: "",
+                        tz: "",
+                      });
                     }}
                     className={`flex-1 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                      p2InputMode === 'family'
-                        ? 'bg-purple-500/40 border border-purple-400 text-purple-200'
-                        : 'bg-white/10 border border-white/20 text-white/60 hover:bg-white/20'
+                      p2InputMode === "family"
+                        ? "bg-purple-500/40 border border-purple-400 text-purple-200"
+                        : "bg-white/10 border border-white/20 text-white/60 hover:bg-white/20"
                     }`}
                   >
                     From Family
                   </button>
                   <button
                     onClick={() => {
-                      setP2InputMode('manual');
+                      setP2InputMode("manual");
                       setSelectedP2Id(null);
                     }}
                     className={`flex-1 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                      p2InputMode === 'manual'
-                        ? 'bg-purple-500/40 border border-purple-400 text-purple-200'
-                        : 'bg-white/10 border border-white/20 text-white/60 hover:bg-white/20'
+                      p2InputMode === "manual"
+                        ? "bg-purple-500/40 border border-purple-400 text-purple-200"
+                        : "bg-white/10 border border-white/20 text-white/60 hover:bg-white/20"
                     }`}
                   >
                     Manual Entry
@@ -1270,7 +1822,7 @@ export default function CosmicCompatibilityPage() {
                 </div>
 
                 {/* Family Selection Mode */}
-                {p2InputMode === 'family' && (
+                {p2InputMode === "family" && (
                   <FamilyMemberSelector
                     selectedMemberId={selectedP2Id}
                     onMemberSelect={handleP2FamilyMemberSelect}
@@ -1281,32 +1833,40 @@ export default function CosmicCompatibilityPage() {
                 )}
 
                 {/* Manual Entry Mode */}
-                {p2InputMode === 'manual' && (
+                {p2InputMode === "manual" && (
                   <div className="space-y-3">
                     <input
                       type="text"
                       placeholder="Full Name"
                       value={p2.name}
-                      onChange={(e) => setP2(prev => ({ ...prev, name: e.target.value }))}
+                      onChange={(e) =>
+                        setP2((prev) => ({ ...prev, name: e.target.value }))
+                      }
                       className="w-full px-4 py-2 bg-white/5 border border-white/20 rounded-lg text-white placeholder-white/40 focus:border-purple-400 focus:outline-none"
                     />
                     <input
                       type="date"
                       value={p2.dob}
-                      onChange={(e) => setP2(prev => ({ ...prev, dob: e.target.value }))}
+                      onChange={(e) =>
+                        setP2((prev) => ({ ...prev, dob: e.target.value }))
+                      }
                       className="w-full px-4 py-2 bg-white/5 border border-white/20 rounded-lg text-white focus:border-purple-400 focus:outline-none"
                     />
                     <input
                       type="time"
                       value={p2.tob}
-                      onChange={(e) => setP2(prev => ({ ...prev, tob: e.target.value }))}
+                      onChange={(e) =>
+                        setP2((prev) => ({ ...prev, tob: e.target.value }))
+                      }
                       className="w-full px-4 py-2 bg-white/5 border border-white/20 rounded-lg text-white focus:border-purple-400 focus:outline-none"
                     />
                     <input
                       type="text"
                       placeholder="Birth City (optional)"
                       value={p2.city}
-                      onChange={(e) => setP2(prev => ({ ...prev, city: e.target.value }))}
+                      onChange={(e) =>
+                        setP2((prev) => ({ ...prev, city: e.target.value }))
+                      }
                       className="w-full px-4 py-2 bg-white/5 border border-white/20 rounded-lg text-white placeholder-white/40 focus:border-purple-400 focus:outline-none"
                     />
                   </div>
@@ -1314,7 +1874,8 @@ export default function CosmicCompatibilityPage() {
               </div>
 
               {/* Validation Message */}
-              {!selectedP1Id || (p2InputMode === 'family' && !selectedP2Id && !p2.name) ? (
+              {!selectedP1Id ||
+              (p2InputMode === "family" && !selectedP2Id && !p2.name) ? (
                 <div className="p-4 bg-amber-500/10 border border-amber-500/30 rounded-lg text-center text-amber-300 text-sm">
                   {!selectedP1Id
                     ? "Please select Person 1 from your family"
@@ -1326,26 +1887,28 @@ export default function CosmicCompatibilityPage() {
                   disabled={loading}
                   className="w-full bg-gradient-to-r from-cyan-600 to-purple-600 hover:from-cyan-500 hover:to-purple-500 text-white font-bold py-4 rounded-xl shadow-lg shadow-cyan-500/20 transition-all flex items-center justify-center gap-2"
                 >
-                  {loading ? <Activity className="animate-spin"/> : <Zap/>}
-                  {loading ? "Analyzing 5 Dimensions..." : "Analyze Compatibility"}
+                  {loading ? <Activity className="animate-spin" /> : <Zap />}
+                  {loading
+                    ? "Analyzing 5 Dimensions..."
+                    : "Analyze Compatibility"}
                 </button>
               )}
             </div>
           )}
 
-          {screen === 'report' && report && viewMode === 'detailed' && (
+          {screen === "report" && report && viewMode === "detailed" && (
             <CosmicOnceReport
               report={report}
-              onBack={() => setViewMode('standard')}
+              onBack={() => setViewMode("standard")}
             />
           )}
 
-          {screen === 'report' && report && viewMode === 'standard' && (
+          {screen === "report" && report && viewMode === "standard" && (
             <div className="animate-in slide-in-from-bottom-8 duration-700 space-y-8">
               {/* View Toggle Button */}
               <div className="flex justify-between items-center">
                 <button
-                  onClick={() => setViewMode('detailed')}
+                  onClick={() => setViewMode("detailed")}
                   className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white px-6 py-3 rounded-xl shadow-lg flex items-center gap-2 font-medium transition-all"
                 >
                   <FileText size={18} />
@@ -1358,20 +1921,30 @@ export default function CosmicCompatibilityPage() {
                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-500 via-purple-500 to-pink-500" />
                 <button
                   onClick={() => {
-                    setScreen('input');
-                    setViewMode('standard');
+                    setScreen("input");
+                    setViewMode("standard");
                   }}
                   className="absolute top-4 right-4 p-2 hover:bg-white/10 rounded-full transition-colors"
                 >
-                  <RotateCcw size={16}/>
+                  <RotateCcw size={16} />
                 </button>
 
                 <div className="flex flex-col md:flex-row items-center justify-between gap-8">
                   <div className="text-center md:text-left">
-                    <h2 className="text-cyan-300 font-bold tracking-widest uppercase text-xs mb-1">Final Verdict</h2>
-                    <div className="text-6xl font-bold text-white mb-2">{report.scores.total}%</div>
-                    <div className={`text-2xl font-bold ${report.verdict.color} mb-2`}>{report.verdict.text}</div>
-                    <div className="text-gray-400 text-sm mt-2 max-w-md">{report.verdict.desc}</div>
+                    <h2 className="text-cyan-300 font-bold tracking-widest uppercase text-xs mb-1">
+                      Final Verdict
+                    </h2>
+                    <div className="text-6xl font-bold text-white mb-2">
+                      {report.scores.total}%
+                    </div>
+                    <div
+                      className={`text-2xl font-bold ${report.verdict.color} mb-2`}
+                    >
+                      {report.verdict.text}
+                    </div>
+                    <div className="text-gray-400 text-sm mt-2 max-w-md">
+                      {report.verdict.desc}
+                    </div>
                   </div>
 
                   <RadarChart scores={report.scores} />
@@ -1381,7 +1954,7 @@ export default function CosmicCompatibilityPage() {
               {/* Destiny Archetypes */}
               <div>
                 <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-                  <BookOpen className="text-cyan-400"/> Destiny Archetypes
+                  <BookOpen className="text-cyan-400" /> Destiny Archetypes
                 </h3>
                 <div className="grid md:grid-cols-2 gap-4">
                   <div className="bg-gray-900/50 border border-cyan-500/20 p-6 rounded-xl backdrop-blur-md">
@@ -1391,8 +1964,12 @@ export default function CosmicCompatibilityPage() {
                         Number {report.details.num.d1}
                       </span>
                     </div>
-                    <h5 className="text-lg text-cyan-200 font-serif mb-2">{report.details.num.info1.archetype}</h5>
-                    <p className="text-sm text-gray-400 leading-relaxed">{report.details.num.info1.desc}</p>
+                    <h5 className="text-lg text-cyan-200 font-serif mb-2">
+                      {report.details.num.info1.archetype}
+                    </h5>
+                    <p className="text-sm text-gray-400 leading-relaxed">
+                      {report.details.num.info1.desc}
+                    </p>
                   </div>
                   <div className="bg-gray-900/50 border border-cyan-500/20 p-6 rounded-xl backdrop-blur-md">
                     <div className="flex items-center justify-between mb-2">
@@ -1401,8 +1978,12 @@ export default function CosmicCompatibilityPage() {
                         Number {report.details.num.d2}
                       </span>
                     </div>
-                    <h5 className="text-lg text-pink-200 font-serif mb-2">{report.details.num.info2.archetype}</h5>
-                    <p className="text-sm text-gray-400 leading-relaxed">{report.details.num.info2.desc}</p>
+                    <h5 className="text-lg text-pink-200 font-serif mb-2">
+                      {report.details.num.info2.archetype}
+                    </h5>
+                    <p className="text-sm text-gray-400 leading-relaxed">
+                      {report.details.num.info2.desc}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -1412,90 +1993,168 @@ export default function CosmicCompatibilityPage() {
                 <div className="bg-gray-900/50 border border-cyan-500/20 p-6 rounded-2xl animate-in fade-in zoom-in backdrop-blur-md">
                   <div className="flex justify-between items-center mb-4">
                     <h3 className="text-xl font-bold text-white flex items-center gap-2">
-                      {activeTab === 'vedic' && <><Moon className="text-cyan-400"/> Vedic Ashta Koot Breakdown</>}
-                      {activeTab === 'num' && <><Fingerprint className="text-purple-400"/> Numerology Report</>}
-                      {activeTab === 'cosmic' && <><Globe className="text-pink-400"/> Cosmic Biorhythms</>}
-                      {activeTab === 'name' && <><User className="text-blue-400"/> Name Vibration Analysis</>}
-                      {activeTab === 'elem' && <><Wind className="text-green-400"/> Elemental Alchemy</>}
+                      {activeTab === "vedic" && (
+                        <>
+                          <Moon className="text-cyan-400" /> Vedic Ashta Koot
+                          Breakdown
+                        </>
+                      )}
+                      {activeTab === "num" && (
+                        <>
+                          <Fingerprint className="text-purple-400" /> Numerology
+                          Report
+                        </>
+                      )}
+                      {activeTab === "cosmic" && (
+                        <>
+                          <Globe className="text-pink-400" /> Cosmic Biorhythms
+                        </>
+                      )}
+                      {activeTab === "name" && (
+                        <>
+                          <User className="text-blue-400" /> Name Vibration
+                          Analysis
+                        </>
+                      )}
+                      {activeTab === "elem" && (
+                        <>
+                          <Wind className="text-green-400" /> Elemental Alchemy
+                        </>
+                      )}
                     </h3>
-                    <button onClick={()=>setActiveTab(null)} className="text-xs text-gray-500 hover:text-white">Close</button>
+                    <button
+                      onClick={() => setActiveTab(null)}
+                      className="text-xs text-gray-500 hover:text-white"
+                    >
+                      Close
+                    </button>
                   </div>
 
-                  {activeTab === 'vedic' && (
+                  {activeTab === "vedic" && (
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                       {report.details.vedic.map((d, i) => (
-                        <div key={i} className="p-4 bg-gray-950/50 border border-cyan-500/20 rounded-xl">
-                          <div className="text-xs text-gray-500 uppercase mb-1">{d.name}</div>
-                          <div className="text-2xl font-bold text-white mb-1">{d.score}/{d.max}</div>
-                          <div className="text-[10px] text-gray-400">{d.desc}</div>
+                        <div
+                          key={i}
+                          className="p-4 bg-gray-950/50 border border-cyan-500/20 rounded-xl"
+                        >
+                          <div className="text-xs text-gray-500 uppercase mb-1">
+                            {d.name}
+                          </div>
+                          <div className="text-2xl font-bold text-white mb-1">
+                            {d.score}/{d.max}
+                          </div>
+                          <div className="text-[10px] text-gray-400">
+                            {d.desc}
+                          </div>
                           <div className="w-full bg-gray-800 h-1.5 mt-2 rounded-full overflow-hidden">
-                            <div className="h-full bg-cyan-500" style={{width: `${(d.score/d.max)*100}%`}}></div>
+                            <div
+                              className="h-full bg-cyan-500"
+                              style={{ width: `${(d.score / d.max) * 100}%` }}
+                            ></div>
                           </div>
                         </div>
                       ))}
                     </div>
                   )}
 
-                  {activeTab === 'num' && (
+                  {activeTab === "num" && (
                     <div className="space-y-4">
                       <div className="flex justify-between p-6 bg-gray-950/50 rounded-xl border border-cyan-500/20">
                         <div className="text-center">
-                          <div className="text-xs text-gray-500 mb-2">Person 1 Destiny</div>
-                          <div className="text-4xl font-bold text-cyan-400">{report.details.num.d1}</div>
+                          <div className="text-xs text-gray-500 mb-2">
+                            Person 1 Destiny
+                          </div>
+                          <div className="text-4xl font-bold text-cyan-400">
+                            {report.details.num.d1}
+                          </div>
                         </div>
                         <div className="text-center self-center">
                           <Heart className="text-pink-500" size={32} />
                         </div>
                         <div className="text-center">
-                          <div className="text-xs text-gray-500 mb-2">Person 2 Destiny</div>
-                          <div className="text-4xl font-bold text-pink-400">{report.details.num.d2}</div>
+                          <div className="text-xs text-gray-500 mb-2">
+                            Person 2 Destiny
+                          </div>
+                          <div className="text-4xl font-bold text-pink-400">
+                            {report.details.num.d2}
+                          </div>
                         </div>
                       </div>
                     </div>
                   )}
 
-                  {activeTab === 'cosmic' && (
+                  {activeTab === "cosmic" && (
                     <div className="space-y-3">
                       {report.details.cosmic.details.map((d, i) => (
-                        <div key={i} className="flex items-center justify-between p-4 bg-gray-950/50 rounded-xl border border-cyan-500/20">
-                          <span className="text-gray-300 font-medium">{d.name} Cycle</span>
+                        <div
+                          key={i}
+                          className="flex items-center justify-between p-4 bg-gray-950/50 rounded-xl border border-cyan-500/20"
+                        >
+                          <span className="text-gray-300 font-medium">
+                            {d.name} Cycle
+                          </span>
                           <div className="flex items-center gap-3">
                             <div className="w-48 h-2 bg-gray-800 rounded-full overflow-hidden">
-                              <div className="h-full bg-gradient-to-r from-pink-500 to-purple-500" style={{width: `${d.score}%`}}></div>
+                              <div
+                                className="h-full bg-gradient-to-r from-pink-500 to-purple-500"
+                                style={{ width: `${d.score}%` }}
+                              ></div>
                             </div>
-                            <span className="text-sm font-bold text-white min-w-[3rem]">{d.score}%</span>
+                            <span className="text-sm font-bold text-white min-w-[3rem]">
+                              {d.score}%
+                            </span>
                           </div>
                         </div>
                       ))}
                     </div>
                   )}
 
-                  {activeTab === 'name' && (
+                  {activeTab === "name" && (
                     <div className="flex justify-around p-8 bg-gray-950/50 rounded-xl border border-cyan-500/20">
                       <div className="text-center">
-                        <div className="text-5xl font-bold text-cyan-400 mb-2">{report.details.name.num1}</div>
-                        <div className="text-xs text-gray-500">Person 1 Name Number</div>
+                        <div className="text-5xl font-bold text-cyan-400 mb-2">
+                          {report.details.name.num1}
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          Person 1 Name Number
+                        </div>
                       </div>
-                      <div className="text-3xl text-gray-600 self-center">vs</div>
+                      <div className="text-3xl text-gray-600 self-center">
+                        vs
+                      </div>
                       <div className="text-center">
-                        <div className="text-5xl font-bold text-pink-400 mb-2">{report.details.name.num2}</div>
-                        <div className="text-xs text-gray-500">Person 2 Name Number</div>
+                        <div className="text-5xl font-bold text-pink-400 mb-2">
+                          {report.details.name.num2}
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          Person 2 Name Number
+                        </div>
                       </div>
                     </div>
                   )}
 
-                  {activeTab === 'elem' && (
+                  {activeTab === "elem" && (
                     <div className="p-8 bg-gray-950/50 rounded-xl border border-cyan-500/20 text-center">
-                      <div className="text-2xl font-bold text-green-400 mb-4">Elemental Harmony</div>
+                      <div className="text-2xl font-bold text-green-400 mb-4">
+                        Elemental Harmony
+                      </div>
                       <div className="flex justify-center items-center gap-6 text-lg text-gray-300">
                         <div className="text-center">
-                          <div className="text-cyan-400 font-bold">{report.details.elem.z1}</div>
-                          <div className="text-sm text-gray-500">({report.details.elem.e1})</div>
+                          <div className="text-cyan-400 font-bold">
+                            {report.details.elem.z1}
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            ({report.details.elem.e1})
+                          </div>
                         </div>
                         <Sparkles className="text-purple-400" />
                         <div className="text-center">
-                          <div className="text-pink-400 font-bold">{report.details.elem.z2}</div>
-                          <div className="text-sm text-gray-500">({report.details.elem.e2})</div>
+                          <div className="text-pink-400 font-bold">
+                            {report.details.elem.z2}
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            ({report.details.elem.e2})
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -1512,7 +2171,7 @@ export default function CosmicCompatibilityPage() {
                   color="bg-cyan-500"
                   icon={Moon}
                   desc={`${report.details.p1Nak} & ${report.details.p2Nak}`}
-                  onClick={()=>setActiveTab('vedic')}
+                  onClick={() => setActiveTab("vedic")}
                 />
                 <MetricCard
                   title="Numerology (Destiny)"
@@ -1521,7 +2180,7 @@ export default function CosmicCompatibilityPage() {
                   color="bg-purple-500"
                   icon={Fingerprint}
                   desc={`Numbers: ${report.details.num.d1} & ${report.details.num.d2}`}
-                  onClick={()=>setActiveTab('num')}
+                  onClick={() => setActiveTab("num")}
                 />
                 <MetricCard
                   title="Cosmic (Western)"
@@ -1530,7 +2189,7 @@ export default function CosmicCompatibilityPage() {
                   color="bg-pink-500"
                   icon={Globe}
                   desc="Biorhythm Synchronization"
-                  onClick={()=>setActiveTab('cosmic')}
+                  onClick={() => setActiveTab("cosmic")}
                 />
                 <MetricCard
                   title="Name Analysis"
@@ -1539,7 +2198,7 @@ export default function CosmicCompatibilityPage() {
                   color="bg-blue-500"
                   icon={User}
                   desc={`Numbers: ${report.details.name.num1} & ${report.details.name.num2}`}
-                  onClick={()=>setActiveTab('name')}
+                  onClick={() => setActiveTab("name")}
                 />
                 <MetricCard
                   title="Elemental"
@@ -1548,31 +2207,44 @@ export default function CosmicCompatibilityPage() {
                   color="bg-green-500"
                   icon={Wind}
                   desc={`${report.details.elem.e1} & ${report.details.elem.e2}`}
-                  onClick={()=>setActiveTab('elem')}
+                  onClick={() => setActiveTab("elem")}
                 />
               </div>
 
               {/* 5-Dimensional Analysis */}
               <div>
                 <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-                  <Activity className="text-pink-400"/> 5-Dimensional Compatibility Domains
+                  <Activity className="text-pink-400" /> 5-Dimensional
+                  Compatibility Domains
                 </h3>
                 <div className="space-y-4">
                   {report.domains.map((domain, idx) => {
                     const Icon = domain.icon;
                     return (
-                      <div key={domain.name} className="bg-gray-900/50 border border-cyan-500/20 p-6 rounded-2xl flex flex-col md:flex-row items-center gap-6 backdrop-blur-md">
+                      <div
+                        key={domain.name}
+                        className="bg-gray-900/50 border border-cyan-500/20 p-6 rounded-2xl flex flex-col md:flex-row items-center gap-6 backdrop-blur-md"
+                      >
                         <div className="p-4 bg-black/40 rounded-full text-purple-300">
-                          <Icon size={28}/>
+                          <Icon size={28} />
                         </div>
                         <div className="flex-1 text-center md:text-left">
-                          <h4 className="text-lg font-bold text-white">{domain.name}</h4>
-                          <p className="text-sm text-gray-400">{domain.summary}</p>
+                          <h4 className="text-lg font-bold text-white">
+                            {domain.name}
+                          </h4>
+                          <p className="text-sm text-gray-400">
+                            {domain.summary}
+                          </p>
                         </div>
                         <div className="text-right min-w-[120px]">
-                          <div className="text-4xl font-bold text-white mb-2">{domain.score}%</div>
+                          <div className="text-4xl font-bold text-white mb-2">
+                            {domain.score}%
+                          </div>
                           <div className="w-full bg-gray-800 h-2 rounded-full overflow-hidden">
-                            <div className="h-full bg-gradient-to-r from-cyan-500 to-purple-500 rounded-full" style={{width: `${domain.score}%`}}></div>
+                            <div
+                              className="h-full bg-gradient-to-r from-cyan-500 to-purple-500 rounded-full"
+                              style={{ width: `${domain.score}%` }}
+                            ></div>
                           </div>
                         </div>
                       </div>
