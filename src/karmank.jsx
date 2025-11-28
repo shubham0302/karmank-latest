@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 
 // --- Core Data & Logic ---
 import { combinationInsights, DATA } from './data/data';
-import { calculateNumerology, dashaCalculator } from './utils/calculators';
+import { calculateNumerology, dashaCalculator } from './api/numerology-api';
 import { useAuth } from './contexts/AuthContext';
 import { useFamilyMembers } from './hooks/useFamilyMembers';
 
@@ -23,6 +23,11 @@ import AdvancedDashaTab from './components/tabs/AdvancedDashaTab';
 import ForecastTab from './components/tabs/ForecastTab';
 import RemediesAndGuidanceTab from './components/tabs/RemediesAndGuidanceTab';
 import NumerologyTraitsTab from './components/tabs/NumerologyTraitsTab';
+import LifeCycleTab from './components/tabs/LifeCycleTab';
+
+// --- Chat Widget ---
+// Temporarily disabled - backend not running on port 8080
+// import ChatWidget from './components/chat/ChatWidgetEnhanced';
 
 // A simple placeholder for any tab you haven't moved or want to disable
 const PlaceholderTab = ({ name }) => (
@@ -62,14 +67,11 @@ export default function KarmAnkApp() {
                 });
                 // Auto-generate report for first family member
                 try {
-                    const mainReport = calculateNumerology(firstMember.date_of_birth);
+                    const mainReport = await calculateNumerology(firstMember.date_of_birth);
                     if (mainReport) {
                         setReport({ ...mainReport, name: firstMember.name, dob: new Date(firstMember.date_of_birth + 'T00:00:00') });
-                        const maha = dashaCalculator.calculateMahaDasha(mainReport.dob, mainReport.basicNumber);
-                        const yearly = dashaCalculator.calculateYearlyDasha(mainReport.dob, mainReport.basicNumber);
-                        const monthly = dashaCalculator.calculateMonthlyDasha(yearly);
-                        const daily = dashaCalculator.calculateDailyDasha(monthly);
-                        setDashaReport({ mahaDashaTimeline: maha, yearlyDashaTimeline: yearly, monthlyDashaTimeline: monthly, dailyDashaTimeline: daily });
+                        const dashaData = await dashaCalculator.calculateFromBackend(firstMember.date_of_birth);
+                        setDashaReport(dashaData);
                         setActiveTab('Welcome');
                     }
                 } catch (error) {
@@ -105,7 +107,7 @@ export default function KarmAnkApp() {
         });
     };
 
-    const handleGenerate = (e) => {
+    const handleGenerate = async (e) => {
         if (e) e.preventDefault();
         if (!selectedFamilyMemberId || !userData.dob || !userData.name) {
             setFormError("Please select a family member first.");
@@ -114,20 +116,17 @@ export default function KarmAnkApp() {
         setFormError('');
 
         try {
-            // Use the imported calculator functions
-            const mainReport = calculateNumerology(userData.dob);
+            // Use the secure backend API
+            const mainReport = await calculateNumerology(userData.dob);
             console.log('Main Report:', mainReport);
 
             if (mainReport) {
                 // Store the report
                 setReport({ ...mainReport, name: userData.name, dob: new Date(userData.dob + 'T00:00:00') });
 
-                // Use the imported dashaCalculator
-                const maha = dashaCalculator.calculateMahaDasha(mainReport.dob, mainReport.basicNumber);
-                const yearly = dashaCalculator.calculateYearlyDasha(mainReport.dob, mainReport.basicNumber);
-                const monthly = dashaCalculator.calculateMonthlyDasha(yearly);
-                const daily = dashaCalculator.calculateDailyDasha(monthly);
-                setDashaReport({ mahaDashaTimeline: maha, yearlyDashaTimeline: yearly, monthlyDashaTimeline: monthly, dailyDashaTimeline: daily });
+                // Get dasha data from backend
+                const dashaData = await dashaCalculator.calculateFromBackend(userData.dob);
+                setDashaReport(dashaData);
 
                 setActiveTab('Welcome');
             } else {
@@ -141,7 +140,7 @@ export default function KarmAnkApp() {
     };
 
     // UPDATED: Removed 'Name Analysis', 'Asset Vibration', and 'Education'
-    const tabs = ['Welcome', 'Foundational Analysis', 'Advanced Dasha', 'Forecast', 'Remedies & Guidance', 'Numerology Traits'];
+    const tabs = ['Welcome', 'Numerology Traits', 'Foundational Analysis', 'Advanced Dasha', 'Forecast', 'Remedies & Guidance', 'Life Cycle'];
 
     const renderTabContent = () => {
         if (!report) return null;
@@ -170,6 +169,8 @@ export default function KarmAnkApp() {
                 return <RemediesAndGuidanceTab report={report} language={language} />;
             case 'Numerology Traits':
                 return <NumerologyTraitsTab report={report} gender={userData.gender} language={language} />;
+            case 'Life Cycle':
+                return <LifeCycleTab report={report} dashaReport={dashaReport} name={userData.name} gender={userData.gender} language={language} />;
             default:
                 return <PlaceholderTab name={activeTab} />;
         }
@@ -238,7 +239,7 @@ export default function KarmAnkApp() {
                                         {members.map(member => (
                                             <button
                                                 key={member.id}
-                                                onClick={() => {
+                                                onClick={async () => {
                                                     setSelectedFamilyMemberId(member.id);
                                                     setUserData({
                                                         name: member.name,
@@ -247,15 +248,16 @@ export default function KarmAnkApp() {
                                                     });
                                                     setMemberDropdownOpen(false);
                                                     // Auto-generate report when member is selected
-                                                    const mainReport = calculateNumerology(member.date_of_birth);
-                                                    if (mainReport) {
-                                                        setReport({ ...mainReport, name: member.name, dob: new Date(member.date_of_birth + 'T00:00:00') });
-                                                        const maha = dashaCalculator.calculateMahaDasha(mainReport.dob, mainReport.basicNumber);
-                                                        const yearly = dashaCalculator.calculateYearlyDasha(mainReport.dob, mainReport.basicNumber);
-                                                        const monthly = dashaCalculator.calculateMonthlyDasha(yearly);
-                                                        const daily = dashaCalculator.calculateDailyDasha(monthly);
-                                                        setDashaReport({ mahaDashaTimeline: maha, yearlyDashaTimeline: yearly, monthlyDashaTimeline: monthly, dailyDashaTimeline: daily });
-                                                        setActiveTab('Welcome');
+                                                    try {
+                                                        const mainReport = await calculateNumerology(member.date_of_birth);
+                                                        if (mainReport) {
+                                                            setReport({ ...mainReport, name: member.name, dob: new Date(member.date_of_birth + 'T00:00:00') });
+                                                            const dashaData = await dashaCalculator.calculateFromBackend(member.date_of_birth);
+                                                            setDashaReport(dashaData);
+                                                            setActiveTab('Welcome');
+                                                        }
+                                                    } catch (error) {
+                                                        console.error('Error generating report for member:', error);
                                                     }
                                                 }}
                                                 className={`w-full text-left px-4 py-3 hover:bg-cyan-400/10 transition ${
@@ -332,6 +334,21 @@ export default function KarmAnkApp() {
                             <div className="mt-6">{renderTabContent()}</div>
                         </div>
                     )}
+
+                    {/* Chat Widget - Shows only after report is generated */}
+                    {/* Temporarily disabled - backend not running on port 8080 */}
+                    {/* {report && (
+                        <ChatWidget
+                            userContext={{
+                                destinyNumber: report.destinyNumber,
+                                basicNumber: report.basicNumber,
+                                currentDasha: dashaReport?.mahaDashaTimeline?.[0]?.planet,
+                                gender: userData.gender,
+                            }}
+                            report={report}
+                            dashaReport={dashaReport}
+                        />
+                    )} */}
                 </div>
             </div>
         </CosmicBackground>

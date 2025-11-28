@@ -1,12 +1,19 @@
 import React, { useState, useEffect } from 'react';
 
-const NlgChildBirthForecast = ({ analysis }) => {
+const NlgChildBirthForecast = ({ analysis, shouldGenerate = false }) => {
     const [forecastText, setForecastText] = useState('');
-    const [isLoading, setIsLoading] = useState(true);
+    const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
+    const [userTriggered, setUserTriggered] = useState(false);
 
     useEffect(() => {
         if (!analysis) return;
+
+        // Only generate if explicitly triggered
+        if (!shouldGenerate && !userTriggered) {
+            setIsLoading(false);
+            return;
+        }
 
         const generateText = async () => {
             setIsLoading(true);
@@ -26,38 +33,46 @@ const NlgChildBirthForecast = ({ analysis }) => {
             prompt += "\nGenerate the forecast:";
 
             try {
-                let chatHistory = [];
-                chatHistory.push({ role: "user", parts: [{ text: prompt }] });
-                const payload = { contents: chatHistory };
-                const apiKey = import.meta.env.VITE_GEMINI_API_KEY || "";
+                const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080';
 
-                if (!apiKey) {
-                    throw new Error('Gemini API key is not configured. Please add VITE_GEMINI_API_KEY to your .env file.');
-                }
+                console.log("[Childbirth Forecast] 🔒 Calling secure backend API for NLG generation...");
 
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+                // Generate cache key based on analysis status
+                const cacheKey = `nlg_childbirth_${analysis.status}`;
 
-                const response = await fetch(apiUrl, {
+                const response = await fetch(`${backendUrl}/nlg/generate`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
+                    body: JSON.stringify({
+                        prompt,
+                        cacheKey,
+                        nlgType: 'childbirth'
+                    })
                 });
 
+                console.log("[Childbirth Forecast] Response status:", response.status);
+                const result = await response.json();
+                console.log("[Childbirth Forecast] API Response:", result);
+
                 if (!response.ok) {
-                    throw new Error(`API call failed with status: ${response.status}`);
+                    const errorMsg = result.message || `API call failed with status: ${response.status}`;
+                    throw new Error(errorMsg);
                 }
 
-                const result = await response.json();
-                if (result.candidates && result.candidates.length > 0 && result.candidates[0].content.parts.length > 0) {
-                    const text = result.candidates[0].content.parts[0].text;
-                    setForecastText(text);
+                if (result.success && result.text) {
+                    setForecastText(result.text);
+                    if (result.cached) {
+                        console.log("✅ Childbirth forecast loaded from cache (no API cost)");
+                    } else {
+                        console.log("✅ Childbirth forecast generated and cached");
+                    }
                 } else {
                     throw new Error("Received an invalid response from the API.");
                 }
 
             } catch (err) {
                 console.error("Error generating forecast:", err);
-                setError('Could not generate the forecast at this time. Please try again later.');
+                setError('Could not generate the forecast at this time. Please ensure backend server is running.');
                 if (analysis.status === 'Green') {
                     setForecastText("The current Dasha period shows positive indicators, suggesting a high possibility for childbirth this year.");
                 } else if (analysis.status === 'Yellow') {
@@ -71,16 +86,29 @@ const NlgChildBirthForecast = ({ analysis }) => {
         };
 
         generateText();
-    }, [analysis]);
+    }, [analysis, shouldGenerate, userTriggered]);
 
     if (isLoading) {
-        return <div className="p-4 text-center">Generating your personalized forecast...</div>;
+        return <div className="p-4 text-center text-indigo-200 animate-pulse">Generating your personalized forecast...</div>;
     }
     if (error) {
         return <div className="p-4 text-center text-red-400">{error}</div>;
     }
+    if (!forecastText) {
+        return (
+            <div className="p-4 text-center">
+                <p className="text-indigo-200 mb-3">Click below to generate your AI-powered childbirth forecast</p>
+                <button
+                    onClick={() => setUserTriggered(true)}
+                    className="px-5 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-semibold rounded-lg hover:from-indigo-400 hover:to-purple-500 transition-all duration-300 shadow-md hover:shadow-indigo-500/50"
+                >
+                    ✨ Generate Forecast
+                </button>
+            </div>
+        );
+    }
 
-    return <div className="p-4">{forecastText}</div>;
+    return <div className="p-4 text-indigo-100">{forecastText}</div>;
 };
 
 export default NlgChildBirthForecast;

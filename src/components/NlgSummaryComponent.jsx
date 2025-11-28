@@ -1,39 +1,40 @@
 import React, { useState, useEffect } from 'react';
 import Card from './Card'; // Import the Card component
 
-const NlgSummaryComponent = ({ prompt, title }) => {
+const NlgSummaryComponent = ({ prompt, title, shouldGenerate = false }) => {
     const [summary, setSummary] = useState('');
-    const [isLoading, setIsLoading] = useState(true);
+    const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
+    const [userTriggered, setUserTriggered] = useState(false);
 
     useEffect(() => {
         if (!prompt) return;
+
+        // Only generate if explicitly triggered by shouldGenerate prop or user button click
+        if (!shouldGenerate && !userTriggered) {
+            setIsLoading(false);
+            return;
+        }
 
         const generateSummary = async () => {
             setIsLoading(true);
             setError('');
             try {
-                const apiKey = import.meta.env.VITE_GEMINI_API_KEY || "";
+                const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080';
 
-                if (!apiKey) {
-                    throw new Error('Gemini API key is not configured. Please add VITE_GEMINI_API_KEY to your .env file.');
-                }
+                console.log("🔒 Calling secure backend API for NLG generation...");
 
-                const payload = {
-                    contents: [{
-                        role: "user",
-                        parts: [{ text: prompt }]
-                    }]
-                };
+                // Generate cache key based on prompt (first 50 chars)
+                const cacheKey = `nlg_summary_${prompt.substring(0, 50).replace(/\s+/g, '_')}`;
 
-                const apiUrl = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash-001:generateContent?key=${apiKey}`;
-
-                console.log("Calling Gemini API with URL:", apiUrl);
-
-                const response = await fetch(apiUrl, {
+                const response = await fetch(`${backendUrl}/nlg/generate`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
+                    body: JSON.stringify({
+                        prompt,
+                        cacheKey,
+                        nlgType: 'summary'
+                    })
                 });
 
                 console.log("Response status:", response.status);
@@ -41,35 +42,50 @@ const NlgSummaryComponent = ({ prompt, title }) => {
                 console.log("API Response:", result);
 
                 if (!response.ok) {
-                    const errorMsg = result.error?.message || `API call failed with status: ${response.status}`;
+                    const errorMsg = result.message || `API call failed with status: ${response.status}`;
                     throw new Error(errorMsg);
                 }
 
-                if (result.candidates && result.candidates.length > 0 && result.candidates[0].content?.parts?.[0]?.text) {
-                    const text = result.candidates[0].content.parts[0].text;
-                    setSummary(text);
+                if (result.success && result.text) {
+                    setSummary(result.text);
+                    if (result.cached) {
+                        console.log("✅ Summary loaded from cache (no API cost)");
+                    } else {
+                        console.log("✅ Summary generated and cached");
+                    }
                 } else {
                     setSummary("Could not generate a detailed summary at this time. Please review the data below.");
                 }
             } catch (err) {
                 console.error("Error generating summary:", err);
                 setError('An error occurred while generating the summary.');
-                setSummary("Could not generate a summary. Please check the console for errors.");
+                setSummary("Could not generate a summary. Please check your backend server is running.");
             } finally {
                 setIsLoading(false);
             }
         };
 
         generateSummary();
-    }, [prompt]); // Re-run whenever the prompt changes
+    }, [prompt, shouldGenerate, userTriggered]); // Re-run when prompt or trigger changes
 
     return (
         <Card className="bg-indigo-900/30 border-indigo-400">
             <h3 className="text-xl font-bold text-indigo-300 mb-3">{title}</h3>
             {isLoading && <p className="text-indigo-200/80">Generating personalized insights...</p>}
             {error && <p className="text-red-400">{error}</p>}
-            {!isLoading && !error && (
+            {!isLoading && !error && summary && (
                 <p className="text-indigo-200 whitespace-pre-wrap">{summary}</p>
+            )}
+            {!isLoading && !summary && !error && (
+                <div className="text-center">
+                    <p className="text-indigo-200 mb-3">Click below to generate AI-powered insights for this section</p>
+                    <button
+                        onClick={() => setUserTriggered(true)}
+                        className="px-5 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-semibold rounded-lg hover:from-indigo-400 hover:to-purple-500 transition-all duration-300 shadow-md hover:shadow-indigo-500/50"
+                    >
+                        ✨ Generate Insights
+                    </button>
+                </div>
             )}
         </Card>
     );
