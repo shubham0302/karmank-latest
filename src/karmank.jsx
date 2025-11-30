@@ -18,6 +18,7 @@ import StaticVedicKundli from "./components/StaticVedicKundli";
 import NlgSummaryComponent from "./components/NlgSummaryComponent";
 import CosmicBackground from "./components/CosmicBackground";
 import FamilyMemberSelector from "./components/FamilyMemberSelector";
+import LoadingAnimation from "./components/LoadingAnimation";
 import { GradientText, gradientUtils } from "./components/GradientText";
 import { ArrowLeft, ChevronDown } from "lucide-react";
 
@@ -380,16 +381,14 @@ export default function KarmAnkApp() {
           </div>
 
           {!report ? (
-            /* Introduction Page */
+            /* Introduction Page with Animated Loading */
             <div className="max-w-2xl mx-auto">
               <div className="bg-gray-900/60 backdrop-blur-md p-8 rounded-xl border border-cyan-500/20 shadow-2xl">
-                <h3 className="text-lg font-semibold text-center text-cyan-300 mb-4">
+                <h3 className="text-lg font-semibold text-center text-cyan-300 mb-8">
                   {userData.name || "Select a member to begin"}
                 </h3>
 
-                <div className="text-center text-white/70 text-sm">
-                  Loading your analysis...
-                </div>
+                <LoadingAnimation />
               </div>
             </div>
           ) : (
