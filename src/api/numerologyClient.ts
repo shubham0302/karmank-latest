@@ -109,14 +109,43 @@ export async function calculateNumerology(
       throw new Error(data.error || "Calculation was unsuccessful");
     }
 
-    // Parse dates if needed
+    // Parse dates if needed - convert all date strings in dashaReport to Date objects
+    const parseDateInObject = (obj: any): any => {
+      if (!obj) return obj;
+      if (obj instanceof Date) return obj;
+
+      if (Array.isArray(obj)) {
+        return obj.map(item => parseDateInObject(item));
+      }
+
+      if (typeof obj === 'object') {
+        const parsed: any = {};
+        for (const key in obj) {
+          if (obj.hasOwnProperty(key)) {
+            const value = obj[key];
+            // Convert startDate and endDate strings to Date objects
+            if ((key === 'startDate' || key === 'endDate') && typeof value === 'string') {
+              parsed[key] = new Date(value);
+            } else if (typeof value === 'object') {
+              parsed[key] = parseDateInObject(value);
+            } else {
+              parsed[key] = value;
+            }
+          }
+        }
+        return parsed;
+      }
+
+      return obj;
+    };
+
     const result: CalculationResponse = {
       success: data.success,
       report: {
         ...data.report,
         dob: new Date(data.report.dob),
       },
-      dashaReport: data.dashaReport,
+      dashaReport: parseDateInObject(data.dashaReport),
       timestamp: data.timestamp,
     };
 
