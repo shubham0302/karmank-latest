@@ -10,6 +10,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import CosmicBackground from "../components/CosmicBackground";
+import { GradientText, gradientUtils } from "../components/GradientText";
 
 // Scroll Reveal Component
 const ScrollReveal = ({ children, delay = 0 }) => {
@@ -91,8 +92,13 @@ export default function AboutPage() {
               />
 
               <div className="relative z-10 text-center">
-                <h1 className="text-5xl lg:text-7xl font-serif font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-blue-400 to-purple-500 mb-4">
-                  KarmAnk
+                <h1 className="mb-4">
+                  <GradientText as="span" size="5xl" className="font-serif lg:text-7xl">
+                    KarmAnk
+                  </GradientText>
+                  <sup className={`text-2xl lg:text-3xl -top-2 ${gradientUtils.text}`}>
+                    ™
+                  </sup>
                 </h1>
                 <div className="h-1.5 w-48 bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 rounded-full mx-auto mb-6 blur-[1px]"></div>
                 <p className="text-xl md:text-2xl text-white/80 max-w-3xl mx-auto leading-relaxed">

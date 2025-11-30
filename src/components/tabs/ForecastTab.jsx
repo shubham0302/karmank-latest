@@ -12,7 +12,8 @@ const ForecastTab = ({ report, dashaReport, gender, language = 'en' }) => {
 
     if (!report) return null;
 
-    const dob = report.dob;
+    // Handle dob as either Date object or string
+    const dob = typeof report.dob === 'string' ? new Date(report.dob) : report.dob;
     const targetDate = new Date(forecastYear, dob.getMonth(), dob.getDate());
     const endDate = new Date(targetDate);
     endDate.setFullYear(endDate.getFullYear() + 1);

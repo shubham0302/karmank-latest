@@ -1,20 +1,32 @@
 import React, { useMemo } from 'react';
 import Card from '../Card';
 import SectionTitle from '../SectionTitle';
-import { DATA } from '../../data/data';
 import { getText } from '../../utils/helpers';
 
-const AdvancedRemediesTab = ({ report, language = 'en' }) => { 
+const AdvancedRemediesTab = ({ report, language = 'en' }) => {
+
+    if (!report?.relevantData) {
+        return (
+            <Card>
+                <SectionTitle>Advanced Remedies for Amplified Numbers</SectionTitle>
+                <p className="text-yellow-400">Report data not fully loaded.</p>
+            </Card>
+        );
+    }
 
     const { baseKundliGrid } = report;
     const applicableRemedies = useMemo(() => {
         const remedies = [];
+
+        // Get multi-number remedies from relevantData if available
+        const multipleNumberRemedies = report.relevantData?.multipleNumberRemedies || {};
+
         baseKundliGrid.forEach((count, number) => {
             // Skip number 0 as it's not significant in numerology
             if (number === 0) return;
 
             if (count >= 2) {
-                const remedy = DATA.multipleNumberRemedies[number];
+                const remedy = multipleNumberRemedies[number];
                 if (remedy) {
                     remedies.push({
                         number,
@@ -26,7 +38,7 @@ const AdvancedRemediesTab = ({ report, language = 'en' }) => {
             }
         });
         return remedies;
-    }, [baseKundliGrid, language]);
+    }, [baseKundliGrid, language, report.relevantData]);
 
     return (
         <Card>

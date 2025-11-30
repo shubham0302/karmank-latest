@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import jsPDF from 'jspdf';
 import CosmicBackground from '../components/CosmicBackground';
+import { GradientText, gradientUtils } from "../components/GradientText";
 import FamilyMemberSelector from '../components/FamilyMemberSelector';
 import { useAuth } from '../contexts/AuthContext';
 import { useFamilyMembers } from '../hooks/useFamilyMembers';
@@ -523,44 +524,10 @@ function generatePDF(report) {
   doc.save(`${profile.name.replace(/\s+/g, '_')}_Numerology_Report.pdf`);
 }
 
-// --- GEMINI API FUNCTION ---
+// --- GEMINI API FUNCTION (DISABLED FOR PRODUCTION) ---
 async function fetchGeminiAnalysis(prompt, imageBase64 = null) {
-  const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
-  if (!GEMINI_API_KEY) throw new Error("Gemini API key not configured");
-
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${GEMINI_API_KEY}`;
-
-  const parts = [{ text: prompt }];
-  if (imageBase64) {
-    parts.push({
-      inline_data: {
-        mime_type: "image/png",
-        data: imageBase64
-      }
-    });
-  }
-
-  const payload = {
-    contents: [{ parts }],
-    generationConfig: {
-      temperature: 0.7,
-      maxOutputTokens: 2048
-    }
-  };
-
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload)
-  });
-
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.error?.message || 'Gemini API request failed');
-  }
-
-  const data = await response.json();
-  return data.candidates[0].content.parts[0].text;
+  // Gemini API integration disabled for production deployment
+  return "AI-powered signature analysis is temporarily unavailable. Your signature has been received and you can continue with the name analysis below.";
 }
 
 // --- UI COMPONENTS ---
@@ -596,10 +563,10 @@ const FuturisticGate = () => (
     <div className="absolute inset-0 flex items-center justify-center">
       <div className="text-center space-y-2 relative z-10">
         <div className="text-4xl font-bold">
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-blue-400 to-purple-500">
+          <GradientText as="span" size="4xl" className="font-serif">
             KarmAnk
-          </span>
-          <sup className="text-2xl -top-2 text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-blue-400 to-purple-500">
+          </GradientText>
+          <sup className={`text-2xl -top-2 ${gradientUtils.text}`}>
             ™
           </sup>
         </div>
@@ -1583,7 +1550,7 @@ export default function NameAnalysisPage() {
             pythagoreanProfile: profile
           });
         } catch (error) {
-          console.error('Error generating report for first member:', error);
+          // Error generating initial report - user can manually generate
         }
       }
     };

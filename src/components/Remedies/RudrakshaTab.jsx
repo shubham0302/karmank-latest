@@ -1,7 +1,8 @@
 import React from 'react';
 import Card from '../Card';
-import { DATA } from '../../data/data';
 import { getText } from '../../utils/helpers';
+import { GradientText } from '../GradientText';
+import { getRudrakshaData, getAdvancedRudrakshaData, getRelevantNumbers } from '../../utils/localData';
 
 const RudrakshaTab = ({ report, language = 'en' }) => {
 
@@ -9,19 +10,24 @@ const RudrakshaTab = ({ report, language = 'en' }) => {
         return <Card><p className="text-red-400">Report data is not available.</p></Card>;
     }
 
+    if (!report?.relevantData) {
+        return <Card><p className="text-yellow-400">Report data not fully loaded. Please regenerate your report.</p></Card>;
+    }
+
     if (!report.basicNumber || !report.destinyNumber) {
         return <Card><p className="text-red-400">Basic number or destiny number is missing.</p></Card>;
     }
 
-    const uniqueNumbers = [...new Set([report.basicNumber, report.destinyNumber])].filter(Boolean);
+    // Get all relevant numbers from user's chart
+    const uniqueNumbers = getRelevantNumbers(report);
 
     if (uniqueNumbers.length === 0) {
         return <Card><p className="text-red-400">No valid numbers found.</p></Card>;
     }
 
     const RudrakshaCard = ({ number }) => {
-        const rudrakshaData = DATA.rudrakshaRemedies?.[number];
-        const advancedData = DATA.advancedRudrakshaRemedies?.[number];
+        const rudrakshaData = getRudrakshaData(report, number);
+        const advancedData = getAdvancedRudrakshaData(report, number);
 
         if (!rudrakshaData || !advancedData) {
             return (
@@ -33,9 +39,9 @@ const RudrakshaTab = ({ report, language = 'en' }) => {
 
         return (
             <Card>
-                <h2 className="text-2xl font-bold text-yellow-400 mb-4">
+                <GradientText as="h2" size="2xl" className="mb-4">
                     Rudraksha for Number {number} ({getText(rudrakshaData.planet, language)})
-                </h2>
+                </GradientText>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <h3 className="font-semibold text-yellow-300 text-lg mb-2">Details</h3>

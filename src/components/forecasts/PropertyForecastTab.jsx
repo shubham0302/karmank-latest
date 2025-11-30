@@ -1,14 +1,16 @@
 import React, { useMemo } from 'react';
 import Card from '../Card';
 import SectionTitle from '../SectionTitle';
-import { DATA } from '../../data/data'; // Import DATA
 
 const PropertyForecastTab = ({ report, dashaReport, targetDate }) => {
     if (!report || !dashaReport) return null;
 
+    // Helper to ensure dates are Date objects
+    const toDate = (date) => (date instanceof Date ? date : new Date(date));
+
     const propertyAnalysis = useMemo(() => {
-        const annualDasha = dashaReport.yearlyDashaTimeline.find(d => targetDate >= d.startDate && targetDate <= d.endDate);
-        const mahaDasha = dashaReport.mahaDashaTimeline.find(d => targetDate >= d.startDate && targetDate <= d.endDate);
+        const annualDasha = dashaReport.yearlyDashaTimeline.find(d => targetDate >= toDate(d.startDate) && targetDate <= toDate(d.endDate));
+        const mahaDasha = dashaReport.mahaDashaTimeline.find(d => targetDate >= toDate(d.startDate) && targetDate <= toDate(d.endDate));
 
         if (!annualDasha || !mahaDasha) {
             return { opportunities: [], warnings:[], specialInsights: [] };

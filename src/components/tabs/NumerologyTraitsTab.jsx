@@ -1,14 +1,22 @@
 import React, { useMemo } from 'react';
 import Card from '../Card';
 import SectionTitle from '../SectionTitle';
-import { DATA } from '../../data/data';
 import { getText } from '../../utils/helpers'; // Import getText
+import { GradientText } from '../GradientText';
 
 const NumerologyTraitsTab = ({ report, gender, language = 'en' }) => {
-    if (!report) return null;
+    if (!report?.relevantData) {
+        return <Card><p className="text-yellow-400">Report data not fully loaded.</p></Card>;
+    }
+
     const { destinyNumber } = report;
-    const traits = DATA.destinyTraits[destinyNumber];
-    const professions = DATA.destinyProfessions[destinyNumber]; 
+
+    // Get traits and professions from relevantData if available
+    const destinyTraits = report.relevantData?.destinyTraits || {};
+    const destinyProfessions = report.relevantData?.destinyProfessions || {};
+
+    const traits = destinyTraits[destinyNumber];
+    const professions = destinyProfessions[destinyNumber]; 
 
     const supportAnalysis = useMemo(() => {
         if (!professions || !professions.supportNeeded) return [];
@@ -26,7 +34,9 @@ const NumerologyTraitsTab = ({ report, gender, language = 'en' }) => {
 
     const TraitItem = ({ label, value }) => (
         <div className="bg-gray-900/50 p-3 rounded-md">
-            <h4 className="font-semibold text-yellow-500 text-sm">{label}</h4>
+            <GradientText as="h4" size="sm" className="mb-1">
+                {label}
+            </GradientText>
             <p className="text-white/90">{value}</p>
         </div>
     );

@@ -1,7 +1,13 @@
-import React from 'react';
+import { GradientText } from './GradientText';
 
 const SectionTitle = ({ children, className = '' }) => (
-    <h2 className={`text-2xl font-bold text-yellow-400 mb-4 font-serif tracking-wider ${className}`}>{children}</h2>
+    <GradientText
+        as="h2"
+        size="2xl"
+        className={`mb-4 font-serif tracking-wider ${className}`}
+    >
+        {children}
+    </GradientText>
 );
 
 export default SectionTitle;

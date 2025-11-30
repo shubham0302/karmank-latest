@@ -7,11 +7,13 @@ import {
   Sparkles, Wand2, CheckCircle2, Star, ChevronDown
 } from 'lucide-react';
 import CosmicBackground from '../components/CosmicBackground';
-import { DATA } from '../data/data';
+import { GradientText, gradientUtils } from '../components/GradientText';
 import { getText } from '../utils/helpers';
 import { useAuth } from '../contexts/AuthContext';
 import { useFamilyMembers } from '../hooks/useFamilyMembers';
 import { useEffect } from 'react';
+import { getAssetCompatibility } from '../utils/localData';
+import { DATA } from '../data/data';
 
 // Enhanced Asset Data with Pythagorean Letter Values
 const ASSET_DATA = {
@@ -574,10 +576,10 @@ const AssetVibrationPage = () => {
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="text-center space-y-2 relative z-10">
                 <div className="text-4xl font-bold">
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-blue-400 to-purple-500">
+                  <GradientText as="span" size="4xl" className="font-serif">
                     KarmAnk
-                  </span>
-                  <sup className="text-2xl -top-2 text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-blue-400 to-purple-500">
+                  </GradientText>
+                  <sup className={`text-2xl -top-2 ${gradientUtils.text}`}>
                     ™
                   </sup>
                 </div>

@@ -5,6 +5,9 @@ import NlgChildBirthForecast from './NlgChildBirthForecast'; // Import sub-compo
 import { reduceToSingleDigit } from '../../utils/helpers'; // Import helper
 
 const ChildBirthForecastTab = ({ report, dashaReport, gender, targetDate }) => {
+    // Helper to ensure dates are Date objects
+    const toDate = (date) => (date instanceof Date ? date : new Date(date));
+
     if (!report || !dashaReport || !targetDate) {
         return (
             <div className="p-4 bg-red-900/50 text-red-300 rounded-lg">

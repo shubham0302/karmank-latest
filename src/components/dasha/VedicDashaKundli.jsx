@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
-import { DATA } from '../../data/data'; // Import DATA
+import { getNumberColor } from '../../utils/localData';
 
-const VedicDashaKundli = ({ baseGrid, activeNumbers, basicNumber, destinyNumber }) => {
+const VedicDashaKundli = ({ report, baseGrid, activeNumbers, basicNumber, destinyNumber }) => {
     const layout = [3, 1, 9, 6, 7, 5, 2, 8, 4];
     const displayGrid = useMemo(() => {
         const newGrid = [...baseGrid];
@@ -11,17 +11,28 @@ const VedicDashaKundli = ({ baseGrid, activeNumbers, basicNumber, destinyNumber 
         return newGrid;
     }, [baseGrid, activeNumbers]);
 
+    // Color map for dasha visualization (static reference data)
+    const colorMap = {
+        daily: '#FF6B6B',
+        monthly: '#4ECDC4',
+        yearly: '#FFE66D',
+        maha: '#95E1D3',
+        destiny: '#FF6B6B',
+        basic: '#4D96FF',
+        dob: '#9D84B7'
+    };
+
     const getCellBackground = (num) => {
         const colors = [];
-        if (activeNumbers.daily === num) colors.push(DATA.colorMap.daily);
-        if (activeNumbers.monthly === num) colors.push(DATA.colorMap.monthly);
-        if (activeNumbers.yearly === num) colors.push(DATA.colorMap.yearly);
-        if (activeNumbers.maha === num) colors.push(DATA.colorMap.maha);
-        if (destinyNumber === num) colors.push(DATA.colorMap.destiny);
-        if (basicNumber === num) colors.push(DATA.colorMap.basic);
+        if (activeNumbers.daily === num) colors.push(colorMap.daily);
+        if (activeNumbers.monthly === num) colors.push(colorMap.monthly);
+        if (activeNumbers.yearly === num) colors.push(colorMap.yearly);
+        if (activeNumbers.maha === num) colors.push(colorMap.maha);
+        if (destinyNumber === num) colors.push(colorMap.destiny);
+        if (basicNumber === num) colors.push(colorMap.basic);
 
         if (colors.length === 0) return baseGrid[num] > 0 ?
-            DATA.colorMap.dob : '#4b5563'; // Gray for empty
+            colorMap.dob : '#4b5563'; // Gray for empty
         if (colors.length === 1) return colors[0];
         return `linear-gradient(45deg, ${colors.join(', ')})`;
     };

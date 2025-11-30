@@ -5,7 +5,6 @@ import { ArrowLeft, Crown, Heart, Users, Info } from 'lucide-react';
 import CosmicBackground from '../components/CosmicBackground';
 import FamilyMemberSelector from '../components/FamilyMemberSelector';
 import { useAuth } from '../contexts/AuthContext';
-import { DATA } from '../data/data';
 import { reduceToSingleDigit, getText } from '../utils/helpers';
 
 const CompatibilityPage = () => {

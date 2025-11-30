@@ -31,11 +31,12 @@ export const reduceToSingleDigit = (num) => {
  * Analyzes the influence of recurring numbers in the chart.
  * @param {Array<number>} digitCounts - Array showing count of each digit.
  * @param {number} destinyNumber - The user's destiny number.
+ * @param {object} recurringRules - Optional recurring number influence rules (from relevantData)
  * @returns {Array<object>} An array of analysis results for recurring numbers.
  */
-export const analyzeRecurringNumbers = (digitCounts, destinyNumber) => {
+export const analyzeRecurringNumbers = (digitCounts, destinyNumber, recurringRules = null) => {
     const results = [];
-    const rules = DATA.recurringNumberInfluence;
+    const rules = recurringRules || DATA.recurringNumberInfluence;
     const language = 'en'; // Default to 'en' for this logic
 
     for (let num = 1; num <= 9; num++) {

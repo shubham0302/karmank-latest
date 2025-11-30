@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, MessageSquare, Send, Star, Sparkles, Heart, Lightbulb, AlertCircle, CheckCircle2 } from "lucide-react";
 import CosmicBackground from "../components/CosmicBackground";
+import { GradientText, gradientUtils } from "../components/GradientText";
 
 export default function FeedbackPage() {
   const year = new Date().getFullYear();
@@ -94,10 +95,10 @@ Sent from KarmAnk™ Feedback Portal
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="text-center space-y-2 relative z-10">
                 <div className="text-4xl font-bold">
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-blue-400 to-purple-500">
+                  <GradientText as="span" size="4xl" className="font-serif">
                     KarmAnk
-                  </span>
-                  <sup className="text-2xl -top-2 text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-blue-400 to-purple-500">
+                  </GradientText>
+                  <sup className={`text-2xl -top-2 ${gradientUtils.text}`}>
                     ™
                   </sup>
                 </div>

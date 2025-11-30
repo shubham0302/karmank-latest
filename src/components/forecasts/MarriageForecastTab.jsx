@@ -1,14 +1,16 @@
-import React, { useMemo } from 'react';
+import React, { useMemo } from 'react'
 import Card from '../Card';
 import SectionTitle from '../SectionTitle';
-import { DATA } from '../../data/data'; // Import DATA
 
 const MarriageForecastTab = ({ report, dashaReport, targetDate }) => {
     if (!report || !dashaReport) return null;
 
+    // Helper to ensure dates are Date objects
+    const toDate = (date) => (date instanceof Date ? date : new Date(date));
+
     const marriageAnalysis = useMemo(() => {
-        const yearlyDasha = dashaReport.yearlyDashaTimeline.find(d => targetDate >= d.startDate && targetDate <= d.endDate);
-        const mahaDasha = dashaReport.mahaDashaTimeline.find(d => targetDate >= d.startDate && targetDate <= d.endDate);
+        const yearlyDasha = dashaReport.yearlyDashaTimeline.find(d => targetDate >= toDate(d.startDate) && targetDate <= toDate(d.endDate));
+        const mahaDasha = dashaReport.mahaDashaTimeline.find(d => targetDate >= toDate(d.startDate) && targetDate <= toDate(d.endDate));
 
         if (!yearlyDasha || !mahaDasha) {
             return { mahaDashaInsights: [], annualDashaInsights: [] };
@@ -79,7 +81,8 @@ const MarriageForecastTab = ({ report, dashaReport, targetDate }) => {
         const probabilities = [];
         const startAge = 20;
         const endAge = 40;
-        const birthYear = report.dob.getFullYear();
+        const dob = typeof report.dob === 'string' ? new Date(report.dob) : report.dob;
+        const birthYear = dob.getFullYear();
 
         for (let age = startAge; age <= endAge; age++) {
             const targetYear = birthYear + age;
@@ -126,8 +129,14 @@ const MarriageForecastTab = ({ report, dashaReport, targetDate }) => {
         return probabilities;
     }, [report, dashaReport]);
 
-    const compatibility = DATA.destinyCompatibility[report.destinyNumber];
-    const compatibilityDescription = compatibility?.description?.en || '';
+    // Compatibility data comes from report if available
+    const compatibilityData = report.relevantData?.destinyCompatibility?.[report.destinyNumber] || {};
+    const compatibilityDescription = compatibilityData?.description?.en || '';
+    const compatibility = {
+        good: compatibilityData?.good || [],
+        neutral: compatibilityData?.neutral || [],
+        not: compatibilityData?.not || compatibilityData?.avoid || []
+    };
 
     return (
         <div className="space-y-6">

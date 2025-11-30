@@ -1,29 +1,39 @@
 import React from 'react';
 import Card from '../Card';
-import { DATA } from '../../data/data';
 import { getText } from '../../utils/helpers';
+import { GradientText } from '../GradientText';
+import { getRemedyData } from '../../utils/localData';
 
 const GeneralRemediesTab = ({ report, language = 'en' }) => {
+    if (!report?.relevantData) {
+        return <Card><p className="text-yellow-400">Report data not fully loaded.</p></Card>;
+    }
 
-    const basicRemedy = DATA.remedies[report.basicNumber];
-    const destinyRemedy = DATA.remedies[report.destinyNumber];
+    const basicRemedy = getRemedyData(report, report.basicNumber);
+    const destinyRemedy = getRemedyData(report, report.destinyNumber);
 
     const RemedyCard = ({ title, number, remedyData }) => (
         <Card>
-            <h2 className="text-2xl font-bold text-yellow-400 mb-4">
+            <GradientText as="h2" size="2xl" className="mb-4">
                 {title} (Number: {number})
-            </h2>
+            </GradientText>
             <div className="space-y-4 text-white/90">
                 <div>
-                    <h3 className="font-semibold text-yellow-300 text-lg mb-1">General Advice</h3>
+                    <GradientText as="h3" size="lg" className="mb-1">
+                        General Advice
+                    </GradientText>
                     <p>{getText(remedyData.general, language)}</p>
                 </div>
                 <div>
-                    <h3 className="font-semibold text-yellow-300 text-lg mb-1">Mantra</h3>
+                    <GradientText as="h3" size="lg" className="mb-1">
+                        Mantra
+                    </GradientText>
                     <p className="italic">{getText(remedyData.mantra, language)}</p>
                 </div>
                 <div>
-                    <h3 className="font-semibold text-yellow-300 text-lg mb-1">Donations</h3>
+                    <GradientText as="h3" size="lg" className="mb-1">
+                        Donations
+                    </GradientText>
                     <p>{getText(remedyData.donation, language)}</p>
                 </div>
             </div>

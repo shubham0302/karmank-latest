@@ -2,6 +2,7 @@ import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ArrowLeft, DollarSign, RefreshCcw } from "lucide-react";
 import CosmicBackground from "../components/CosmicBackground";
+import { GradientText, gradientUtils } from "../components/GradientText";
 
 export default function RefundPage() {
   const year = new Date().getFullYear();
@@ -43,8 +44,13 @@ export default function RefundPage() {
             />
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="text-center space-y-2 relative z-10">
-                <div className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-blue-400 to-purple-500">
-                  KarmAnk™
+                <div className="text-4xl font-bold">
+                  <GradientText as="span" size="4xl" className="font-serif">
+                    KarmAnk
+                  </GradientText>
+                  <sup className={`text-2xl -top-2 ${gradientUtils.text}`}>
+                    ™
+                  </sup>
                 </div>
                 <div className="text-sm text-cyan-400/60 tracking-widest">
                   REFUND & CANCELLATION POLICY

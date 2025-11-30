@@ -1,10 +1,15 @@
 import React, { useMemo } from 'react';
 import Card from '../Card';
 import SectionTitle from '../SectionTitle';
-import { combinationInsights, DATA } from '../../data/data'; // Import from data.js
 import { getText } from '../../utils/helpers'; // Import getText
+import { GradientText } from '../GradientText';
+import { getNumberDetail, getCombinationInsight } from '../../utils/localData';
 
 const WelcomeTab = ({ report, userData, language = 'en' }) => {
+    if (!report?.relevantData) {
+        return <Card><p className="text-yellow-400">Report data not fully loaded.</p></Card>;
+    }
+
     const { kundliNumbers, coreVibrationSummary } = useMemo(() => {
         const numbers = new Set();
         report.baseKundliGrid.forEach((count, number) => {
@@ -28,9 +33,10 @@ const WelcomeTab = ({ report, userData, language = 'en' }) => {
             return a - b;
         });
 
-        const topTraits = sortedNumbers.slice(0, 3).map(num =>
-            getText(DATA.numberDetails[num].coreVibration, language)
-        );
+        const topTraits = sortedNumbers.slice(0, 3).map(num => {
+            const detail = getNumberDetail(report, num);
+            return detail ? getText(detail.coreVibration, language) : 'unknown';
+        });
         let summary = '';
         if (topTraits.length === 1) {
             summary = `Based on the above grid, the person is primarily influenced by ${topTraits[0]} core vibrations.`;
@@ -44,18 +50,25 @@ const WelcomeTab = ({ report, userData, language = 'en' }) => {
         return { kundliNumbers: sortedNumbers, coreVibrationSummary: summary };
     }, [report, language]);
 
-    const insightKey = `${report.basicNumber}-${report.destinyNumber}`;
-    const snapshotDescription = getText(combinationInsights[insightKey], language) || "No specific insight available for this combination.";
+    const combination = getCombinationInsight(report);
+    const snapshotDescription = combination ? getText(combination, language) : "No specific insight available for this combination.";
+
+    // Color map for kundli visualization (static reference data)
+    const colorMap = {
+        destiny: '#FF6B6B',
+        basic: '#4D96FF',
+        dob: '#9D84B7'
+    };
 
     // Function to get cell background color based on number significance
     const getCellBackground = (num) => {
         const colors = [];
 
-        if (report.destinyNumber === num) colors.push(DATA.colorMap.destiny);
-        if (report.basicNumber === num) colors.push(DATA.colorMap.basic);
+        if (report.destinyNumber === num) colors.push(colorMap.destiny);
+        if (report.basicNumber === num) colors.push(colorMap.basic);
 
         if (colors.length === 0) {
-            return report.baseKundliGrid[num] > 0 ? DATA.colorMap.dob : '#4b5563'; // Gray for empty
+            return report.baseKundliGrid[num] > 0 ? colorMap.dob : '#4b5563'; // Gray for empty
         }
         if (colors.length === 1) return colors[0];
         return `linear-gradient(135deg, ${colors.join(', ')})`;
@@ -64,7 +77,9 @@ const WelcomeTab = ({ report, userData, language = 'en' }) => {
     return (
         <div className="space-y-6">
             <Card className="bg-indigo-900/30 border-indigo-400">
-                <h3 className="text-xl font-bold text-indigo-300 mb-3">Your Numerology Snapshot</h3>
+                <GradientText as="h3" size="xl" className="mb-3">
+                    Your Numerology Snapshot
+                </GradientText>
                 <p className="text-indigo-200 whitespace-pre-wrap">{snapshotDescription}</p>
             </Card>
 
@@ -72,7 +87,9 @@ const WelcomeTab = ({ report, userData, language = 'en' }) => {
                 <div className="grid lg:grid-cols-5 gap-6">
                     {/* Left Section - Base Kundli (3/5 width on large screens) */}
                     <div className="lg:col-span-3">
-                        <h3 className="text-lg font-bold text-center text-yellow-300 mb-3">Base Kundli</h3>
+                        <GradientText as="h3" size="2xl" className="text-center mb-3">
+                            Base Kundli
+                        </GradientText>
                         <div className="flex justify-center items-center">
                             <div className="w-full max-w-xs">
                                 <div className="grid grid-cols-3 gap-1.5 bg-gray-900/50 p-2 rounded-md aspect-square">
@@ -91,15 +108,15 @@ const WelcomeTab = ({ report, userData, language = 'en' }) => {
                         {/* Legend */}
                         <div className="mt-3 flex flex-wrap justify-center gap-2 text-xs">
                             <div className="flex items-center gap-1.5">
-                                <div className="w-3 h-3 rounded" style={{ backgroundColor: DATA.colorMap.basic }}></div>
+                                <div className="w-3 h-3 rounded" style={{ backgroundColor: colorMap.basic }}></div>
                                 <span className="text-white/70">Basic</span>
                             </div>
                             <div className="flex items-center gap-1.5">
-                                <div className="w-3 h-3 rounded" style={{ backgroundColor: DATA.colorMap.destiny }}></div>
+                                <div className="w-3 h-3 rounded" style={{ backgroundColor: colorMap.destiny }}></div>
                                 <span className="text-white/70">Destiny</span>
                             </div>
                             <div className="flex items-center gap-1.5">
-                                <div className="w-3 h-3 rounded" style={{ backgroundColor: DATA.colorMap.dob }}></div>
+                                <div className="w-3 h-3 rounded" style={{ backgroundColor: colorMap.dob }}></div>
                                 <span className="text-white/70">DOB</span>
                             </div>
                         </div>
@@ -126,17 +143,27 @@ const WelcomeTab = ({ report, userData, language = 'en' }) => {
                 <div className="space-y-4">
                     {kundliNumbers.map(num => {
                         const isDestiny = num === report.destinyNumber;
-                        const description = isDestiny
-                            ? getText(DATA.destinyNumberDetails[num].description, language)
-                            : getText(DATA.numberDetails[num].description, language);
-                        const name = getText(DATA.numberDetails[num].name, language);
-                        
+                        const detail = getNumberDetail(report, num);
+
+                        if (!detail) {
+                            return (
+                                <div key={num} className="p-3 bg-gray-900/50 rounded-md">
+                                    <p className="text-sm text-blue-300">Data not available for Number {num}</p>
+                                </div>
+                            );
+                        }
+
+                        const description = getText(detail.description, language);
+                        const name = getText(detail.name, language);
+
                         return (
                             <div key={num} className="p-3 bg-gray-900/50 rounded-md">
-                                <h4 className="font-bold text-yellow-400 flex items-center">
+                                <h4 className="flex items-center">
                                     {isDestiny && <span className="mr-2 text-xl">🌟</span>}
                                     {num === report.basicNumber && !isDestiny && <span className="mr-2 text-xl">⭐</span>}
-                                    Number {num} – {name}
+                                    <GradientText as="span" size="lg">
+                                        Number {num} – {name}
+                                    </GradientText>
                                     {isDestiny && <span className="ml-2 text-xs font-normal bg-yellow-500/20 text-yellow-300 px-2 py-1 rounded-full">Destiny Number</span>}
                                     {num === report.basicNumber && !isDestiny && <span className="ml-2 text-xs font-normal bg-rose-500/20 text-rose-300 px-2 py-1 rounded-full">Basic Number</span>}
                                 </h4>

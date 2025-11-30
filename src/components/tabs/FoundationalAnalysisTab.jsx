@@ -3,15 +3,21 @@ import Card from '../Card';
 import SectionTitle from '../SectionTitle';
 import NlgSummaryComponent from '../NlgSummaryComponent';
 import { getText } from '../../utils/helpers'; // Import getText
-import { DATA } from '../../data/data';
+import { GradientText } from '../GradientText';
 
 const FoundationalAnalysisTab = ({ analysis, yogas, specialInsights, language = 'en' }) => {
     // Re-process analysis with current language
+    // Note: recurringNumberInfluence is static reference data and can be included
+    const staticRecurringNumberInfluence = {
+        // This would normally come from relevantData, but for now use a minimal version
+        // In production, this should be part of the filtered data
+    };
+
     const translatedAnalysis = useMemo(() => {
         if (!analysis || analysis.length === 0) return [];
 
         return analysis.map(item => {
-            const rule = DATA.recurringNumberInfluence[item.number];
+            const rule = staticRecurringNumberInfluence[item.number];
             if (!rule) return item;
 
             let influence = [];
@@ -69,11 +75,15 @@ const FoundationalAnalysisTab = ({ analysis, yogas, specialInsights, language = 
                         {translatedAnalysis.map(item => (
                             <div key={item.number} className="bg-gray-900/50 p-4 rounded-md border-l-4 border-yellow-500">
                                 <div className="flex justify-between items-baseline">
-                                    <h3 className="text-xl font-bold text-yellow-400">Number: {item.number}</h3>
+                                    <GradientText as="h3" size="xl">
+                                        Number: {item.number}
+                                    </GradientText>
                                     <span className="text-sm text-white/70">Occurrences: {item.occurrences}</span>
                                 </div>
                                 <div className="mt-3">
-                                    <h4 className="font-semibold text-yellow-500 mb-1">Influence:</h4>
+                                    <GradientText as="h4" size="base" className="mb-1">
+                                        Influence:
+                                    </GradientText>
                                     <p className="text-white/90">{item.influence}</p>
                                 </div>
                             </div>
@@ -89,7 +99,9 @@ const FoundationalAnalysisTab = ({ analysis, yogas, specialInsights, language = 
                     <div className="space-y-4">
                         {specialInsights.map((insight, index) => (
                             <div key={index} className="bg-indigo-900/40 p-4 rounded-md border-l-4 border-purple-400">
-                                <h3 className="text-xl font-bold text-purple-300">{getText(insight.title, language)}</h3>
+                                <GradientText as="h3" size="xl" className="mb-2">
+                                    {getText(insight.title, language)}
+                                </GradientText>
                                 <p className="text-white/90 mt-2">{getText(insight.text, language)}</p>
                             </div>
                         ))}

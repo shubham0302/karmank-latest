@@ -1,20 +1,25 @@
 import React from 'react';
 import Card from '../Card';
-import { DATA } from '../../data/data';
 import { getText } from '../../utils/helpers';
+import { GradientText } from '../GradientText';
+import { getMantraData, getRelevantNumbers } from '../../utils/localData';
 
-const MantrasTab = ({ report, language = 'en' }) => { 
-    const uniqueNumbers = [...new Set([report.basicNumber, report.destinyNumber])];
+const MantrasTab = ({ report, language = 'en' }) => {
+    if (!report?.relevantData) {
+        return <Card><p className="text-yellow-400">Report data not fully loaded.</p></Card>;
+    }
+
+    const uniqueNumbers = getRelevantNumbers(report);
 
     const MantraCard = ({ number }) => {
-        const mantraData = DATA.mantraRemedies[number];
+        const mantraData = getMantraData(report, number);
         if (!mantraData) return null;
 
         return (
             <Card>
-                <h2 className="text-2xl font-bold text-yellow-400 mb-4">
+                <GradientText as="h2" size="2xl" className="mb-4">
                     Mantra for Number {number} ({getText(mantraData.planet, language)})
-                </h2>
+                </GradientText>
                 <div className="mb-4">
                     <p className="text-lg text-cyan-300 font-semibold">{getText(mantraData.mantra, language)}</p>
                     {/* <p className="text-sm text-white/70">{getText(mantraData.transliteration, language)}</p> */}

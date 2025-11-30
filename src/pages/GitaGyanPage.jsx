@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import CosmicBackground from "../components/CosmicBackground";
+import { GradientText, gradientUtils } from "../components/GradientText";
 import {
   ArrowLeft,
   Sparkles,
@@ -230,9 +231,11 @@ export default function GitaGyanPage() {
                   initial={{ scale: 0.9, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{ duration: 0.8, delay: 0.2 }}
-                  className="text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-blue-400 to-purple-500"
+                  className="text-5xl font-bold"
                 >
-                  Gita Gyan
+                  <GradientText as="span" size="5xl" className="font-serif">
+                    Gita Gyan
+                  </GradientText>
                 </motion.div>
                 <motion.div
                   initial={{ opacity: 0 }}

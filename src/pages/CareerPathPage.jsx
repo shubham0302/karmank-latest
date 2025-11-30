@@ -2,6 +2,7 @@ import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import CosmicBackground from '../components/CosmicBackground';
+import { GradientText, gradientUtils } from "../components/GradientText";
 import FamilyMemberSelector from '../components/FamilyMemberSelector';
 import { useFamilyMembers } from '../hooks/useFamilyMembers';
 import { useAuth } from '../contexts/AuthContext';
@@ -16,7 +17,7 @@ import {
   STREAM_RECOMMENDATIONS,
   CAREER_CLUSTERS
 } from '../data/careerPathData';
-import { calculateNumerology } from '../utils/calculators';
+import { calculateNumerology } from '../api/numerologyClient';
 import { DATA } from '../data/data';
 import {
   Chart,
@@ -162,8 +163,14 @@ export default function CareerPathPage() {
         setUserData(memberData);
         // Auto-generate numerology report for first family member
         try {
-          const numReport = calculateNumerology(firstMember.date_of_birth);
-          setNumerologyReport(numReport);
+          const calcResult = await calculateNumerology({
+            dob: firstMember.date_of_birth,
+            name: firstMember.name,
+            gender: 'Other'
+          });
+          if (calcResult.success) {
+            setNumerologyReport(calcResult.report);
+          }
         } catch (error) {
           console.error('Error generating numerology report for first member:', error);
         }
@@ -226,12 +233,22 @@ export default function CareerPathPage() {
     }));
   };
 
-  const handleWelcomeSubmit = (formData) => {
+  const handleWelcomeSubmit = async (formData) => {
     setUserData(formData);
 
-    // Calculate numerology report
-    const numReport = calculateNumerology(formData.dob);
-    setNumerologyReport(numReport);
+    // Calculate numerology report via API
+    try {
+      const calcResult = await calculateNumerology({
+        dob: formData.dob,
+        name: formData.name,
+        gender: 'Other'
+      });
+      if (calcResult.success) {
+        setNumerologyReport(calcResult.report);
+      }
+    } catch (error) {
+      console.error('Error generating numerology report:', error);
+    }
 
     // Determine path based on class
     const classNum = parseInt(formData.class);
@@ -482,7 +499,7 @@ export default function CareerPathPage() {
                     {members.map(member => (
                       <button
                         key={member.id}
-                        onClick={() => {
+                        onClick={async () => {
                           setSelectedFamilyMemberId(member.id);
                           setUserData(prev => ({
                             ...prev,
@@ -492,8 +509,14 @@ export default function CareerPathPage() {
                           setMemberDropdownOpen(false);
                           // Auto-generate numerology report when member is selected
                           try {
-                            const numReport = calculateNumerology(member.date_of_birth);
-                            setNumerologyReport(numReport);
+                            const calcResult = await calculateNumerology({
+                              dob: member.date_of_birth,
+                              name: member.name,
+                              gender: 'Other'
+                            });
+                            if (calcResult.success) {
+                              setNumerologyReport(calcResult.report);
+                            }
                           } catch (error) {
                             console.error('Error generating numerology report:', error);
                           }
@@ -527,10 +550,10 @@ export default function CareerPathPage() {
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="text-center space-y-2 relative z-10">
                 <div className="text-4xl font-bold">
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-blue-400 to-purple-500">
+                  <GradientText as="span" size="4xl" className="font-serif">
                     KarmAnk
-                  </span>
-                  <sup className="text-2xl -top-2 text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-blue-400 to-purple-500">
+                  </GradientText>
+                  <sup className={`text-2xl -top-2 ${gradientUtils.text}`}>
                     ™
                   </sup>
                 </div>

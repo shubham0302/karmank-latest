@@ -1,13 +1,17 @@
 import React, { useMemo } from 'react';
 import Card from '../Card';
 import SectionTitle from '../SectionTitle';
+import { GradientText } from '../GradientText';
 
 const TravelForecastTab = ({ report, dashaReport, targetDate }) => {
     if (!report || !dashaReport) return null;
 
+    // Helper to ensure dates are Date objects
+    const toDate = (date) => (date instanceof Date ? date : new Date(date));
+
     const travelAnalysis = useMemo(() => {
-        const annualDasha = dashaReport.yearlyDashaTimeline.find(d => targetDate >= d.startDate && targetDate <= d.endDate);
-        const mahaDasha = dashaReport.mahaDashaTimeline.find(d => targetDate >= d.startDate && targetDate <= d.endDate);
+        const annualDasha = dashaReport.yearlyDashaTimeline.find(d => targetDate >= toDate(d.startDate) && targetDate <= toDate(d.endDate));
+        const mahaDasha = dashaReport.mahaDashaTimeline.find(d => targetDate >= toDate(d.startDate) && targetDate <= toDate(d.endDate));
 
         if (!annualDasha || !mahaDasha) {
             return { outlook: { title: 'N/A', text: 'Forecast not available for this date.', status: 'Yellow'}, opportunities: [], 
@@ -124,7 +128,9 @@ const TravelForecastTab = ({ report, dashaReport, targetDate }) => {
         const colorClass = status === 'Green' ? 'border-green-500/50' : status === 'Red' ? 'border-red-500/50' : 'border-yellow-500/50';
         return (
             <div>
-                <h4 className="font-semibold text-lg text-yellow-300 mb-2">{icon} {title}</h4>
+                <GradientText as="h4" size="lg" className="mb-2">
+                    {icon} {title}
+                </GradientText>
                 <ul className={`list-disc list-inside space-y-2 pl-4 border-l-4 ${colorClass}`}>
                     {items.map((item, index) => <li key={index}>{item}</li>)}
                 </ul>
@@ -138,7 +144,9 @@ const TravelForecastTab = ({ report, dashaReport, targetDate }) => {
                 <SectionTitle>Travel & Relocation Forecast</SectionTitle>
                 {travelAnalysis ? (
                     <div className="bg-gray-900/50 p-4 rounded-lg">
-                        <h3 className="font-bold text-xl text-yellow-400 mb-2">{travelAnalysis.outlook.title}</h3>
+                        <GradientText as="h3" size="xl" className="mb-2">
+                            {travelAnalysis.outlook.title}
+                        </GradientText>
                         <div className="flex items-start mb-6">
                             <StatusIcon status={travelAnalysis.outlook.status} />
                             <p>{travelAnalysis.outlook.text}</p>

@@ -4,14 +4,11 @@ import SectionTitle from '../SectionTitle';
 import { checkForSpecialRemedies } from '../../utils/helpers'; // Import helper
 import { getText } from '../../utils/helpers'; // Import getText
 
-const DynamicSpecialGuidanceDisplay = ({ dynamicGrid, destinyNumber, mahaDasha, annualDasha }) => {
-    const specialRemedies = useMemo(() => 
-        checkForSpecialRemedies(dynamicGrid, destinyNumber, mahaDasha, annualDasha), 
+const DynamicSpecialGuidanceDisplay = ({ report, dynamicGrid, destinyNumber, mahaDasha, annualDasha, language = 'en' }) => {
+    const specialRemedies = useMemo(() =>
+        checkForSpecialRemedies(dynamicGrid, destinyNumber, mahaDasha, annualDasha),
         [dynamicGrid, destinyNumber, mahaDasha, annualDasha]
-    );
-
-    // Using 'en' as a default, pass language as a prop if needed
-    const language = 'en'; 
+    ); 
 
     if (specialRemedies.length === 0) {
         return null;
