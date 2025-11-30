@@ -144,7 +144,7 @@ export default function LoginPage() {
                   <span
                     className="bg-clip-text text-transparent"
                     style={{
-                      backgroundImage: 'linear-gradient(135deg, hsl(44, 91%, 69%), hsl(261, 100%, 75%))',
+                      backgroundImage: 'linear-gradient(90deg, hsl(186, 100%, 69%), hsl(184, 100%, 69%), hsl(211, 100%, 62%))',
                     }}
                   >
                     KarmAnk
@@ -152,7 +152,7 @@ export default function LoginPage() {
                   <sup
                     className="text-[2.75rem] lg:text-[3.75rem] -top-4 lg:-top-6 bg-clip-text text-transparent"
                     style={{
-                      backgroundImage: 'linear-gradient(135deg, hsl(44, 91%, 69%), hsl(261, 100%, 75%))',
+                      backgroundImage: 'linear-gradient(90deg, hsl(186, 100%, 69%), hsl(184, 100%, 69%), hsl(211, 100%, 62%))',
                     }}
                   >
                     ™
@@ -327,9 +327,9 @@ export default function LoginPage() {
                     <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                       <Button
                         type="submit"
-                        className="w-full h-14 hover:shadow-2xl hover:shadow-auric-gold/50 text-white font-bold text-lg relative overflow-hidden transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full h-14 hover:shadow-2xl hover:shadow-cyan-400/50 text-white font-bold text-lg relative overflow-hidden transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                         style={{
-                          background: 'linear-gradient(135deg, hsl(44, 85%, 50%), hsl(261, 85%, 55%))',
+                          background: 'linear-gradient(90deg, hsl(186, 100%, 45%), hsl(184, 100%, 45%), hsl(211, 100%, 40%))',
                         }}
                         disabled={loading || !acceptedTerms}
                       >
@@ -423,9 +423,9 @@ export default function LoginPage() {
                       <Button
                         type="submit"
                         disabled={loading || otp.length !== 6}
-                        className="w-full h-14 hover:shadow-2xl hover:shadow-auric-gold/50 text-white font-bold text-lg relative overflow-hidden transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full h-14 hover:shadow-2xl hover:shadow-cyan-400/50 text-white font-bold text-lg relative overflow-hidden transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                         style={{
-                          background: 'linear-gradient(135deg, hsl(44, 85%, 50%), hsl(261, 85%, 55%))',
+                          background: 'linear-gradient(90deg, hsl(186, 100%, 45%), hsl(184, 100%, 45%), hsl(211, 100%, 40%))',
                         }}
                       >
                         <motion.span

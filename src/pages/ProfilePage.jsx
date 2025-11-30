@@ -1,66 +1,73 @@
-import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { motion } from 'framer-motion'
-import { ArrowLeft, Plus, Users, Mail, LogOut } from 'lucide-react'
-import CosmicBackground from '../components/CosmicBackground'
-import { useFamilyMembers } from '@/hooks/useFamilyMembers'
-import { useAuth } from '@/contexts/AuthContext'
-import FamilyMemberForm from '@/components/onboarding/FamilyMemberForm'
-import MemberCard from '@/components/onboarding/MemberCard'
-import { Button } from '@/components/ui/button'
-import { GlassCard } from '@/components/ui/glass-card'
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import { ArrowLeft, Plus, Users, Mail, LogOut } from "lucide-react";
+import CosmicBackground from "../components/CosmicBackground";
+import { useFamilyMembers } from "@/hooks/useFamilyMembers";
+import { useAuth } from "@/contexts/AuthContext";
+import FamilyMemberForm from "@/components/onboarding/FamilyMemberForm";
+import MemberCard from "@/components/onboarding/MemberCard";
+import { Button } from "@/components/ui/button";
+import { GlassCard } from "@/components/ui/glass-card";
+import GradientText from "../components/GradientText";
 
-const MAX_MEMBERS = 3
+const MAX_MEMBERS = 3;
 const TABS = {
-  PROFILE: 'profile',
-  FAMILY: 'family'
-}
+  PROFILE: "profile",
+  FAMILY: "family",
+};
 
 export default function ProfilePage() {
-  const navigate = useNavigate()
-  const { user, signOut } = useAuth()
-  const { members, loading, error: hookError, getFamilyMembersData, addMember } = useFamilyMembers()
+  const navigate = useNavigate();
+  const { user, signOut } = useAuth();
+  const {
+    members,
+    loading,
+    error: hookError,
+    getFamilyMembersData,
+    addMember,
+  } = useFamilyMembers();
 
-  const [activeTab, setActiveTab] = useState(TABS.PROFILE)
-  const [showAddForm, setShowAddForm] = useState(false)
-  const [addError, setAddError] = useState(null)
-  const [addLoading, setAddLoading] = useState(false)
-  const [signingOut, setSigningOut] = useState(false)
+  const [activeTab, setActiveTab] = useState(TABS.PROFILE);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [addError, setAddError] = useState(null);
+  const [addLoading, setAddLoading] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
 
   useEffect(() => {
-    getFamilyMembersData()
-  }, [])
+    getFamilyMembersData();
+  }, []);
 
   const handleAddMember = async (formData) => {
-    setAddLoading(true)
-    setAddError(null)
+    setAddLoading(true);
+    setAddError(null);
 
     try {
-      const { success, error } = await addMember(formData)
+      const { success, error } = await addMember(formData);
 
       if (!success) {
-        setAddError(error?.message || 'Failed to add family member')
-        setAddLoading(false)
-        return
+        setAddError(error?.message || "Failed to add family member");
+        setAddLoading(false);
+        return;
       }
 
-      await getFamilyMembersData()
-      setShowAddForm(false)
-      setAddLoading(false)
+      await getFamilyMembersData();
+      setShowAddForm(false);
+      setAddLoading(false);
     } catch (err) {
-      console.error('Error adding member:', err)
-      setAddError(err.message)
-      setAddLoading(false)
+      console.error("Error adding member:", err);
+      setAddError(err.message);
+      setAddLoading(false);
     }
-  }
+  };
 
   const handleSignOut = async () => {
-    setSigningOut(true)
-    await signOut()
-  }
+    setSigningOut(true);
+    await signOut();
+  };
 
-  const canAddMore = members.length < MAX_MEMBERS
-  const remainingSlots = MAX_MEMBERS - members.length
+  const canAddMore = members.length < MAX_MEMBERS;
+  const remainingSlots = MAX_MEMBERS - members.length;
 
   return (
     <CosmicBackground density={140} useVideo={true}>
@@ -74,18 +81,16 @@ export default function ProfilePage() {
             className="mb-8"
           >
             <button
-              onClick={() => navigate('/')}
+              onClick={() => navigate("/")}
               className="flex items-center gap-2 text-cyan-400 hover:text-cyan-300 transition-colors mb-4"
             >
               <ArrowLeft className="h-5 w-5" />
               Back to Home
             </button>
 
-            <h1 className="text-4xl md:text-5xl font-serif font-bold mb-6">
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-purple-400 to-pink-400">
-                My Profile
-              </span>
-            </h1>
+            <GradientText as="h3" size="4xl" className="mb-3">
+              My Profile
+            </GradientText>
 
             {/* Tabs */}
             <motion.div
@@ -98,8 +103,8 @@ export default function ProfilePage() {
                 onClick={() => setActiveTab(TABS.PROFILE)}
                 className={`px-4 py-3 font-semibold transition duration-200 border-b-2 flex items-center gap-2 ${
                   activeTab === TABS.PROFILE
-                    ? 'text-cyan-400 border-cyan-400'
-                    : 'text-white/60 hover:text-white/80 border-transparent'
+                    ? "text-cyan-400 border-cyan-400"
+                    : "text-white/60 hover:text-white/80 border-transparent"
                 }`}
               >
                 <Mail className="h-5 w-5" />
@@ -109,8 +114,8 @@ export default function ProfilePage() {
                 onClick={() => setActiveTab(TABS.FAMILY)}
                 className={`px-4 py-3 font-semibold transition duration-200 border-b-2 flex items-center gap-2 ${
                   activeTab === TABS.FAMILY
-                    ? 'text-cyan-400 border-cyan-400'
-                    : 'text-white/60 hover:text-white/80 border-transparent'
+                    ? "text-cyan-400 border-cyan-400"
+                    : "text-white/60 hover:text-white/80 border-transparent"
                 }`}
               >
                 <Users className="h-5 w-5" />
@@ -139,7 +144,9 @@ export default function ProfilePage() {
                     </div>
                     <div className="flex-1">
                       <p className="text-white/70 text-sm">Email Address</p>
-                      <p className="text-white font-semibold break-all">{user?.email}</p>
+                      <p className="text-white font-semibold break-all">
+                        {user?.email}
+                      </p>
                     </div>
                   </div>
 
@@ -151,18 +158,23 @@ export default function ProfilePage() {
                     className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-red-500/20 to-red-500/10 hover:from-red-500/30 hover:to-red-500/20 text-red-300 border border-red-500/30 rounded-lg font-semibold transition duration-200 disabled:opacity-50"
                   >
                     <LogOut className="h-5 w-5" />
-                    {signingOut ? 'Logging Out...' : 'Log Out'}
+                    {signingOut ? "Logging Out..." : "Log Out"}
                   </motion.button>
                 </div>
               </GlassCard>
 
               {/* Info Box */}
               <GlassCard className="bg-gradient-to-br from-purple-500/10 to-blue-500/5 border-purple-500/20 p-5">
-                <h3 className="text-white font-semibold mb-3 text-sm">💡 Profile Information</h3>
+                <h3 className="text-white font-semibold mb-3 text-sm">
+                  💡 Profile Information
+                </h3>
                 <ul className="space-y-2 text-white/70 text-xs">
                   <li className="flex items-start gap-2">
                     <span className="text-cyan-400 mt-0.5">✓</span>
-                    <span>Your profile contains your email and family member information</span>
+                    <span>
+                      Your profile contains your email and family member
+                      information
+                    </span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-cyan-400 mt-0.5">✓</span>
@@ -170,7 +182,9 @@ export default function ProfilePage() {
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-cyan-400 mt-0.5">✓</span>
-                    <span>You can add up to {MAX_MEMBERS} family members total</span>
+                    <span>
+                      You can add up to {MAX_MEMBERS} family members total
+                    </span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-cyan-400 mt-0.5">✓</span>
@@ -216,7 +230,9 @@ export default function ProfilePage() {
                 <div className="flex justify-center items-center py-12">
                   <div className="text-center">
                     <div className="inline-block animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-cyan-400 mb-3"></div>
-                    <p className="text-white/70 text-sm">Loading family members...</p>
+                    <p className="text-white/70 text-sm">
+                      Loading family members...
+                    </p>
                   </div>
                 </div>
               )}
@@ -244,7 +260,9 @@ export default function ProfilePage() {
                 >
                   <div className="text-4xl mb-3">👨‍👩‍👧</div>
                   <p className="text-white/70 mb-2">No family members yet</p>
-                  <p className="text-white/50 text-sm">Add your first family member to get started</p>
+                  <p className="text-white/50 text-sm">
+                    Add your first family member to get started
+                  </p>
                 </motion.div>
               )}
 
@@ -305,8 +323,8 @@ export default function ProfilePage() {
                       <div className="flex gap-3 justify-between mt-4">
                         <Button
                           onClick={() => {
-                            setShowAddForm(false)
-                            setAddError(null)
+                            setShowAddForm(false);
+                            setAddError(null);
                           }}
                           disabled={addLoading}
                           className="flex-1 bg-white/10 hover:bg-white/20 text-white border border-white/30 rounded-lg py-2 transition duration-200 disabled:opacity-50"
@@ -326,8 +344,12 @@ export default function ProfilePage() {
                   animate={{ opacity: 1 }}
                   className="p-4 bg-amber-500/10 border border-amber-500/30 rounded-lg text-amber-300 text-center text-sm"
                 >
-                  <p className="font-semibold">Maximum family members reached</p>
-                  <p className="text-amber-200 text-xs mt-1">You have added the maximum of {MAX_MEMBERS} members</p>
+                  <p className="font-semibold">
+                    Maximum family members reached
+                  </p>
+                  <p className="text-amber-200 text-xs mt-1">
+                    You have added the maximum of {MAX_MEMBERS} members
+                  </p>
                 </motion.div>
               )}
             </motion.div>
@@ -335,5 +357,5 @@ export default function ProfilePage() {
         </div>
       </div>
     </CosmicBackground>
-  )
+  );
 }
