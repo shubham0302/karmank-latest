@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import Card from '../Card';
 import SectionTitle from '../SectionTitle';
+import { getDashaNumborsForDate } from './dashaUtils';
 
 const ProfessionForecastTab = ({ report, dashaReport, gender, targetDate }) => {
     if (!report || !dashaReport) return null;
@@ -9,8 +10,15 @@ const ProfessionForecastTab = ({ report, dashaReport, gender, targetDate }) => {
     const toDate = (date) => (date instanceof Date ? date : new Date(date));
 
     const professionAnalysis = useMemo(() => {
-        const yearlyDasha = dashaReport.yearlyDashaTimeline.find(d => targetDate >= toDate(d.startDate) && targetDate <= toDate(d.endDate));
-        const mahaDasha = dashaReport.mahaDashaTimeline.find(d => targetDate >= toDate(d.startDate) && targetDate <= toDate(d.endDate));
+        const dashaData = getDashaNumborsForDate(dashaReport, targetDate, toDate);
+
+        if (!dashaData.isValid) {
+            console.warn('[ProfessionForecast] Could not find dasha periods for date:', targetDate);
+            return { outlook: { title: 'N/A', text: 'Forecast not available for this date.', status: 'Yellow'}, opportunities: [], challenges: [], advice: [], partnership: [], milestones: [] };
+        }
+
+        const yearlyDasha = dashaData.yearlyDasha;
+        const mahaDasha = dashaData.mahaDasha;
 
         if (!yearlyDasha || !mahaDasha) return { outlook: { title: 'N/A', text: 'Forecast not available for this date.', status: 'Yellow'}, opportunities: [], challenges: [], advice: [], partnership: [], milestones: [] };
 

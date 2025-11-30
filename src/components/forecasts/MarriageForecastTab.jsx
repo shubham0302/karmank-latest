@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react'
 import Card from '../Card';
 import SectionTitle from '../SectionTitle';
+import { getDashaNumborsForDate } from './dashaUtils';
 
 const MarriageForecastTab = ({ report, dashaReport, targetDate }) => {
     if (!report || !dashaReport) return null;
@@ -9,8 +10,15 @@ const MarriageForecastTab = ({ report, dashaReport, targetDate }) => {
     const toDate = (date) => (date instanceof Date ? date : new Date(date));
 
     const marriageAnalysis = useMemo(() => {
-        const yearlyDasha = dashaReport.yearlyDashaTimeline.find(d => targetDate >= toDate(d.startDate) && targetDate <= toDate(d.endDate));
-        const mahaDasha = dashaReport.mahaDashaTimeline.find(d => targetDate >= toDate(d.startDate) && targetDate <= toDate(d.endDate));
+        const dashaData = getDashaNumborsForDate(dashaReport, targetDate, toDate);
+
+        if (!dashaData.isValid) {
+            console.warn('[MarriageForecast] Could not find dasha periods for date:', targetDate);
+            return { mahaDashaInsights: [], annualDashaInsights: [] };
+        }
+
+        const yearlyDasha = dashaData.yearlyDasha;
+        const mahaDasha = dashaData.mahaDasha;
 
         if (!yearlyDasha || !mahaDasha) {
             return { mahaDashaInsights: [], annualDashaInsights: [] };

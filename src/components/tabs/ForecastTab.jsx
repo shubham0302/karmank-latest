@@ -10,7 +10,15 @@ const ForecastTab = ({ report, dashaReport, gender, language = 'en' }) => {
     const [activeSubTab, setActiveSubTab] = useState('Profession');
     const [forecastYear, setForecastYear] = useState(new Date().getFullYear());
 
-    if (!report) return null;
+    // Debug: Log if dashaReport is missing
+    if (!report || !dashaReport) {
+        console.warn('[ForecastTab] Missing data:', {
+            hasReport: !!report,
+            hasDashaReport: !!dashaReport,
+            dashaReportKeys: dashaReport ? Object.keys(dashaReport) : 'N/A'
+        });
+        return null;
+    }
 
     // Handle dob as either Date object or string
     const dob = typeof report.dob === 'string' ? new Date(report.dob) : report.dob;

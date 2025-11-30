@@ -3,6 +3,7 @@ import Card from '../Card';
 import SectionTitle from '../SectionTitle';
 import NlgChildBirthForecast from './NlgChildBirthForecast'; // Import sub-component
 import { reduceToSingleDigit } from '../../utils/helpers'; // Import helper
+import { getDashaNumborsForDate } from './dashaUtils';
 
 const ChildBirthForecastTab = ({ report, dashaReport, gender, targetDate }) => {
     // Helper to ensure dates are Date objects
@@ -19,8 +20,15 @@ const ChildBirthForecastTab = ({ report, dashaReport, gender, targetDate }) => {
     const [selectedDeliveryDate, setSelectedDeliveryDate] = useState(new Date().toISOString().split('T')[0]);
 
     const possibilityAnalysis = useMemo(() => {
-        const yearlyDashaRec = dashaReport.yearlyDashaTimeline.find(d => targetDate >= new Date(d.startDate) && targetDate <= new Date(d.endDate));
-        const mahaDashaRec = dashaReport.mahaDashaTimeline.find(d => targetDate >= new Date(d.startDate) && targetDate <= new Date(d.endDate));
+        const dashaData = getDashaNumborsForDate(dashaReport, targetDate, toDate);
+
+        if (!dashaData.isValid) {
+            console.warn('[ChildBirthForecast] Could not find dasha periods for date:', targetDate);
+            return { title: 'Data Not Available', text: 'Cannot provide forecast for this date.', status: 'Yellow', possibilities: [] };
+        }
+
+        const yearlyDashaRec = dashaData.yearlyDasha;
+        const mahaDashaRec = dashaData.mahaDasha;
 
         if (!yearlyDashaRec || !mahaDashaRec) {
             return { status: 'Neutral', dasha3: { active: false }, even8: { active: false } };

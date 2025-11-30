@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import Card from '../Card';
 import SectionTitle from '../SectionTitle';
 import { GradientText } from '../GradientText';
+import { getDashaNumborsForDate } from './dashaUtils';
 
 const TravelForecastTab = ({ report, dashaReport, targetDate }) => {
     if (!report || !dashaReport) return null;
@@ -10,11 +11,19 @@ const TravelForecastTab = ({ report, dashaReport, targetDate }) => {
     const toDate = (date) => (date instanceof Date ? date : new Date(date));
 
     const travelAnalysis = useMemo(() => {
-        const annualDasha = dashaReport.yearlyDashaTimeline.find(d => targetDate >= toDate(d.startDate) && targetDate <= toDate(d.endDate));
-        const mahaDasha = dashaReport.mahaDashaTimeline.find(d => targetDate >= toDate(d.startDate) && targetDate <= toDate(d.endDate));
+        const dashaData = getDashaNumborsForDate(dashaReport, targetDate, toDate);
+
+        if (!dashaData.isValid) {
+            console.warn('[TravelForecast] Could not find dasha periods for date:', targetDate);
+            return { outlook: { title: 'N/A', text: 'Forecast not available for this date.', status: 'Yellow'}, opportunities: [],
+            challenges: [], advice: [], warnings:[], score: 'Low', visaEase: 'Moderate', countryType: 'N/A' };
+        }
+
+        const annualDasha = dashaData.yearlyDasha;
+        const mahaDasha = dashaData.mahaDasha;
 
         if (!annualDasha || !mahaDasha) {
-            return { outlook: { title: 'N/A', text: 'Forecast not available for this date.', status: 'Yellow'}, opportunities: [], 
+            return { outlook: { title: 'N/A', text: 'Forecast not available for this date.', status: 'Yellow'}, opportunities: [],
             challenges: [], advice: [], warnings:[], score: 'Low', visaEase: 'Moderate', countryType: 'N/A' };
         }
 
