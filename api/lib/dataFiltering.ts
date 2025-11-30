@@ -36,10 +36,11 @@ export const filterNumberDetails = (
   numbers: number[]
 ): { [key: number]: any } => {
   const filtered: { [key: number]: any } = {};
+  const numberDetails = (DATA as any).numberDetails || {};
 
   numbers.forEach((num) => {
-    if (DATA.numberDetails && (DATA.numberDetails as any)[num]) {
-      filtered[num] = (DATA.numberDetails as any)[num];
+    if (numberDetails[num]) {
+      filtered[num] = numberDetails[num];
     }
   });
 
@@ -53,13 +54,15 @@ export const filterNumberDetails = (
 export const filterYogaDetails = (yogas: any[]): any[] => {
   if (!yogas || yogas.length === 0) return [];
 
+  const yogaDetails = (DATA as any).yogaDetails || {};
+
   // Yogas array already contains only detected yogas
   // Ensure we return full yoga details
   return yogas
     .map((yoga) => {
       // If yoga is just an ID, look it up in DATA
       if (typeof yoga === "string") {
-        return (DATA.yogaDetails as any)[yoga] || null;
+        return yogaDetails[yoga] || null;
       }
       // Otherwise it's already a full yoga object
       return yoga;
@@ -85,10 +88,11 @@ export const getCombinationInsight = (
  */
 export const filterRemedies = (numbers: number[]): { [key: number]: any } => {
   const filtered: { [key: number]: any } = {};
+  const remedies = (DATA as any).remedies || {};
 
   numbers.forEach((num) => {
-    if (DATA.remedies && (DATA.remedies as any)[num]) {
-      filtered[num] = (DATA.remedies as any)[num];
+    if (remedies[num]) {
+      filtered[num] = remedies[num];
     }
   });
 
@@ -104,16 +108,15 @@ export const filterRudrakshaData = (
 ): { basic: { [key: number]: any }; advanced: { [key: number]: any } } => {
   const basicRemedies: { [key: number]: any } = {};
   const advancedRemedies: { [key: number]: any } = {};
+  const rudrakshaRemedies = (DATA as any).rudrakshaRemedies || {};
+  const advancedRudrakshaRemedies = (DATA as any).advancedRudrakshaRemedies || {};
 
   numbers.forEach((num) => {
-    if (DATA.rudrakshaRemedies && (DATA.rudrakshaRemedies as any)[num]) {
-      basicRemedies[num] = (DATA.rudrakshaRemedies as any)[num];
+    if (rudrakshaRemedies[num]) {
+      basicRemedies[num] = rudrakshaRemedies[num];
     }
-    if (
-      DATA.advancedRudrakshaRemedies &&
-      (DATA.advancedRudrakshaRemedies as any)[num]
-    ) {
-      advancedRemedies[num] = (DATA.advancedRudrakshaRemedies as any)[num];
+    if (advancedRudrakshaRemedies[num]) {
+      advancedRemedies[num] = advancedRudrakshaRemedies[num];
     }
   });
 
@@ -126,10 +129,11 @@ export const filterRudrakshaData = (
  */
 export const filterMantras = (numbers: number[]): { [key: number]: any } => {
   const filtered: { [key: number]: any } = {};
+  const mantraRemedies = (DATA as any).mantraRemedies || {};
 
   numbers.forEach((num) => {
-    if (DATA.mantraRemedies && (DATA.mantraRemedies as any)[num]) {
-      filtered[num] = (DATA.mantraRemedies as any)[num];
+    if (mantraRemedies[num]) {
+      filtered[num] = mantraRemedies[num];
     }
   });
 
@@ -155,8 +159,9 @@ export const extractDashaTraits = (
 
   // Get dasha traits for these numbers
   seenNumbers.forEach((num) => {
-    if (DATA.destinyNumberDetails && (DATA.destinyNumberDetails as any)[num]) {
-      traits[num] = (DATA.destinyNumberDetails as any)[num];
+    const destinyDetails = (DATA as any).destinyNumberDetails;
+    if (destinyDetails && destinyDetails[num]) {
+      traits[num] = destinyDetails[num];
     }
   });
 
@@ -207,16 +212,20 @@ export const getGenderSpecificTraits = (
   destinyNumber: number,
   gender: string
 ): any => {
-  const destinyDetails = DATA.destinyNumberDetails?.[destinyNumber];
+  // Normalize gender to lowercase for comparison
+  const normalizedGender = gender?.toLowerCase() || "other";
+
+  // Try to find destiny-specific traits first
+  const destinyDetails = (DATA as any).destinyNumberDetails?.[destinyNumber];
 
   if (!destinyDetails) return null;
 
   // Look for gender-specific information
-  if (gender === "Female" && destinyDetails.femaleTraits) {
+  if (normalizedGender === "female" && destinyDetails.femaleTraits) {
     return destinyDetails.femaleTraits;
   }
 
-  if (gender === "Male" && destinyDetails.maleTraits) {
+  if (normalizedGender === "male" && destinyDetails.maleTraits) {
     return destinyDetails.maleTraits;
   }
 
