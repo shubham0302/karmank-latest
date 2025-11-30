@@ -22,7 +22,24 @@ const ForecastTab = ({ report, dashaReport, gender, language = 'en' }) => {
 
     // Handle dob as either Date object or string
     const dob = typeof report.dob === 'string' ? new Date(report.dob) : report.dob;
-    const targetDate = new Date(forecastYear, dob.getMonth(), dob.getDate());
+
+    // Create target date using UTC to match server-generated dates (which are in UTC after JSON serialization)
+    const targetDate = new Date(Date.UTC(
+      forecastYear,
+      dob.getUTCMonth(),
+      dob.getUTCDate(),
+      0, 0, 0, 0
+    ));
+
+    console.log('[ForecastTab] Forecast date created:', {
+      forecastYear,
+      dobMonth: dob.getUTCMonth(),
+      dobDate: dob.getUTCDate(),
+      targetDate: targetDate.toISOString(),
+      targetDateUTC: targetDate.toUTCString(),
+      dobOriginal: dob.toISOString()
+    });
+
     const endDate = new Date(targetDate);
     endDate.setFullYear(endDate.getFullYear() + 1);
     endDate.setDate(endDate.getDate() - 1);
