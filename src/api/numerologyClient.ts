@@ -56,10 +56,17 @@ export async function calculateNumerology(
   userData: CalculationRequest
 ): Promise<CalculationResponse> {
   try {
+    console.log("[CLIENT] ===== NUMEROLOGY CALCULATION START =====");
+    console.log("[CLIENT] Timestamp:", new Date().toISOString());
+    console.log("[CLIENT] Input data:", userData);
+
     // Determine API URL based on environment
     const API_URL = import.meta.env.DEV
       ? "http://localhost:3001/api/calculate" // Local dev server
       : "/api/calculate"; // Production Vercel endpoint
+
+    console.log("[CLIENT] API_URL:", API_URL);
+    console.log("[CLIENT] Environment:", import.meta.env.DEV ? "development" : "production");
 
     // In development mode, skip authentication
     const isDevelopment = import.meta.env.DEV;
@@ -67,7 +74,10 @@ export async function calculateNumerology(
       "Content-Type": "application/json",
     };
 
+    console.log("[CLIENT] isDevelopment:", isDevelopment);
+
     if (!isDevelopment) {
+      console.log("[CLIENT] Getting session for production...");
       // Only get session in production
       const {
         data: { session },
@@ -75,8 +85,11 @@ export async function calculateNumerology(
       } = await supabase.auth.getSession();
 
       if (sessionError || !session) {
+        console.error("[CLIENT] Session error:", sessionError);
         throw new Error("Not authenticated. Please log in.");
       }
+
+      console.log("[CLIENT] Session obtained");
 
       // Get fresh access token
       const {
@@ -85,29 +98,51 @@ export async function calculateNumerology(
       } = await supabase.auth.refreshSession();
 
       if (refreshError || !freshSession) {
+        console.error("[CLIENT] Refresh error:", refreshError);
         throw new Error("Failed to refresh authentication session");
       }
 
       headers.Authorization = `Bearer ${freshSession.access_token}`;
+      console.log("[CLIENT] Auth headers set");
     }
 
     // Call the backend API
+    console.log("[CLIENT] Calling API...");
     const response = await fetch(API_URL, {
       method: "POST",
       headers,
       body: JSON.stringify(userData),
     });
 
+    console.log("[CLIENT] API Response status:", response.status);
+    console.log("[CLIENT] API Response headers:", {
+      contentType: response.headers.get("content-type"),
+      contentLength: response.headers.get("content-length")
+    });
+
     // Handle response
     const data = await response.json();
 
+    console.log("[CLIENT] API Response data keys:", Object.keys(data));
+    console.log("[CLIENT] Response success:", data.success);
+
     if (!response.ok) {
+      console.error("[CLIENT] API response not OK:", data.error);
       throw new Error(data.error || "Failed to calculate numerology");
     }
 
     if (!data.success) {
+      console.error("[CLIENT] Calculation unsuccessful:", data.error);
       throw new Error(data.error || "Calculation was unsuccessful");
     }
+
+    console.log("[CLIENT] API response structure:", {
+      hasReport: !!data.report,
+      hasDashaReport: !!data.dashaReport,
+      hasTimestamp: !!data.timestamp,
+      reportKeys: data.report ? Object.keys(data.report).slice(0, 5) : 'N/A',
+      dashaReportKeys: data.dashaReport ? Object.keys(data.dashaReport) : 'N/A'
+    });
 
     // Parse dates if needed - convert all date strings in dashaReport to Date objects
     const parseDateInObject = (obj: any): any => {
@@ -149,9 +184,24 @@ export async function calculateNumerology(
       timestamp: data.timestamp,
     };
 
+    console.log("[CLIENT] Date parsing completed");
+    console.log("[CLIENT] Final result structure:", {
+      success: result.success,
+      hasReport: !!result.report,
+      hasDashaReport: !!result.dashaReport,
+      reportBasicNumber: result.report?.basicNumber,
+      reportDestinyNumber: result.report?.destinyNumber,
+      dashaReportKeys: result.dashaReport ? Object.keys(result.dashaReport) : 'N/A',
+      mahaDashaLength: result.dashaReport?.mahaDashaTimeline?.length || 0,
+      yearlyDashaLength: result.dashaReport?.yearlyDashaTimeline?.length || 0
+    });
+
+    console.log("[CLIENT] ===== NUMEROLOGY CALCULATION SUCCESS =====");
     return result;
   } catch (error: any) {
-    console.error("Numerology calculation error:", error);
+    console.error("[CLIENT] ===== NUMEROLOGY CALCULATION FAILED =====");
+    console.error("[CLIENT] Error message:", error.message);
+    console.error("[CLIENT] Error stack:", error.stack);
     throw error;
   }
 }
