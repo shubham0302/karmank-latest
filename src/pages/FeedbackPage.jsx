@@ -1,13 +1,16 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, MessageSquare, Send, Star, Sparkles, Heart, Lightbulb, AlertCircle, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, MessageSquare, Send, Star, Sparkles, Heart, Lightbulb, AlertCircle, CheckCircle2, AlertTriangle } from "lucide-react";
 import CosmicBackground from "../components/CosmicBackground";
 import { GradientText, gradientUtils } from "../components/GradientText";
+import { useAuth } from "../contexts/AuthContext";
+import { feedbackService } from "../services/feedbackService";
 
 export default function FeedbackPage() {
   const year = new Date().getFullYear();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -17,38 +20,38 @@ export default function FeedbackPage() {
   });
   const [submitted, setSubmitted] = useState(false);
   const [hoveredRating, setHoveredRating] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState(null);
 
   const handleBackToLogin = () => {
     navigate('/login');
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
+    setErrorMessage(null);
 
-    // Prepare email content
-    const subject = `KarmAnk Feedback: ${categories.find(c => c.value === formData.category)?.label}`;
-    const body = `
-Name: ${formData.name}
-Email: ${formData.email}
-Category: ${categories.find(c => c.value === formData.category)?.label}
-Rating: ${formData.rating}/5 stars
+    try {
+      // Submit feedback to Supabase
+      const result = await feedbackService.submitFeedback(formData, user?.id);
 
-Message:
-${formData.message}
+      if (!result.success) {
+        setErrorMessage(result.error);
+        setLoading(false);
+        return;
+      }
 
----
-Sent from KarmAnk™ Feedback Portal
-    `.trim();
-
-    // Open mailto link (internal email, not exposed to users)
-    const mailtoLink = `mailto:karmankofficials@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-    window.location.href = mailtoLink;
-
-    // Show success message
-    setSubmitted(true);
-    setTimeout(() => {
-      navigate('/login');
-    }, 3000);
+      // Show success message
+      setSubmitted(true);
+      setTimeout(() => {
+        navigate('/login');
+      }, 3000);
+    } catch (error) {
+      console.error('Error submitting feedback:', error);
+      setErrorMessage(error.message || 'Failed to submit feedback. Please try again.');
+      setLoading(false);
+    }
   };
 
   const handleChange = (e) => {
@@ -138,6 +141,18 @@ Sent from KarmAnk™ Feedback Portal
 
           {/* Feedback Form */}
           <div className="bg-gray-900/60 backdrop-blur-md rounded-xl border border-cyan-500/20 shadow-2xl p-8">
+            {errorMessage && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mb-6 bg-red-500/20 border border-red-400/50 rounded-lg p-4 backdrop-blur-sm"
+              >
+                <div className="flex items-start gap-3">
+                  <AlertTriangle className="h-5 w-5 text-red-400 flex-shrink-0 mt-0.5" />
+                  <p className="text-red-300 text-sm font-medium">{errorMessage}</p>
+                </div>
+              </motion.div>
+            )}
             {submitted ? (
               <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
@@ -313,12 +328,21 @@ Sent from KarmAnk™ Feedback Portal
                 >
                   <button
                     type="submit"
-                    disabled={formData.message.length < 10 || formData.rating === 0}
+                    disabled={formData.message.length < 10 || formData.rating === 0 || loading}
                     className="w-full py-4 px-6 bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-400 hover:to-purple-400 text-white font-bold text-lg rounded-lg shadow-lg hover:shadow-cyan-500/50 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none flex items-center justify-center gap-3 group"
                   >
-                    <Send className="h-5 w-5 group-hover:translate-x-1 transition-transform duration-300" />
-                    Send Feedback to the Cosmos
-                    <Sparkles className="h-5 w-5 group-hover:rotate-180 transition-transform duration-500" />
+                    {loading ? (
+                      <>
+                        <Sparkles className="h-5 w-5 animate-spin" />
+                        Sending...
+                      </>
+                    ) : (
+                      <>
+                        <Send className="h-5 w-5 group-hover:translate-x-1 transition-transform duration-300" />
+                        Send Feedback to the Cosmos
+                        <Sparkles className="h-5 w-5 group-hover:rotate-180 transition-transform duration-500" />
+                      </>
+                    )}
                   </button>
                 </motion.div>
 

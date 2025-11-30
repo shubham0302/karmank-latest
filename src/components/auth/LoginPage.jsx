@@ -7,7 +7,13 @@ import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { GlassCard } from "../ui/glass-card";
-import { Sparkles, Mail, KeyRound, AlertCircle, MessageSquare } from "lucide-react";
+import {
+  Sparkles,
+  Mail,
+  KeyRound,
+  AlertCircle,
+  MessageSquare,
+} from "lucide-react";
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -111,7 +117,7 @@ export default function LoginPage() {
       <div className="min-h-screen relative flex items-center justify-center p-4">
         {/* Feedback Button - Fixed Position */}
         <motion.button
-          onClick={() => navigate('/feedback')}
+          onClick={() => navigate("/feedback")}
           initial={{ opacity: 0, x: 100 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.8, delay: 1.5 }}
@@ -138,13 +144,12 @@ export default function LoginPage() {
                 transition={{ duration: 0.8, delay: 0.3, ease: "easeOut" }}
                 className="relative"
               >
-                <h1
-                  className="text-6xl lg:text-8xl font-serif font-bold leading-tight tracking-tight"
-                >
+                <h1 className="text-6xl lg:text-8xl font-serif font-bold leading-tight tracking-tight">
                   <span
                     className="bg-clip-text text-transparent"
                     style={{
-                      backgroundImage: 'linear-gradient(90deg, hsl(186, 100%, 69%), hsl(184, 100%, 69%), hsl(211, 100%, 62%))',
+                      backgroundImage:
+                        "linear-gradient(90deg, hsl(186, 100%, 40%), hsl(184, 100%, 45%), hsl(211, 100%, 50%))",
                     }}
                   >
                     KarmAnk
@@ -152,7 +157,8 @@ export default function LoginPage() {
                   <sup
                     className="text-[2.75rem] lg:text-[3.75rem] -top-4 lg:-top-6 bg-clip-text text-transparent"
                     style={{
-                      backgroundImage: 'linear-gradient(90deg, hsl(186, 100%, 69%), hsl(184, 100%, 69%), hsl(211, 100%, 62%))',
+                      backgroundImage:
+                        "linear-gradient(90deg, hsl(186, 100%, 40%), hsl(184, 100%, 45%), hsl(211, 100%, 50%))",
                     }}
                   >
                     ™
@@ -179,7 +185,8 @@ export default function LoginPage() {
             >
               {/* Paragraph */}
               <p className="text-lg lg:text-xl font-light leading-relaxed text-gradient">
-                Unlock the mysteries of the universe through authentic Vedic numerology, sacred geometry, and cosmic wisdom.
+                Unlock the mysteries of the universe through authentic Vedic
+                numerology, sacred geometry, and cosmic wisdom.
               </p>
 
               {/* Feature List */}
@@ -213,7 +220,9 @@ export default function LoginPage() {
               className="text-center lg:text-left"
             >
               <p className="text-xs text-white/40 font-light">
-                © {new Date().getFullYear()} KarmAnk<sup className="text-[0.5rem] text-white/40">™</sup> - All Rights Reserved
+                © {new Date().getFullYear()} KarmAnk
+                <sup className="text-[0.5rem] text-white/40">™</sup> - All
+                Rights Reserved
               </p>
             </motion.div>
           </motion.div>
@@ -251,7 +260,11 @@ export default function LoginPage() {
                       <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/20 via-purple-500/20 to-auric-gold/20 rounded-2xl blur-2xl"></div>
 
                       {/* Favicon image */}
-                      <img src="/favicon.ico" alt="KarmAnk" className="w-full h-full object-cover relative z-10 rounded-2xl" />
+                      <img
+                        src="/favicon.ico"
+                        alt="KarmAnk"
+                        className="w-full h-full object-cover relative z-10 rounded-2xl"
+                      />
                     </div>
                   </motion.div>
 
@@ -262,8 +275,7 @@ export default function LoginPage() {
                     <p className="text-sm text-white/70">
                       {step === "email"
                         ? "Enter your email to receive a magic code"
-                        : "Enter the 6-digit code sent to your email"
-                      }
+                        : "Enter the 6-digit code sent to your email"}
                     </p>
                   </div>
                 </div>
@@ -272,7 +284,10 @@ export default function LoginPage() {
                 {step === "email" && (
                   <form onSubmit={handleEmailSubmit} className="space-y-6">
                     <div className="space-y-2">
-                      <Label htmlFor="email" className="text-white/90 font-semibold">
+                      <Label
+                        htmlFor="email"
+                        className="text-white/90 font-semibold"
+                      >
                         Email Address
                       </Label>
                       <div className="relative group">
@@ -291,7 +306,15 @@ export default function LoginPage() {
                           aria-describedby={error ? "email-error" : undefined}
                         />
                       </div>
-                      {error && <p id="email-error" className="text-sm text-red-400 mt-1" role="alert">{error}</p>}
+                      {error && (
+                        <p
+                          id="email-error"
+                          className="text-sm text-red-400 mt-1"
+                          role="alert"
+                        >
+                          {error}
+                        </p>
+                      )}
                     </div>
 
                     {/* Terms & Conditions Checkbox */}
@@ -304,38 +327,68 @@ export default function LoginPage() {
                         className="mt-1 h-4 w-4 rounded border-white/30 bg-white/10 text-auric-gold focus:ring-2 focus:ring-auric-gold/50 cursor-pointer"
                         disabled={loading}
                       />
-                      <label htmlFor="terms" className="text-sm text-white/80 leading-relaxed cursor-pointer">
+                      <label
+                        htmlFor="terms"
+                        className="text-sm text-white/80 leading-relaxed cursor-pointer"
+                      >
                         I agree to the{" "}
-                        <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-auric-gold hover:text-auric-gold/80 underline font-semibold">
+                        <a
+                          href="/terms"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-auric-gold hover:text-auric-gold/80 underline font-semibold"
+                        >
                           Terms & Conditions
                         </a>
                         ,{" "}
-                        <a href="/privacy" target="_blank" rel="noopener noreferrer" className="text-auric-gold hover:text-auric-gold/80 underline font-semibold">
+                        <a
+                          href="/privacy"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-auric-gold hover:text-auric-gold/80 underline font-semibold"
+                        >
                           Privacy Policy
                         </a>
                         ,{" "}
-                        <a href="/disclaimer" target="_blank" rel="noopener noreferrer" className="text-auric-gold hover:text-auric-gold/80 underline font-semibold">
+                        <a
+                          href="/disclaimer"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-auric-gold hover:text-auric-gold/80 underline font-semibold"
+                        >
                           Disclaimer
                         </a>
                         , and{" "}
-                        <a href="/refund" target="_blank" rel="noopener noreferrer" className="text-auric-gold hover:text-auric-gold/80 underline font-semibold">
+                        <a
+                          href="/refund"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-auric-gold hover:text-auric-gold/80 underline font-semibold"
+                        >
                           Refund Policy
                         </a>
                       </label>
                     </div>
 
-                    <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                    <motion.div
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                    >
                       <Button
                         type="submit"
-                        className="w-full h-14 hover:shadow-2xl hover:shadow-cyan-400/50 text-white font-bold text-lg relative overflow-hidden transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full h-14 hover:shadow-2xl hover:shadow-auric-gold/50 text-white font-bold text-lg relative overflow-hidden transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                         style={{
-                          background: 'linear-gradient(90deg, hsl(186, 100%, 45%), hsl(184, 100%, 45%), hsl(211, 100%, 40%))',
+                          backgroundImage:
+                            "linear-gradient(90deg, hsl(186, 100%, 40%), hsl(184, 100%, 45%), hsl(211, 100%, 50%))",
                         }}
                         disabled={loading || !acceptedTerms}
                       >
                         <motion.span
                           animate={loading ? { opacity: [1, 0.5, 1] } : {}}
-                          transition={{ duration: 1, repeat: loading ? Infinity : 0 }}
+                          transition={{
+                            duration: 1,
+                            repeat: loading ? Infinity : 0,
+                          }}
                           className="flex items-center justify-center gap-2"
                         >
                           {loading ? (
@@ -375,7 +428,9 @@ export default function LoginPage() {
                       </Label>
                       <p className="text-white/70 text-sm mb-3">
                         Enter the 6-digit code sent to{" "}
-                        <span className="text-auric-gold font-semibold">{email}</span>
+                        <span className="text-auric-gold font-semibold">
+                          {email}
+                        </span>
                       </p>
                       <div className="relative group">
                         <KeyRound className="absolute left-4 top-1/2 -translate-y-1/2 h-6 w-6 text-auric-gold/60 group-focus-within:text-auric-gold transition-colors" />
@@ -383,7 +438,9 @@ export default function LoginPage() {
                           type="text"
                           value={otp}
                           onChange={(e) =>
-                            setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))
+                            setOtp(
+                              e.target.value.replace(/\D/g, "").slice(0, 6)
+                            )
                           }
                           placeholder="● ● ● ● ● ●"
                           disabled={loading}
@@ -393,7 +450,13 @@ export default function LoginPage() {
                           autoComplete="one-time-code"
                           autoFocus
                           aria-invalid={!!error}
-                          aria-describedby={error ? "otp-error" : message ? "otp-success" : undefined}
+                          aria-describedby={
+                            error
+                              ? "otp-error"
+                              : message
+                              ? "otp-success"
+                              : undefined
+                          }
                         />
                       </div>
                       {error && (
@@ -402,7 +465,13 @@ export default function LoginPage() {
                           animate={{ opacity: 1, y: 0 }}
                           className="bg-red-500/20 border border-red-400/50 rounded-lg p-3 mt-2 backdrop-blur-sm"
                         >
-                          <p id="otp-error" className="text-red-300 text-sm font-medium" role="alert">{error}</p>
+                          <p
+                            id="otp-error"
+                            className="text-red-300 text-sm font-medium"
+                            role="alert"
+                          >
+                            {error}
+                          </p>
                         </motion.div>
                       )}
                       {message && (
@@ -411,7 +480,10 @@ export default function LoginPage() {
                           animate={{ opacity: 1, y: 0 }}
                           className="bg-green-500/20 border border-green-400/50 rounded-lg p-3 mt-2 backdrop-blur-sm"
                         >
-                          <p id="otp-success" className="text-green-300 text-sm font-medium flex items-center justify-center gap-2">
+                          <p
+                            id="otp-success"
+                            className="text-green-300 text-sm font-medium flex items-center justify-center gap-2"
+                          >
                             <Sparkles className="h-4 w-4" />
                             {message}
                           </p>
@@ -419,18 +491,25 @@ export default function LoginPage() {
                       )}
                     </div>
 
-                    <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                    <motion.div
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                    >
                       <Button
                         type="submit"
                         disabled={loading || otp.length !== 6}
-                        className="w-full h-14 hover:shadow-2xl hover:shadow-cyan-400/50 text-white font-bold text-lg relative overflow-hidden transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full h-14 hover:shadow-2xl hover:shadow-auric-gold/50 text-white font-bold text-lg relative overflow-hidden transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                         style={{
-                          background: 'linear-gradient(90deg, hsl(186, 100%, 45%), hsl(184, 100%, 45%), hsl(211, 100%, 40%))',
+                          backgroundImage:
+                            "linear-gradient(90deg, hsl(186, 100%, 40%), hsl(184, 100%, 45%), hsl(211, 100%, 50%))",
                         }}
                       >
                         <motion.span
                           animate={loading ? { opacity: [1, 0.5, 1] } : {}}
-                          transition={{ duration: 1, repeat: loading ? Infinity : 0 }}
+                          transition={{
+                            duration: 1,
+                            repeat: loading ? Infinity : 0,
+                          }}
                           className="flex items-center justify-center gap-2"
                         >
                           {loading ? (
@@ -457,7 +536,8 @@ export default function LoginPage() {
                         ← Use a different email
                       </button>
                       <p className="text-white/50 text-xs">
-                        Didn't receive the code? Check your spam folder or try again.
+                        Didn't receive the code? Check your spam folder or try
+                        again.
                       </p>
                     </div>
                   </form>
