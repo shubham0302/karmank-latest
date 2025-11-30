@@ -5,8 +5,9 @@ let supabase: any = null;
 
 function getSupabaseClient() {
   if (!supabase) {
-    const supabaseUrl = process.env.VITE_SUPABASE_URL || "";
-    const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY || "";
+    // Try both naming conventions: VITE_* for local dev and plain names for Vercel
+    const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || "";
+    const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || "";
 
     if (!supabaseUrl || !supabaseKey) {
       throw new Error("Supabase credentials not configured");
