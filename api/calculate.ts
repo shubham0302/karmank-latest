@@ -4,12 +4,12 @@ import {
   validateDOB,
   validateName,
   validateGender,
-} from "./lib/supabaseAuth";
-import { calculateNumerology, dashaCalculator } from "./lib/calculators";
+} from "./lib/supabaseAuth.js";
+import { calculateNumerology, dashaCalculator } from "./lib/calculators.js";
 import {
   buildRelevantDataSet,
   validateFilteredData,
-} from "./lib/dataFiltering";
+} from "./lib/dataFiltering.js";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Enable CORS

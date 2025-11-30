@@ -1,4 +1,4 @@
-import { DATA, combinationInsights } from '../data/data';
+import { DATA, combinationInsights } from "../data/data.js";
 
 /**
  * Data Filtering Module
@@ -9,7 +9,10 @@ import { DATA, combinationInsights } from '../data/data';
 /**
  * Extract all unique numbers present in user's chart
  */
-export const getAllRelevantNumbers = (digitCounts: number[], destinyNumber: number): number[] => {
+export const getAllRelevantNumbers = (
+  digitCounts: number[],
+  destinyNumber: number
+): number[] => {
   const numbers = new Set<number>();
 
   // Add all numbers that appear in the chart
@@ -29,10 +32,12 @@ export const getAllRelevantNumbers = (digitCounts: number[], destinyNumber: numb
  * Filter number details for given numbers
  * Returns only the number details relevant to user's chart
  */
-export const filterNumberDetails = (numbers: number[]): { [key: number]: any } => {
+export const filterNumberDetails = (
+  numbers: number[]
+): { [key: number]: any } => {
   const filtered: { [key: number]: any } = {};
 
-  numbers.forEach(num => {
+  numbers.forEach((num) => {
     if (DATA.numberDetails && (DATA.numberDetails as any)[num]) {
       filtered[num] = (DATA.numberDetails as any)[num];
     }
@@ -50,21 +55,26 @@ export const filterYogaDetails = (yogas: any[]): any[] => {
 
   // Yogas array already contains only detected yogas
   // Ensure we return full yoga details
-  return yogas.map(yoga => {
-    // If yoga is just an ID, look it up in DATA
-    if (typeof yoga === 'string') {
-      return (DATA.yogaDetails as any)[yoga] || null;
-    }
-    // Otherwise it's already a full yoga object
-    return yoga;
-  }).filter(y => y !== null);
+  return yogas
+    .map((yoga) => {
+      // If yoga is just an ID, look it up in DATA
+      if (typeof yoga === "string") {
+        return (DATA.yogaDetails as any)[yoga] || null;
+      }
+      // Otherwise it's already a full yoga object
+      return yoga;
+    })
+    .filter((y) => y !== null);
 };
 
 /**
  * Get combination insight for basic-destiny pair
  * Returns the specific insight for this user's numbers
  */
-export const getCombinationInsight = (basicNum: number, destinyNum: number): any => {
+export const getCombinationInsight = (
+  basicNum: number,
+  destinyNum: number
+): any => {
   const key = `${basicNum}-${destinyNum}`;
   return (combinationInsights as any)[key] || null;
 };
@@ -76,7 +86,7 @@ export const getCombinationInsight = (basicNum: number, destinyNum: number): any
 export const filterRemedies = (numbers: number[]): { [key: number]: any } => {
   const filtered: { [key: number]: any } = {};
 
-  numbers.forEach(num => {
+  numbers.forEach((num) => {
     if (DATA.remedies && (DATA.remedies as any)[num]) {
       filtered[num] = (DATA.remedies as any)[num];
     }
@@ -95,11 +105,14 @@ export const filterRudrakshaData = (
   const basicRemedies: { [key: number]: any } = {};
   const advancedRemedies: { [key: number]: any } = {};
 
-  numbers.forEach(num => {
+  numbers.forEach((num) => {
     if (DATA.rudrakshaRemedies && (DATA.rudrakshaRemedies as any)[num]) {
       basicRemedies[num] = (DATA.rudrakshaRemedies as any)[num];
     }
-    if (DATA.advancedRudrakshaRemedies && (DATA.advancedRudrakshaRemedies as any)[num]) {
+    if (
+      DATA.advancedRudrakshaRemedies &&
+      (DATA.advancedRudrakshaRemedies as any)[num]
+    ) {
       advancedRemedies[num] = (DATA.advancedRudrakshaRemedies as any)[num];
     }
   });
@@ -114,7 +127,7 @@ export const filterRudrakshaData = (
 export const filterMantras = (numbers: number[]): { [key: number]: any } => {
   const filtered: { [key: number]: any } = {};
 
-  numbers.forEach(num => {
+  numbers.forEach((num) => {
     if (DATA.mantraRemedies && (DATA.mantraRemedies as any)[num]) {
       filtered[num] = (DATA.mantraRemedies as any)[num];
     }
@@ -127,19 +140,21 @@ export const filterMantras = (numbers: number[]): { [key: number]: any } => {
  * Extract dasha traits for numbers appearing in user's dasha timeline
  * Returns traits only for dasha numbers user will experience
  */
-export const extractDashaTraits = (dashaTimeline: any[]): { [key: number]: any } => {
+export const extractDashaTraits = (
+  dashaTimeline: any[]
+): { [key: number]: any } => {
   const traits: { [key: number]: any } = {};
   const seenNumbers = new Set<number>();
 
   // Collect all unique dasha numbers from timeline
-  dashaTimeline.forEach(period => {
+  dashaTimeline.forEach((period) => {
     if (period.dashaNumber && !seenNumbers.has(period.dashaNumber)) {
       seenNumbers.add(period.dashaNumber);
     }
   });
 
   // Get dasha traits for these numbers
-  seenNumbers.forEach(num => {
+  seenNumbers.forEach((num) => {
     if (DATA.destinyNumberDetails && (DATA.destinyNumberDetails as any)[num]) {
       traits[num] = (DATA.destinyNumberDetails as any)[num];
     }
@@ -152,7 +167,9 @@ export const extractDashaTraits = (dashaTimeline: any[]): { [key: number]: any }
  * Filter recurring number influences for numbers in user's chart
  * Returns influence descriptions only for recurring numbers user has
  */
-export const filterRecurringNumberInfluences = (digitCounts: number[]): any[] => {
+export const filterRecurringNumberInfluences = (
+  digitCounts: number[]
+): any[] => {
   const influences = [];
   const rules = DATA.recurringNumberInfluence || {};
 
@@ -164,7 +181,7 @@ export const filterRecurringNumberInfluences = (digitCounts: number[]): any[] =>
       influences.push({
         number: num,
         occurrences: count,
-        details: (rules as any)[num]
+        details: (rules as any)[num],
       });
     }
   }
@@ -195,11 +212,11 @@ export const getGenderSpecificTraits = (
   if (!destinyDetails) return null;
 
   // Look for gender-specific information
-  if (gender === 'Female' && destinyDetails.femaleTraits) {
+  if (gender === "Female" && destinyDetails.femaleTraits) {
     return destinyDetails.femaleTraits;
   }
 
-  if (gender === 'Male' && destinyDetails.maleTraits) {
+  if (gender === "Male" && destinyDetails.maleTraits) {
     return destinyDetails.maleTraits;
   }
 
@@ -211,7 +228,10 @@ export const getGenderSpecificTraits = (
  * This is reference data, but can be filtered to show only user's relevant compatibility
  */
 export const getAssetCompatibility = (destinyNumber: number): any => {
-  if (!DATA.assetCompatibility || !(DATA.assetCompatibility as any)[destinyNumber]) {
+  if (
+    !DATA.assetCompatibility ||
+    !(DATA.assetCompatibility as any)[destinyNumber]
+  ) {
     return null;
   }
 
@@ -226,7 +246,7 @@ export const getAssetCompatibility = (destinyNumber: number): any => {
 export const buildRelevantDataSet = (
   mainReport: any,
   dashaReport: any,
-  gender: string = 'Other'
+  gender: string = "Other"
 ): any => {
   const {
     basicNumber,
@@ -235,7 +255,7 @@ export const buildRelevantDataSet = (
     yogas,
     recurringNumbersAnalysis,
     specialInsights,
-    specialRemedies
+    specialRemedies,
   } = mainReport;
 
   // Get all numbers relevant to this user
@@ -244,17 +264,25 @@ export const buildRelevantDataSet = (
   // Get all dasha numbers user will experience
   const allDashaNumbers = new Set<number>();
   if (dashaReport?.mahaDashaTimeline) {
-    dashaReport.mahaDashaTimeline.forEach((p: any) => allDashaNumbers.add(p.dashaNumber));
+    dashaReport.mahaDashaTimeline.forEach((p: any) =>
+      allDashaNumbers.add(p.dashaNumber)
+    );
   }
   if (dashaReport?.yearlyDashaTimeline) {
-    dashaReport.yearlyDashaTimeline.forEach((p: any) => allDashaNumbers.add(p.dashaNumber));
+    dashaReport.yearlyDashaTimeline.forEach((p: any) =>
+      allDashaNumbers.add(p.dashaNumber)
+    );
   }
   if (dashaReport?.monthlyDashaTimeline) {
-    dashaReport.monthlyDashaTimeline.forEach((p: any) => allDashaNumbers.add(p.dashaNumber));
+    dashaReport.monthlyDashaTimeline.forEach((p: any) =>
+      allDashaNumbers.add(p.dashaNumber)
+    );
   }
 
   // Combine chart numbers and dasha numbers for complete number details
-  const allRelevantNumbers = Array.from(new Set([...relevantNumbers, ...Array.from(allDashaNumbers)]));
+  const allRelevantNumbers = Array.from(
+    new Set([...relevantNumbers, ...Array.from(allDashaNumbers)])
+  );
 
   // Build filtered data sets
   const numberDetails = filterNumberDetails(allRelevantNumbers);
@@ -263,9 +291,7 @@ export const buildRelevantDataSet = (
   const remedies = filterRemedies(relevantNumbers);
   const rudrakshaData = filterRudrakshaData(relevantNumbers);
   const mantras = filterMantras(relevantNumbers);
-  const dashaTraits = extractDashaTraits(
-    dashaReport?.mahaDashaTimeline || []
-  );
+  const dashaTraits = extractDashaTraits(dashaReport?.mahaDashaTimeline || []);
   const recurringInfluences = filterRecurringNumberInfluences(baseKundliGrid);
   const genderTraits = getGenderSpecificTraits(destinyNumber, gender);
   const assetCompatibility = getAssetCompatibility(destinyNumber);
@@ -335,8 +361,8 @@ export const buildRelevantDataSet = (
     // Color associations (static)
     colors: {
       [basicNumber]: getNumberColor(basicNumber),
-      [destinyNumber]: getNumberColor(destinyNumber)
-    }
+      [destinyNumber]: getNumberColor(destinyNumber),
+    },
   };
 };
 
@@ -346,18 +372,18 @@ export const buildRelevantDataSet = (
  */
 export const getNumberColor = (number: number): string => {
   const colorMap: { [key: number]: string } = {
-    1: '#FFD700', // Gold
-    2: '#FF69B4', // Pink
-    3: '#FFA500', // Orange
-    4: '#4169E1', // Royal Blue
-    5: '#32CD32', // Lime Green
-    6: '#20B2AA', // Light Sea Green
-    7: '#9370DB', // Medium Purple
-    8: '#DC143C', // Crimson
-    9: '#FF4500'  // Orange Red
+    1: "#FFD700", // Gold
+    2: "#FF69B4", // Pink
+    3: "#FFA500", // Orange
+    4: "#4169E1", // Royal Blue
+    5: "#32CD32", // Lime Green
+    6: "#20B2AA", // Light Sea Green
+    7: "#9370DB", // Medium Purple
+    8: "#DC143C", // Crimson
+    9: "#FF4500", // Orange Red
   };
 
-  return colorMap[number] || '#808080';
+  return colorMap[number] || "#808080";
 };
 
 /**
@@ -366,11 +392,11 @@ export const getNumberColor = (number: number): string => {
  */
 export const validateFilteredData = (relevantData: any): boolean => {
   const requiredFields = [
-    'numberDetails',
-    'yogas',
-    'remedies',
-    'mantras',
-    'dashaTraits'
+    "numberDetails",
+    "yogas",
+    "remedies",
+    "mantras",
+    "dashaTraits",
   ];
 
   for (const field of requiredFields) {

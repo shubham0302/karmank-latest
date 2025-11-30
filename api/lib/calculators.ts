@@ -4,8 +4,8 @@ import {
   checkAdvancedYoga,
   checkForSpecialRemedies,
   getText
-} from './helpers';
-import { DATA } from '../data/data';
+} from './helpers.js';
+import { DATA } from '../data/data.js';
 
 /**
  * Calculates the base numerology report.

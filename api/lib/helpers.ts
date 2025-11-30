@@ -1,4 +1,4 @@
-import { DATA } from '../data/data';
+import { DATA } from '../data/data.js';
 
 /**
  * Safely retrieves text in the desired language from a multi-language object.
