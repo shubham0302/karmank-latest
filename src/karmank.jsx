@@ -167,11 +167,11 @@ export default function KarmAnkApp() {
   // UPDATED: Removed 'Name Analysis', 'Asset Vibration', and 'Education'
   const tabs = [
     "Welcome",
+    "Numerology Traits",
     "Foundational Analysis",
     "Advanced Dasha",
     "Forecast",
     "Remedies & Guidance",
-    "Numerology Traits",
   ];
 
   const renderTabContent = () => {
@@ -425,7 +425,9 @@ export default function KarmAnkApp() {
             <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 rounded-lg">
               <div className="bg-gray-900/90 border border-cyan-400/50 rounded-xl p-8 text-center">
                 <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-cyan-400 mb-4"></div>
-                <p className="text-cyan-300 font-medium">Loading {userData.name}'s analysis...</p>
+                <p className="text-cyan-300 font-medium">
+                  Loading {userData.name}'s analysis...
+                </p>
               </div>
             </div>
           )}
