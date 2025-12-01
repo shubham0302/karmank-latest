@@ -30,11 +30,7 @@ const RudrakshaTab = ({ report, language = 'en' }) => {
         const advancedData = getAdvancedRudrakshaData(report, number);
 
         if (!rudrakshaData || !advancedData) {
-            return (
-                <Card>
-                    <p className="text-yellow-400">Rudraksha data not available for number {number}.</p>
-                </Card>
-            );
+            return null;
         }
 
         return (

@@ -48,7 +48,7 @@ export default function FamilyMemberSelector({
         })
       }
     }
-  }, [selectedMemberId, members, onDetailsChange])
+  }, [selectedMemberId, members])
 
   const availableMembers = members.filter(m =>
     !excludeMemberId || m.id !== excludeMemberId

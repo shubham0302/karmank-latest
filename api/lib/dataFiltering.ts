@@ -101,10 +101,12 @@ export const filterRemedies = (numbers: number[]): { [key: number]: any } => {
 
 /**
  * Filter rudraksha data for given numbers
- * Returns rudraksha recommendations for user's numbers
+ * Returns rudraksha recommendations for user's numbers, filtered by destiny number and multiplicity
  */
 export const filterRudrakshaData = (
-  numbers: number[]
+  numbers: number[],
+  digitCounts?: number[],
+  destinyNumber?: number
 ): { basic: { [key: number]: any }; advanced: { [key: number]: any } } => {
   const basicRemedies: { [key: number]: any } = {};
   const advancedRemedies: { [key: number]: any } = {};
@@ -112,11 +114,35 @@ export const filterRudrakshaData = (
   const advancedRudrakshaRemedies = (DATA as any).advancedRudrakshaRemedies || {};
 
   numbers.forEach((num) => {
-    if (rudrakshaRemedies[num]) {
-      basicRemedies[num] = rudrakshaRemedies[num];
+    // If no digit counts provided, include all rudraksha for these numbers
+    if (!digitCounts || destinyNumber === undefined) {
+      if (rudrakshaRemedies[num]) {
+        basicRemedies[num] = rudrakshaRemedies[num];
+      }
+      if (advancedRudrakshaRemedies[num]) {
+        advancedRemedies[num] = advancedRudrakshaRemedies[num];
+      }
+      return;
     }
-    if (advancedRudrakshaRemedies[num]) {
-      advancedRemedies[num] = advancedRudrakshaRemedies[num];
+
+    // Multiplicity check: Include rudraksha if:
+    // 1. Number appears only once, OR
+    // 2. Number appears multiple times AND is the destiny number
+    const count = digitCounts[num] || 0;
+    const isDestinyMatch = num === destinyNumber;
+
+    // Include rudraksha if:
+    // - Number has single or zero occurrence, OR
+    // - Number has multiple occurrences AND matches destiny number (harmonious)
+    const shouldInclude = count <= 1 || (count > 1 && isDestinyMatch);
+
+    if (shouldInclude) {
+      if (rudrakshaRemedies[num]) {
+        basicRemedies[num] = rudrakshaRemedies[num];
+      }
+      if (advancedRudrakshaRemedies[num]) {
+        advancedRemedies[num] = advancedRudrakshaRemedies[num];
+      }
     }
   });
 
@@ -125,14 +151,38 @@ export const filterRudrakshaData = (
 
 /**
  * Filter mantras for given numbers
- * Returns mantras relevant to user's numbers
+ * Returns mantras relevant to user's numbers, filtered by destiny number and multiplicity
  */
-export const filterMantras = (numbers: number[]): { [key: number]: any } => {
+export const filterMantras = (
+  numbers: number[],
+  digitCounts?: number[],
+  destinyNumber?: number
+): { [key: number]: any } => {
   const filtered: { [key: number]: any } = {};
   const mantraRemedies = (DATA as any).mantraRemedies || {};
 
   numbers.forEach((num) => {
-    if (mantraRemedies[num]) {
+    if (!mantraRemedies[num]) return;
+
+    // If no digit counts provided, include all mantras for these numbers
+    if (!digitCounts || destinyNumber === undefined) {
+      filtered[num] = mantraRemedies[num];
+      return;
+    }
+
+    // Multiplicity check: Include mantra if:
+    // 1. Number appears only once, OR
+    // 2. Number appears multiple times AND is the destiny number, OR
+    // 3. Number appears once (single occurrence is always included)
+    const count = digitCounts[num] || 0;
+    const isDestinyMatch = num === destinyNumber;
+
+    // Include mantra if:
+    // - Number has single or zero occurrence, OR
+    // - Number has multiple occurrences AND matches destiny number (harmonious)
+    const shouldInclude = count <= 1 || (count > 1 && isDestinyMatch);
+
+    if (shouldInclude) {
       filtered[num] = mantraRemedies[num];
     }
   });
@@ -298,8 +348,8 @@ export const buildRelevantDataSet = (
   const yogaDetails = filterYogaDetails(yogas);
   const combinationInsight = getCombinationInsight(basicNumber, destinyNumber);
   const remedies = filterRemedies(relevantNumbers);
-  const rudrakshaData = filterRudrakshaData(relevantNumbers);
-  const mantras = filterMantras(relevantNumbers);
+  const rudrakshaData = filterRudrakshaData(relevantNumbers, baseKundliGrid, destinyNumber);
+  const mantras = filterMantras(relevantNumbers, baseKundliGrid, destinyNumber);
   const dashaTraits = extractDashaTraits(dashaReport?.mahaDashaTimeline || []);
   const recurringInfluences = filterRecurringNumberInfluences(baseKundliGrid);
   const genderTraits = getGenderSpecificTraits(destinyNumber, gender);
