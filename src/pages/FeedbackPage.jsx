@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, MessageSquare, Send, Star, Sparkles, Heart, Lightbulb, AlertCircle, CheckCircle2, AlertTriangle } from "lucide-react";
+import { ArrowLeft, MessageSquare, Send, Star, Sparkles, Heart, Lightbulb, AlertCircle, CheckCircle2, AlertTriangle, Upload, Image, X } from "lucide-react";
 import CosmicBackground from "../components/CosmicBackground";
 import { GradientText, gradientUtils } from "../components/GradientText";
 import { useAuth } from "../contexts/AuthContext";
@@ -22,9 +22,72 @@ export default function FeedbackPage() {
   const [hoveredRating, setHoveredRating] = useState(0);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState(null);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [attachmentUrl, setAttachmentUrl] = useState(null);
 
   const handleBackToLogin = () => {
     navigate('/login');
+  };
+
+  const handleFileSelect = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!['image/jpeg', 'image/png', 'image/gif', 'image/webp'].includes(file.type)) {
+      setErrorMessage('Only image files (JPEG, PNG, GIF, WebP) are allowed');
+      return;
+    }
+
+    // Validate file size (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setErrorMessage('File size must be less than 5MB');
+      return;
+    }
+
+    setSelectedFile(file);
+    setErrorMessage(null);
+
+    // Create preview
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setPreviewUrl(reader.result);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleRemoveImage = () => {
+    setSelectedFile(null);
+    setPreviewUrl(null);
+    setAttachmentUrl(null);
+  };
+
+  const handleUploadImage = async () => {
+    if (!selectedFile) return;
+
+    setUploadingImage(true);
+    setErrorMessage(null);
+
+    try {
+      // Use a temporary ID for initial upload
+      const tempId = `temp-${Date.now()}`;
+      const result = await feedbackService.uploadImage(selectedFile, tempId);
+
+      if (!result.success) {
+        setErrorMessage(result.error);
+        setUploadingImage(false);
+        return;
+      }
+
+      setAttachmentUrl(result.url);
+      setUploadingImage(false);
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      setErrorMessage(error.message || 'Failed to upload image');
+      setUploadingImage(false);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -33,8 +96,28 @@ export default function FeedbackPage() {
     setErrorMessage(null);
 
     try {
-      // Submit feedback to Supabase
-      const result = await feedbackService.submitFeedback(formData, user?.id);
+      // If there's a selected file but not uploaded yet, upload it first
+      let finalAttachmentUrl = attachmentUrl;
+      if (selectedFile && !attachmentUrl) {
+        const tempId = `temp-${Date.now()}`;
+        const uploadResult = await feedbackService.uploadImage(selectedFile, tempId);
+
+        if (!uploadResult.success) {
+          setErrorMessage(uploadResult.error);
+          setLoading(false);
+          return;
+        }
+
+        finalAttachmentUrl = uploadResult.url;
+      }
+
+      // Submit feedback with optional attachment
+      const feedbackDataWithAttachment = {
+        ...formData,
+        attachmentUrl: finalAttachmentUrl
+      };
+
+      const result = await feedbackService.submitFeedback(feedbackDataWithAttachment, user?.id);
 
       if (!result.success) {
         setErrorMessage(result.error);
@@ -318,6 +401,78 @@ export default function FeedbackPage() {
                   <p className="text-white/50 text-xs mt-2">
                     Minimum 10 characters • Be specific to help us improve
                   </p>
+                </motion.div>
+
+                {/* Image Attachment */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.35 }}
+                >
+                  <label className="block text-cyan-300 font-semibold mb-3 text-sm uppercase tracking-wide">
+                    Attach Screenshot (Optional)
+                  </label>
+
+                  {previewUrl ? (
+                    <div className="relative bg-white/5 border border-cyan-500/30 rounded-lg p-4 mb-3">
+                      <div className="relative inline-block">
+                        <img
+                          src={previewUrl}
+                          alt="Preview"
+                          className="max-w-xs max-h-48 rounded-lg border border-cyan-400/50"
+                        />
+                        <button
+                          type="button"
+                          onClick={handleRemoveImage}
+                          className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-1.5 transition-colors"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      </div>
+                      <div className="mt-3 text-xs text-white/70">
+                        {selectedFile?.name} • {(selectedFile?.size / 1024).toFixed(2)} KB
+                      </div>
+                      {!attachmentUrl && (
+                        <button
+                          type="button"
+                          onClick={handleUploadImage}
+                          disabled={uploadingImage}
+                          className="mt-3 w-full px-4 py-2 bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-400/50 text-cyan-300 rounded-lg text-sm font-medium transition-all disabled:opacity-50"
+                        >
+                          {uploadingImage ? (
+                            <>
+                              <Sparkles className="h-4 w-4 inline animate-spin mr-2" />
+                              Uploading...
+                            </>
+                          ) : (
+                            <>
+                              <Upload className="h-4 w-4 inline mr-2" />
+                              Upload Image
+                            </>
+                          )}
+                        </button>
+                      )}
+                      {attachmentUrl && (
+                        <div className="mt-3 p-2 bg-green-500/20 border border-green-400/50 rounded text-green-300 text-xs text-center">
+                          ✓ Image uploaded successfully
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <label className="flex items-center justify-center w-full px-4 py-8 border-2 border-dashed border-cyan-500/30 rounded-lg hover:border-cyan-400/50 bg-white/5 hover:bg-white/10 transition-all cursor-pointer group">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleFileSelect}
+                        className="hidden"
+                      />
+                      <div className="text-center">
+                        <Image className="h-8 w-8 text-cyan-400/60 mx-auto mb-2 group-hover:text-cyan-300 transition-colors" />
+                        <p className="text-white/70 text-sm font-medium">Drop image here or click to browse</p>
+                        <p className="text-white/50 text-xs mt-1">JPEG, PNG, GIF, WebP • Max 5MB</p>
+                      </div>
+                    </label>
+                  )}
                 </motion.div>
 
                 {/* Submit Button */}

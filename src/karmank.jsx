@@ -60,6 +60,7 @@ export default function KarmAnkApp() {
   const [activeTab, setActiveTab] = useState("Welcome");
   const [formError, setFormError] = useState("");
   const [memberDropdownOpen, setMemberDropdownOpen] = useState(false);
+  const [isLoadingMemberChange, setIsLoadingMemberChange] = useState(false);
 
   // Language state with localStorage persistence
   const [language, setLanguage] = useState(() => {
@@ -285,7 +286,8 @@ export default function KarmAnkApp() {
               <div className="relative">
                 <button
                   onClick={() => setMemberDropdownOpen(!memberDropdownOpen)}
-                  className="flex items-center gap-2 px-4 py-2 bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-400/50 rounded-lg text-cyan-300 text-sm font-medium transition"
+                  disabled={isLoadingMemberChange}
+                  className="flex items-center gap-2 px-4 py-2 bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-400/50 rounded-lg text-cyan-300 text-sm font-medium transition disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {(selectedFamilyMemberId &&
                     members.find((m) => m.id === selectedFamilyMemberId)
@@ -293,21 +295,23 @@ export default function KarmAnkApp() {
                     "Select Member"}
                   <ChevronDown className="h-4 w-4" />
                 </button>
-                {memberDropdownOpen && (
+                {memberDropdownOpen && !isLoadingMemberChange && (
                   <div className="absolute top-full right-0 mt-2 bg-gray-900 border border-cyan-400/50 rounded-lg shadow-lg z-50 min-w-64">
                     {members.map((member) => (
                       <button
                         key={member.id}
                         onClick={async () => {
-                          setSelectedFamilyMemberId(member.id);
-                          setUserData({
-                            name: member.name,
-                            dob: member.date_of_birth,
-                            gender: member.gender,
-                          });
+                          setIsLoadingMemberChange(true);
                           setMemberDropdownOpen(false);
-                          // Auto-generate report when member is selected
+
                           try {
+                            setSelectedFamilyMemberId(member.id);
+                            setUserData({
+                              name: member.name,
+                              dob: member.date_of_birth,
+                              gender: member.gender,
+                            });
+                            // Auto-generate report when member is selected
                             const calcResult = await calculateNumerology({
                               dob: member.date_of_birth,
                               name: member.name,
@@ -320,6 +324,8 @@ export default function KarmAnkApp() {
                             }
                           } catch (error) {
                             console.error("Error generating report:", error);
+                          } finally {
+                            setIsLoadingMemberChange(false);
                           }
                         }}
                         className={`w-full text-left px-4 py-3 hover:bg-cyan-400/10 transition ${
@@ -379,6 +385,16 @@ export default function KarmAnkApp() {
               </div>
             </div>
           </div>
+
+          {/* Member Change Loading Overlay */}
+          {isLoadingMemberChange && (
+            <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 rounded-lg">
+              <div className="bg-gray-900/90 border border-cyan-400/50 rounded-xl p-8 text-center">
+                <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-cyan-400 mb-4"></div>
+                <p className="text-cyan-300 font-medium">Loading {userData.name}'s analysis...</p>
+              </div>
+            </div>
+          )}
 
           {!report ? (
             /* Introduction Page with Animated Loading */

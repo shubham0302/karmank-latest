@@ -4,7 +4,69 @@ import { supabase } from '../lib/supabase';
  * Service for handling feedback operations with Supabase
  */
 
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+const STORAGE_BUCKET = 'feedback-attachments';
+
 export const feedbackService = {
+  /**
+   * Upload image to Supabase Storage
+   * @param {File} file - Image file to upload
+   * @param {string} feedbackId - Feedback ID for file naming
+   * @returns {Promise<{success: boolean, url?: string, error?: string}>}
+   */
+  async uploadImage(file, feedbackId) {
+    try {
+      // Validate file
+      if (!file) {
+        throw new Error('No file selected');
+      }
+
+      if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+        throw new Error('Only image files (JPEG, PNG, GIF, WebP) are allowed');
+      }
+
+      if (file.size > MAX_FILE_SIZE) {
+        throw new Error('File size must be less than 5MB');
+      }
+
+      // Create unique filename
+      const timestamp = Date.now();
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${feedbackId}-${timestamp}.${fileExt}`;
+
+      // Upload to Supabase Storage
+      const { data, error } = await supabase.storage
+        .from(STORAGE_BUCKET)
+        .upload(`feedback/${fileName}`, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
+
+      if (error) {
+        console.error('Supabase storage error:', error);
+        throw error;
+      }
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from(STORAGE_BUCKET)
+        .getPublicUrl(`feedback/${fileName}`);
+
+      return {
+        success: true,
+        url: publicUrl,
+        fileName: fileName
+      };
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      return {
+        success: false,
+        error: error.message || 'Failed to upload image'
+      };
+    }
+  },
+
   /**
    * Submit feedback to Supabase
    * @param {Object} feedbackData - Feedback form data
@@ -13,12 +75,13 @@ export const feedbackService = {
    * @param {string} feedbackData.category - Feedback category
    * @param {number} feedbackData.rating - Rating (1-5)
    * @param {string} feedbackData.message - Feedback message
+   * @param {string} [feedbackData.attachmentUrl] - Optional attachment URL
    * @param {string} [userId] - Optional authenticated user ID
    * @returns {Promise<{success: boolean, error?: any}>}
    */
   async submitFeedback(feedbackData, userId = null) {
     try {
-      const { name, email, category, rating, message } = feedbackData;
+      const { name, email, category, rating, message, attachmentUrl } = feedbackData;
 
       // Validate required fields
       if (!name || !email || !category || !rating || !message) {
@@ -43,6 +106,7 @@ export const feedbackService = {
             category,
             rating,
             message,
+            attachment_url: attachmentUrl || null,
             user_id: userId,
             created_at: new Date().toISOString()
           }

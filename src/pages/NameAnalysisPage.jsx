@@ -1,49 +1,159 @@
-import { useState, useRef, useEffect, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useRef, useEffect, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import {
-  ArrowLeft, ArrowRight, BookOpen, Link as LinkIcon, Briefcase, FlaskConical,
-  Loader2, AlertCircle, Wand2, MousePointerClick, XCircle,
-  Sun, PenTool, Upload, Trash2, Sparkles, Download, Activity,
-  TrendingUp, Globe, Disc, CheckCircle2, Building2, Factory, Camera, DollarSign
-} from 'lucide-react';
-import jsPDF from 'jspdf';
-import CosmicBackground from '../components/CosmicBackground';
+  ArrowLeft,
+  ArrowRight,
+  BookOpen,
+  Link as LinkIcon,
+  Briefcase,
+  FlaskConical,
+  Loader2,
+  AlertCircle,
+  Wand2,
+  MousePointerClick,
+  XCircle,
+  Sun,
+  PenTool,
+  Upload,
+  Trash2,
+  Sparkles,
+  Download,
+  Activity,
+  TrendingUp,
+  Globe,
+  Disc,
+  CheckCircle2,
+  Building2,
+  Factory,
+  Camera,
+  DollarSign,
+} from "lucide-react";
+import jsPDF from "jspdf";
+import CosmicBackground from "../components/CosmicBackground";
 import { GradientText, gradientUtils } from "../components/GradientText";
-import FamilyMemberSelector from '../components/FamilyMemberSelector';
-import { useAuth } from '../contexts/AuthContext';
-import { useFamilyMembers } from '../hooks/useFamilyMembers';
-import { ChevronDown } from 'lucide-react';
+import FamilyMemberSelector from "../components/FamilyMemberSelector";
+import { useAuth } from "../contexts/AuthContext";
+import { useFamilyMembers } from "../hooks/useFamilyMembers";
+import { ChevronDown } from "lucide-react";
 
 // --- PYTHAGOREAN CONSTANTS ---
 const PYTHAGOREAN_CONSTANTS = {
   letterData: {
-    A: { num: 1, meaning: "Ambition & Drive", repeat: "Amplifies ambition and aggression" },
-    B: { num: 2, meaning: "Emotional Sensitivity", repeat: "Enhances empathy but increases mood swings" },
-    C: { num: 3, meaning: "Creative Expression", repeat: "Success after overcoming difficulties" },
-    D: { num: 4, meaning: "Structure & Discipline", repeat: "Overcomes limitations with patience" },
-    E: { num: 5, meaning: "Freedom & Adventure", repeat: "Acquires fame through writing or oratory" },
-    F: { num: 6, meaning: "Love & Responsibility", repeat: "Protection in all family matters" },
-    G: { num: 7, meaning: "Wisdom & Analysis", repeat: "A clever analyst who understands motives" },
-    H: { num: 8, meaning: "Power & Authority", repeat: "Strong potential for material progress" },
-    I: { num: 9, meaning: "Compassion & Completion", repeat: "Signifies extreme sensitivity and suffering" },
-    J: { num: 1, meaning: "Initiative & Independence", repeat: "Shifts focus quickly" },
-    K: { num: 2, meaning: "Cooperation & Duality", repeat: "Emotional fluctuation" },
-    L: { num: 3, meaning: "Communication & Joy", repeat: "Keen insight into motives" },
-    M: { num: 4, meaning: "Stability & Foundation", repeat: "Never accepts defeat" },
+    A: {
+      num: 1,
+      meaning: "Ambition & Drive",
+      repeat: "Amplifies ambition and aggression",
+    },
+    B: {
+      num: 2,
+      meaning: "Emotional Sensitivity",
+      repeat: "Enhances empathy but increases mood swings",
+    },
+    C: {
+      num: 3,
+      meaning: "Creative Expression",
+      repeat: "Success after overcoming difficulties",
+    },
+    D: {
+      num: 4,
+      meaning: "Structure & Discipline",
+      repeat: "Overcomes limitations with patience",
+    },
+    E: {
+      num: 5,
+      meaning: "Freedom & Adventure",
+      repeat: "Acquires fame through writing or oratory",
+    },
+    F: {
+      num: 6,
+      meaning: "Love & Responsibility",
+      repeat: "Protection in all family matters",
+    },
+    G: {
+      num: 7,
+      meaning: "Wisdom & Analysis",
+      repeat: "A clever analyst who understands motives",
+    },
+    H: {
+      num: 8,
+      meaning: "Power & Authority",
+      repeat: "Strong potential for material progress",
+    },
+    I: {
+      num: 9,
+      meaning: "Compassion & Completion",
+      repeat: "Signifies extreme sensitivity and suffering",
+    },
+    J: {
+      num: 1,
+      meaning: "Initiative & Independence",
+      repeat: "Shifts focus quickly",
+    },
+    K: {
+      num: 2,
+      meaning: "Cooperation & Duality",
+      repeat: "Emotional fluctuation",
+    },
+    L: {
+      num: 3,
+      meaning: "Communication & Joy",
+      repeat: "Keen insight into motives",
+    },
+    M: {
+      num: 4,
+      meaning: "Stability & Foundation",
+      repeat: "Never accepts defeat",
+    },
     N: { num: 5, meaning: "Change & Versatility", repeat: "Cycles of luck" },
-    O: { num: 6, meaning: "Harmony & Nurturing", repeat: "Can exaggerate problems" },
-    P: { num: 7, meaning: "Spiritual Insight", repeat: "Power and success follow" },
+    O: {
+      num: 6,
+      meaning: "Harmony & Nurturing",
+      repeat: "Can exaggerate problems",
+    },
+    P: {
+      num: 7,
+      meaning: "Spiritual Insight",
+      repeat: "Power and success follow",
+    },
     Q: { num: 8, meaning: "Material Success", repeat: "Manages others well" },
     R: { num: 9, meaning: "Humanitarian Service", repeat: "Needs discretion" },
-    S: { num: 1, meaning: "Self-Reliance", repeat: "Gains through originality" },
-    T: { num: 2, meaning: "Partnership & Balance", repeat: "Emotional intensity grows" },
-    U: { num: 3, meaning: "Optimism & Expression", repeat: "Trouble expressing feelings" },
-    V: { num: 4, meaning: "Practical Foundation", repeat: "Strong determination" },
-    W: { num: 5, meaning: "Dynamic Energy", repeat: "Intense personal magnetism" },
-    X: { num: 6, meaning: "Responsibility", repeat: "Passion for life increases" },
+    S: {
+      num: 1,
+      meaning: "Self-Reliance",
+      repeat: "Gains through originality",
+    },
+    T: {
+      num: 2,
+      meaning: "Partnership & Balance",
+      repeat: "Emotional intensity grows",
+    },
+    U: {
+      num: 3,
+      meaning: "Optimism & Expression",
+      repeat: "Trouble expressing feelings",
+    },
+    V: {
+      num: 4,
+      meaning: "Practical Foundation",
+      repeat: "Strong determination",
+    },
+    W: {
+      num: 5,
+      meaning: "Dynamic Energy",
+      repeat: "Intense personal magnetism",
+    },
+    X: {
+      num: 6,
+      meaning: "Responsibility",
+      repeat: "Passion for life increases",
+    },
     Y: { num: 7, meaning: "Inner Wisdom", repeat: "Frustrations need outlets" },
-    Z: { num: 8, meaning: "Executive Ability", repeat: "Wealth through inheritance" }
-  }
+    Z: {
+      num: 8,
+      meaning: "Executive Ability",
+      repeat: "Wealth through inheritance",
+    },
+  },
 };
 
 const NUMBER_MEANINGS = {
@@ -58,22 +168,22 @@ const NUMBER_MEANINGS = {
   9: "Embodies compassion, completion, and humanitarian service. You are selfless, wise, and drawn to helping humanity. Your broad perspective and generosity inspire others, though you may struggle with personal boundaries.",
   11: "A master number representing spiritual illumination and intuition. You are highly sensitive, visionary, and possess profound insights. Your mission is to inspire and enlighten others through your idealism and creativity.",
   22: "A master number embodying the master builder. You have the ability to turn dreams into reality on a grand scale. Your practical vision and organizational skills can create lasting legacies.",
-  33: "A master number of compassion and teaching. You are the master teacher with a mission to uplift humanity through unconditional love and service. Your nurturing abilities are extraordinarily powerful."
+  33: "A master number of compassion and teaching. You are the master teacher with a mission to uplift humanity through unconditional love and service. Your nurturing abilities are extraordinarily powerful.",
 };
 
 const CORE_DEFINITIONS = {
   blueprint: {
     title: "The Blueprint (Expression Number)",
-    def: "This number represents your natural talents, abilities, and the path you're meant to walk. It's derived from the full numerical value of your name and shows how you express yourself to the world."
+    def: "This number represents your natural talents, abilities, and the path you're meant to walk. It's derived from the full numerical value of your name and shows how you express yourself to the world.",
   },
   soulUrge: {
     title: "The Core Drive (Soul Urge Number)",
-    def: "This reveals your innermost desires, motivations, and what drives you at the deepest level. It comes from the vowels in your name and represents your heart's true yearning."
+    def: "This reveals your innermost desires, motivations, and what drives you at the deepest level. It comes from the vowels in your name and represents your heart's true yearning.",
   },
   interface: {
     title: "The Interface (Personality Number)",
-    def: "This number shows how others perceive you—your outer personality and first impression. Derived from the consonants in your name, it's the mask you wear in social situations."
-  }
+    def: "This number shows how others perceive you—your outer personality and first impression. Derived from the consonants in your name, it's the mask you wear in social situations.",
+  },
 };
 
 const STATIC_NARRATIVES = {
@@ -89,7 +199,7 @@ const STATIC_NARRATIVES = {
     9: "The Humanitarian. Your blueprint is one of compassion and completion. You're meant to serve humanity, embrace all people, and bring healing to the world.",
     11: "The Illuminator. Your master blueprint is one of spiritual insight and inspiration. You're designed to be a beacon of light, inspiring others through your visionary ideals.",
     22: "The Master Builder. Your rare blueprint combines vision with practical execution. You're meant to manifest great achievements and create structures that benefit humanity.",
-    33: "The Master Teacher. Your exceptional blueprint is one of unconditional love and service. You're designed to uplift humanity through compassionate teaching and healing."
+    33: "The Master Teacher. Your exceptional blueprint is one of unconditional love and service. You're designed to uplift humanity through compassionate teaching and healing.",
   },
   soulUrge: {
     1: "Deep down, you crave total independence and the freedom to lead. Your soul yearns to stand out, make your own decisions, and be recognized for your unique contributions.",
@@ -103,7 +213,7 @@ const STATIC_NARRATIVES = {
     9: "Deep down, you desire to serve humanity and make the world a better place. Your soul craves opportunities to give selflessly and heal others.",
     11: "Your core drive is to illuminate and inspire. Your soul yearns to channel higher wisdom and lift others through your spiritual insights and idealism.",
     22: "At your essence, you desire to build something grand that serves humanity. Your soul craves the opportunity to manifest visionary projects on a large scale.",
-    33: "Your deepest yearning is to teach, heal, and uplift through unconditional love. Your soul desires to serve as a beacon of compassion and wisdom."
+    33: "Your deepest yearning is to teach, heal, and uplift through unconditional love. Your soul desires to serve as a beacon of compassion and wisdom.",
   },
   interface: {
     1: "You appear confident, direct, and original. Others see you as a strong leader who knows what they want and isn't afraid to go after it.",
@@ -117,34 +227,111 @@ const STATIC_NARRATIVES = {
     9: "You appear compassionate, wise, and selfless. Others see you as a humanitarian with a big heart and a generous spirit.",
     11: "You project sensitivity, idealism, and inspiration. Others perceive you as someone with unusual depth, vision, and spiritual awareness.",
     22: "You appear visionary yet practical. Others see you as someone capable of achieving great things and turning ambitious plans into reality.",
-    33: "You project love, wisdom, and healing energy. Others perceive you as a natural teacher and guide with profound compassion."
-  }
+    33: "You project love, wisdom, and healing energy. Others perceive you as a natural teacher and guide with profound compassion.",
+  },
 };
 
 const KARMANK_CONSTANTS = {
   numberDetails: {
-    1: { name: "Surya (Sun)", description: "Carries a confident, ambitious, and driven leadership quality. They are inspiring but don't take orders easily." },
-    2: { name: "Chandra (Moon)", description: "Emotional and caring, needing constant motivation. They seek love, appreciation, and support." },
-    3: { name: "Guru (Jupiter)", description: "Wise, disciplined, and family-oriented. They have strong values and resist temptation." },
-    4: { name: "Rahu (North Node)", description: "Adventurous and risk-taking, but prone to overthinking and mood swings. Plans may not always work out." },
-    5: { name: "Budh (Mercury)", description: "Logical and born for business. They are masters of money and value every penny." },
-    6: { name: "Shukra (Venus)", description: "Naturally charming, especially to the opposite gender. They love luxury, fashion, and good food, and can be blunt." },
-    7: { name: "Ketu (South Node)", description: "Lucky, with a natural inclination towards spirituality and deep, logical thinking. Travel is often meaningful." },
-    8: { name: "Shani (Saturn)", description: "Hard-working, though life may feel slow. They have a soft heart, strong self-respect, and a belief in justice." },
-    9: { name: "Mangal (Mars)", description: "Bold, confident, and full of energy. They are quick to act, love challenges, and feel a need to prove themselves." },
-    11: { name: "Master Chandra (Moon)", description: "Highly intuitive and spiritually aware. Master number 11 combines the emotional sensitivity of 2 with heightened spiritual insight and inspirational leadership." },
-    22: { name: "Master Builder", description: "Visionary builder with the power to turn dreams into reality. Master number 22 combines the practical energy of 4 with the ability to manifest grand visions." },
-    33: { name: "Master Teacher", description: "The master healer and teacher. Master number 33 combines the nurturing energy of 6 with profound wisdom and the calling to serve humanity through compassionate guidance." }
+    1: {
+      name: "Surya (Sun)",
+      description:
+        "Carries a confident, ambitious, and driven leadership quality. They are inspiring but don't take orders easily.",
+    },
+    2: {
+      name: "Chandra (Moon)",
+      description:
+        "Emotional and caring, needing constant motivation. They seek love, appreciation, and support.",
+    },
+    3: {
+      name: "Guru (Jupiter)",
+      description:
+        "Wise, disciplined, and family-oriented. They have strong values and resist temptation.",
+    },
+    4: {
+      name: "Rahu (North Node)",
+      description:
+        "Adventurous and risk-taking, but prone to overthinking and mood swings. Plans may not always work out.",
+    },
+    5: {
+      name: "Budh (Mercury)",
+      description:
+        "Logical and born for business. They are masters of money and value every penny.",
+    },
+    6: {
+      name: "Shukra (Venus)",
+      description:
+        "Naturally charming, especially to the opposite gender. They love luxury, fashion, and good food, and can be blunt.",
+    },
+    7: {
+      name: "Ketu (South Node)",
+      description:
+        "Lucky, with a natural inclination towards spirituality and deep, logical thinking. Travel is often meaningful.",
+    },
+    8: {
+      name: "Shani (Saturn)",
+      description:
+        "Hard-working, though life may feel slow. They have a soft heart, strong self-respect, and a belief in justice.",
+    },
+    9: {
+      name: "Mangal (Mars)",
+      description:
+        "Bold, confident, and full of energy. They are quick to act, love challenges, and feel a need to prove themselves.",
+    },
+    11: {
+      name: "Master Chandra (Moon)",
+      description:
+        "Highly intuitive and spiritually aware. Master number 11 combines the emotional sensitivity of 2 with heightened spiritual insight and inspirational leadership.",
+    },
+    22: {
+      name: "Master Builder",
+      description:
+        "Visionary builder with the power to turn dreams into reality. Master number 22 combines the practical energy of 4 with the ability to manifest grand visions.",
+    },
+    33: {
+      name: "Master Teacher",
+      description:
+        "The master healer and teacher. Master number 33 combines the nurturing energy of 6 with profound wisdom and the calling to serve humanity through compassionate guidance.",
+    },
   },
   letterValues: {
-    'A': 1, 'J': 1, 'S': 1, 'B': 2, 'K': 2, 'T': 2, 'C': 3, 'L': 3, 'U': 3,
-    'D': 4, 'M': 4, 'V': 4, 'E': 5, 'N': 5, 'W': 5, 'F': 6, 'O': 6, 'X': 6,
-    'G': 7, 'P': 7, 'Y': 7, 'H': 8, 'Q': 8, 'Z': 8, 'I': 9, 'R': 9
+    A: 1,
+    J: 1,
+    S: 1,
+    B: 2,
+    K: 2,
+    T: 2,
+    C: 3,
+    L: 3,
+    U: 3,
+    D: 4,
+    M: 4,
+    V: 4,
+    E: 5,
+    N: 5,
+    W: 5,
+    F: 6,
+    O: 6,
+    X: 6,
+    G: 7,
+    P: 7,
+    Y: 7,
+    H: 8,
+    Q: 8,
+    Z: 8,
+    I: 9,
+    R: 9,
   },
   valueToLetters: {
-    1: ['A', 'J', 'S'], 2: ['B', 'K', 'T'], 3: ['C', 'L', 'U'],
-    4: ['D', 'M', 'V'], 5: ['E', 'N', 'W'], 6: ['F', 'O', 'X'],
-    7: ['G', 'P', 'Y'], 8: ['H', 'Q', 'Z'], 9: ['I', 'R']
+    1: ["A", "J", "S"],
+    2: ["B", "K", "T"],
+    3: ["C", "L", "U"],
+    4: ["D", "M", "V"],
+    5: ["E", "N", "W"],
+    6: ["F", "O", "X"],
+    7: ["G", "P", "Y"],
+    8: ["H", "Q", "Z"],
+    9: ["I", "R"],
   },
   assetCompatibility: {
     1: { auspicious: [1, 2, 3], good: [4, 5], neutral: [6, 7], avoid: [8, 9] },
@@ -158,22 +345,22 @@ const KARMANK_CONSTANTS = {
     9: { auspicious: [3, 6, 9], good: [2, 7], neutral: [1, 5], avoid: [4, 8] },
   },
   goalVibrations: {
-    'Power': { numbers: [1, 8], desc: "Authority and influence" },
-    'Money': { numbers: [5, 8], desc: "Wealth and financial flow" },
-    'Luxury': { numbers: [6], desc: "Comfort and high quality" },
-    'Relationships': { numbers: [2, 6], desc: "Love and partnership" },
-    'Health': { numbers: [1, 5], desc: "Vitality and wellness" },
-    'Spiritual': { numbers: [7, 9], desc: "Wisdom and enlightenment" },
-    'Fame': { numbers: [1, 3, 9], desc: "Public acclaim" },
-    'Freedom': { numbers: [5], desc: "Adventure and independence" }
+    Power: { numbers: [1, 8], desc: "Authority and influence" },
+    Money: { numbers: [5, 8], desc: "Wealth and financial flow" },
+    Luxury: { numbers: [6], desc: "Comfort and high quality" },
+    Relationships: { numbers: [2, 6], desc: "Love and partnership" },
+    Health: { numbers: [1, 5], desc: "Vitality and wellness" },
+    Spiritual: { numbers: [7, 9], desc: "Wisdom and enlightenment" },
+    Fame: { numbers: [1, 3, 9], desc: "Public acclaim" },
+    Freedom: { numbers: [5], desc: "Adventure and independence" },
   },
   businessCategories: {
-    'Food & Creative': { numbers: [6, 3, 5], desc: "Restaurants, cafes, arts" },
-    'Authority/CEO': { numbers: [1, 8], desc: "Consulting, management" },
-    'Finance': { numbers: [5, 8], desc: "Banking, investing" },
-    'Travel': { numbers: [7, 5], desc: "Tourism, logistics" },
-    'Education': { numbers: [3, 7, 9], desc: "Schools, coaching" }
-  }
+    "Food & Creative": { numbers: [6, 3, 5], desc: "Restaurants, cafes, arts" },
+    "Authority/CEO": { numbers: [1, 8], desc: "Consulting, management" },
+    Finance: { numbers: [5, 8], desc: "Banking, investing" },
+    Travel: { numbers: [7, 5], desc: "Tourism, logistics" },
+    Education: { numbers: [3, 7, 9], desc: "Schools, coaching" },
+  },
 };
 
 // --- HELPER FUNCTIONS ---
@@ -181,7 +368,10 @@ const KARMANK_CONSTANTS = {
 function reduceToSingleDigit(num) {
   if (num === 11 || num === 22 || num === 33) return num;
   while (num > 9) {
-    num = num.toString().split('').reduce((sum, digit) => sum + parseInt(digit), 0);
+    num = num
+      .toString()
+      .split("")
+      .reduce((sum, digit) => sum + parseInt(digit), 0);
     if (num === 11 || num === 22 || num === 33) return num;
   }
   return num;
@@ -189,20 +379,92 @@ function reduceToSingleDigit(num) {
 
 function getZodiacSign(dobString) {
   if (!dobString) return { name: "Unknown", element: "—", symbol: "?" };
-  const [, month, day] = dobString.split('-').map(Number);
+  const [, month, day] = dobString.split("-").map(Number);
   const zodiacData = [
-    { sign: "Capricorn", start: [12, 22], end: [1, 19], element: "Earth", symbol: "♑" },
-    { sign: "Aquarius", start: [1, 20], end: [2, 18], element: "Air", symbol: "♒" },
-    { sign: "Pisces", start: [2, 19], end: [3, 20], element: "Water", symbol: "♓" },
-    { sign: "Aries", start: [3, 21], end: [4, 19], element: "Fire", symbol: "♈" },
-    { sign: "Taurus", start: [4, 20], end: [5, 20], element: "Earth", symbol: "♉" },
-    { sign: "Gemini", start: [5, 21], end: [6, 20], element: "Air", symbol: "♊" },
-    { sign: "Cancer", start: [6, 21], end: [7, 22], element: "Water", symbol: "♋" },
-    { sign: "Leo", start: [7, 23], end: [8, 22], element: "Fire", symbol: "♌" },
-    { sign: "Virgo", start: [8, 23], end: [9, 22], element: "Earth", symbol: "♍" },
-    { sign: "Libra", start: [9, 23], end: [10, 22], element: "Air", symbol: "♎" },
-    { sign: "Scorpio", start: [10, 23], end: [11, 21], element: "Water", symbol: "♏" },
-    { sign: "Sagittarius", start: [11, 22], end: [12, 21], element: "Fire", symbol: "♐" }
+    {
+      sign: "Capricorn",
+      start: [12, 22],
+      end: [1, 19],
+      element: "Earth",
+      symbol: "♑",
+    },
+    {
+      sign: "Aquarius",
+      start: [1, 20],
+      end: [2, 18],
+      element: "Air",
+      symbol: "♒",
+    },
+    {
+      sign: "Pisces",
+      start: [2, 19],
+      end: [3, 20],
+      element: "Water",
+      symbol: "♓",
+    },
+    {
+      sign: "Aries",
+      start: [3, 21],
+      end: [4, 19],
+      element: "Fire",
+      symbol: "♈",
+    },
+    {
+      sign: "Taurus",
+      start: [4, 20],
+      end: [5, 20],
+      element: "Earth",
+      symbol: "♉",
+    },
+    {
+      sign: "Gemini",
+      start: [5, 21],
+      end: [6, 20],
+      element: "Air",
+      symbol: "♊",
+    },
+    {
+      sign: "Cancer",
+      start: [6, 21],
+      end: [7, 22],
+      element: "Water",
+      symbol: "♋",
+    },
+    {
+      sign: "Leo",
+      start: [7, 23],
+      end: [8, 22],
+      element: "Fire",
+      symbol: "♌",
+    },
+    {
+      sign: "Virgo",
+      start: [8, 23],
+      end: [9, 22],
+      element: "Earth",
+      symbol: "♍",
+    },
+    {
+      sign: "Libra",
+      start: [9, 23],
+      end: [10, 22],
+      element: "Air",
+      symbol: "♎",
+    },
+    {
+      sign: "Scorpio",
+      start: [10, 23],
+      end: [11, 21],
+      element: "Water",
+      symbol: "♏",
+    },
+    {
+      sign: "Sagittarius",
+      start: [11, 22],
+      end: [12, 21],
+      element: "Fire",
+      symbol: "♐",
+    },
   ];
 
   for (const z of zodiacData) {
@@ -222,7 +484,9 @@ function getZodiacSign(dobString) {
 function calculateProfile(name, dob) {
   const upperName = name.toUpperCase().replace(/[^A-Z]/g, "");
   const vowels = "AEIOU";
-  let expression = 0, soulUrge = 0, personality = 0;
+  let expression = 0,
+    soulUrge = 0,
+    personality = 0;
   const letterCounts = {};
 
   for (let char of upperName) {
@@ -244,7 +508,7 @@ function calculateProfile(name, dob) {
       letter: char,
       count,
       meaning: PYTHAGOREAN_CONSTANTS.letterData[char].meaning,
-      effect: PYTHAGOREAN_CONSTANTS.letterData[char].repeat
+      effect: PYTHAGOREAN_CONSTANTS.letterData[char].repeat,
     }));
 
   expression = reduceToSingleDigit(expression);
@@ -253,24 +517,36 @@ function calculateProfile(name, dob) {
 
   let destinyNumber = null;
   let basicNumber = null;
-  let karmicStatus = 'Neutral';
+  let karmicStatus = "Neutral";
 
   // For Synergy tab calculations, we need the single digit version
   const expressionSingle = reduceToSingleDigit(expression);
 
   if (dob) {
-    const digits = dob.replace(/\D/g, '');
-    const dayDigits = dob.split('-')[2];
+    const digits = dob.replace(/\D/g, "");
+    const dayDigits = dob.split("-")[2];
     basicNumber = reduceToSingleDigit(parseInt(dayDigits));
-    destinyNumber = reduceToSingleDigit(digits.split('').reduce((sum, d) => sum + parseInt(d), 0));
+    destinyNumber = reduceToSingleDigit(
+      digits.split("").reduce((sum, d) => sum + parseInt(d), 0)
+    );
 
     // Calculate karmic status - reduce master numbers to single digits for compatibility lookup
-    const expressionForCompatibility = expressionSingle === 11 ? 2 : expressionSingle === 22 ? 4 : expressionSingle === 33 ? 6 : expressionSingle;
+    const expressionForCompatibility =
+      expressionSingle === 11
+        ? 2
+        : expressionSingle === 22
+        ? 4
+        : expressionSingle === 33
+        ? 6
+        : expressionSingle;
     const compat = KARMANK_CONSTANTS.assetCompatibility[destinyNumber];
     if (compat) {
-      if (compat.auspicious.includes(expressionForCompatibility)) karmicStatus = 'Auspicious';
-      else if (compat.good.includes(expressionForCompatibility)) karmicStatus = 'Good';
-      else if (compat.avoid.includes(expressionForCompatibility)) karmicStatus = 'Conflict';
+      if (compat.auspicious.includes(expressionForCompatibility))
+        karmicStatus = "Auspicious";
+      else if (compat.good.includes(expressionForCompatibility))
+        karmicStatus = "Good";
+      else if (compat.avoid.includes(expressionForCompatibility))
+        karmicStatus = "Conflict";
     }
   }
 
@@ -287,41 +563,82 @@ function calculateProfile(name, dob) {
     amplifiedTraits,
     zodiac,
     karmicStatus,
-    expressionSingle
+    expressionSingle,
   };
 }
 
 function getVibrationalStatus(expression, soulUrge) {
   const diff = Math.abs(expression - soulUrge);
-  if (diff === 0) return { label: "Perfect Alignment", percent: 100, color: "text-green-400", bgColor: "bg-green-500" };
-  if (diff <= 2) return { label: "High Synergy", percent: 80, color: "text-cyan-400", bgColor: "bg-cyan-500" };
-  if (diff <= 4) return { label: "Moderate Friction", percent: 60, color: "text-yellow-400", bgColor: "bg-yellow-500" };
-  if (diff <= 6) return { label: "Significant Tension", percent: 40, color: "text-orange-400", bgColor: "bg-orange-500" };
-  return { label: "Major Conflict", percent: 20, color: "text-red-400", bgColor: "bg-red-500" };
+  if (diff === 0)
+    return {
+      label: "Perfect Alignment",
+      percent: 100,
+      color: "text-green-400",
+      bgColor: "bg-green-500",
+    };
+  if (diff <= 2)
+    return {
+      label: "High Synergy",
+      percent: 80,
+      color: "text-cyan-400",
+      bgColor: "bg-cyan-500",
+    };
+  if (diff <= 4)
+    return {
+      label: "Moderate Friction",
+      percent: 60,
+      color: "text-yellow-400",
+      bgColor: "bg-yellow-500",
+    };
+  if (diff <= 6)
+    return {
+      label: "Significant Tension",
+      percent: 40,
+      color: "text-orange-400",
+      bgColor: "bg-orange-500",
+    };
+  return {
+    label: "Major Conflict",
+    percent: 20,
+    color: "text-red-400",
+    bgColor: "bg-red-500",
+  };
 }
 
-function calculateHarmonicAdjustments(currentNameNumber, targetNumbers, currentName) {
+function calculateHarmonicAdjustments(
+  currentNameNumber,
+  targetNumbers,
+  currentName
+) {
   const { valueToLetters, letterValues } = KARMANK_CONSTANTS;
   let suggestions = [];
-  const safeName = currentName.toUpperCase().replace(/[^A-Z]/g, '');
+  const safeName = currentName.toUpperCase().replace(/[^A-Z]/g, "");
 
   // Reduce master numbers to single digits for harmonic calculations
-  const baseNumber = currentNameNumber === 11 ? 2 : currentNameNumber === 22 ? 4 : currentNameNumber === 33 ? 6 : currentNameNumber;
+  const baseNumber =
+    currentNameNumber === 11
+      ? 2
+      : currentNameNumber === 22
+      ? 4
+      : currentNameNumber === 33
+      ? 6
+      : currentNameNumber;
 
-  targetNumbers.forEach(idealNum => {
+  targetNumbers.forEach((idealNum) => {
     const diff = idealNum - baseNumber;
     const addValue = (diff + 9) % 9 === 0 ? 9 : (diff + 9) % 9;
     const removeValue = (-diff + 9) % 9 === 0 ? 9 : (-diff + 9) % 9;
 
     const addLetters = valueToLetters[addValue] || [];
-    const removeLetters = safeName.split('')
-      .filter(char => letterValues[char] === removeValue)
+    const removeLetters = safeName
+      .split("")
+      .filter((char) => letterValues[char] === removeValue)
       .filter((v, i, a) => a.indexOf(v) === i);
 
     suggestions.push({
       target: idealNum,
       add: { value: addValue, letters: addLetters },
-      remove: { value: removeValue, letters: removeLetters }
+      remove: { value: removeValue, letters: removeLetters },
     });
   });
   return suggestions;
@@ -335,115 +652,137 @@ function generatePDF(report) {
   // Colors matching the screen (converting Tailwind colors to RGB)
   const colors = {
     black: [0, 0, 0],
-    cyan: [34, 211, 238],       // cyan-400
-    purple: [192, 132, 252],    // purple-400
-    yellow: [250, 204, 21],     // yellow-400
-    green: [74, 222, 128],      // green-400
-    gray: [156, 163, 175],      // gray-400
-    white: [255, 255, 255]
+    cyan: [34, 211, 238], // cyan-400
+    purple: [192, 132, 252], // purple-400
+    yellow: [250, 204, 21], // yellow-400
+    green: [74, 222, 128], // green-400
+    gray: [156, 163, 175], // gray-400
+    white: [255, 255, 255],
   };
 
   // Background - Black
   doc.setFillColor(...colors.black);
-  doc.rect(0, 0, 210, 297, 'F');
+  doc.rect(0, 0, 210, 297, "F");
 
   let yPos = 20;
 
   // Title
   doc.setFontSize(24);
   doc.setTextColor(...colors.cyan);
-  doc.text('KarmAnk', 105, yPos, { align: 'center' });
+  doc.text("KarmAnk", 105, yPos, { align: "center" });
 
   yPos += 8;
   doc.setFontSize(10);
   doc.setTextColor(...colors.gray);
-  doc.text('NAME ANALYSIS SYSTEM', 105, yPos, { align: 'center' });
+  doc.text("NAME ANALYSIS SYSTEM", 105, yPos, { align: "center" });
 
   yPos += 15;
 
   // Name
   doc.setFontSize(18);
   doc.setTextColor(...colors.cyan);
-  doc.text(profile.name, 105, yPos, { align: 'center' });
+  doc.text(profile.name, 105, yPos, { align: "center" });
 
   yPos += 15;
 
   // Core Numbers Section
   doc.setFontSize(14);
   doc.setTextColor(...colors.white);
-  doc.text('Core Numbers', 20, yPos);
+  doc.text("Core Numbers", 20, yPos);
   yPos += 10;
 
   // Blueprint
   doc.setFontSize(12);
   doc.setTextColor(...colors.cyan);
-  doc.text('Blueprint (Expression)', 20, yPos);
+  doc.text("Blueprint (Expression)", 20, yPos);
   doc.setFontSize(24);
   doc.text(String(pythagoreanProfile.expression), 30, yPos + 10);
 
   doc.setFontSize(10);
   doc.setTextColor(...colors.gray);
-  const blueprintText = doc.splitTextToSize(NUMBER_MEANINGS[pythagoreanProfile.expression], 170);
+  const blueprintText = doc.splitTextToSize(
+    NUMBER_MEANINGS[pythagoreanProfile.expression],
+    170
+  );
   doc.text(blueprintText, 20, yPos + 18);
-  yPos += 18 + (blueprintText.length * 5) + 5;
+  yPos += 18 + blueprintText.length * 5 + 5;
 
   // Core Drive
   doc.setFontSize(12);
   doc.setTextColor(...colors.purple);
-  doc.text('Core Drive (Soul Urge)', 20, yPos);
+  doc.text("Core Drive (Soul Urge)", 20, yPos);
   doc.setFontSize(24);
   doc.text(String(pythagoreanProfile.soulUrge), 30, yPos + 10);
 
   doc.setFontSize(10);
   doc.setTextColor(...colors.gray);
-  const soulUrgeText = doc.splitTextToSize(NUMBER_MEANINGS[pythagoreanProfile.soulUrge], 170);
+  const soulUrgeText = doc.splitTextToSize(
+    NUMBER_MEANINGS[pythagoreanProfile.soulUrge],
+    170
+  );
   doc.text(soulUrgeText, 20, yPos + 18);
-  yPos += 18 + (soulUrgeText.length * 5) + 5;
+  yPos += 18 + soulUrgeText.length * 5 + 5;
 
   // Interface
   doc.setFontSize(12);
   doc.setTextColor(...colors.yellow);
-  doc.text('Interface (Personality)', 20, yPos);
+  doc.text("Interface (Personality)", 20, yPos);
   doc.setFontSize(24);
   doc.text(String(pythagoreanProfile.personality), 30, yPos + 10);
 
   doc.setFontSize(10);
   doc.setTextColor(...colors.gray);
-  const personalityText = doc.splitTextToSize(NUMBER_MEANINGS[pythagoreanProfile.personality], 170);
+  const personalityText = doc.splitTextToSize(
+    NUMBER_MEANINGS[pythagoreanProfile.personality],
+    170
+  );
   doc.text(personalityText, 20, yPos + 18);
-  yPos += 18 + (personalityText.length * 5) + 5;
+  yPos += 18 + personalityText.length * 5 + 5;
 
   // Check if we need a new page
   if (yPos > 250) {
     doc.addPage();
     doc.setFillColor(...colors.black);
-    doc.rect(0, 0, 210, 297, 'F');
+    doc.rect(0, 0, 210, 297, "F");
     yPos = 20;
   }
 
   // Zodiac
-  if (pythagoreanProfile.zodiac && pythagoreanProfile.zodiac.name !== "Unknown") {
+  if (
+    pythagoreanProfile.zodiac &&
+    pythagoreanProfile.zodiac.name !== "Unknown"
+  ) {
     doc.setFontSize(12);
     doc.setTextColor(...colors.yellow);
-    doc.text('Zodiac Sign', 20, yPos);
+    doc.text("Zodiac Sign", 20, yPos);
     doc.setFontSize(10);
     doc.setTextColor(...colors.white);
-    doc.text(`${pythagoreanProfile.zodiac.symbol} ${pythagoreanProfile.zodiac.name} (${pythagoreanProfile.zodiac.element})`, 20, yPos + 7);
+    doc.text(
+      `${pythagoreanProfile.zodiac.symbol} ${pythagoreanProfile.zodiac.name} (${pythagoreanProfile.zodiac.element})`,
+      20,
+      yPos + 7
+    );
     yPos += 15;
   }
 
   // Vibrational Alignment
-  const vibrationalStatus = getVibrationalStatus(pythagoreanProfile.expression, pythagoreanProfile.soulUrge);
+  const vibrationalStatus = getVibrationalStatus(
+    pythagoreanProfile.expression,
+    pythagoreanProfile.soulUrge
+  );
   doc.setFontSize(12);
   doc.setTextColor(...colors.white);
-  doc.text('Vibrational Alignment', 20, yPos);
+  doc.text("Vibrational Alignment", 20, yPos);
   doc.setFontSize(10);
 
   // Color based on status
-  const statusColor = vibrationalStatus.label.includes('Perfect') ? colors.green :
-                     vibrationalStatus.label.includes('High') ? colors.cyan :
-                     vibrationalStatus.label.includes('Moderate') ? colors.yellow :
-                     colors.gray;
+  const statusColor = vibrationalStatus.label.includes("Perfect")
+    ? colors.green
+    : vibrationalStatus.label.includes("High")
+    ? colors.cyan
+    : vibrationalStatus.label.includes("Moderate")
+    ? colors.yellow
+    : colors.gray;
   doc.setTextColor(...statusColor);
   doc.text(vibrationalStatus.label, 20, yPos + 7);
   yPos += 15;
@@ -453,16 +792,16 @@ function generatePDF(report) {
     if (yPos > 230) {
       doc.addPage();
       doc.setFillColor(...colors.black);
-      doc.rect(0, 0, 210, 297, 'F');
+      doc.rect(0, 0, 210, 297, "F");
       yPos = 20;
     }
 
     doc.setFontSize(12);
     doc.setTextColor(...colors.yellow);
-    doc.text('High-Intensity Zones', 20, yPos);
+    doc.text("High-Intensity Zones", 20, yPos);
     yPos += 8;
 
-    pythagoreanProfile.amplifiedTraits.forEach(trait => {
+    pythagoreanProfile.amplifiedTraits.forEach((trait) => {
       doc.setFontSize(10);
       doc.setTextColor(...colors.yellow);
       doc.text(`${trait.letter} (appears ${trait.count}x)`, 20, yPos);
@@ -473,7 +812,7 @@ function generatePDF(report) {
       doc.setTextColor(...colors.gray);
       const effectText = doc.splitTextToSize(trait.effect, 170);
       doc.text(effectText, 20, yPos);
-      yPos += (effectText.length * 4) + 5;
+      yPos += effectText.length * 4 + 5;
     });
   }
 
@@ -482,13 +821,13 @@ function generatePDF(report) {
     if (yPos > 230) {
       doc.addPage();
       doc.setFillColor(...colors.black);
-      doc.rect(0, 0, 210, 297, 'F');
+      doc.rect(0, 0, 210, 297, "F");
       yPos = 20;
     }
 
     doc.setFontSize(14);
     doc.setTextColor(...colors.white);
-    doc.text('Vedic Numerology', 20, yPos);
+    doc.text("Vedic Numerology", 20, yPos);
     yPos += 10;
 
     const destinyData = KARMANK_CONSTANTS.numberDetails[profile.destinyNumber];
@@ -501,7 +840,7 @@ function generatePDF(report) {
     doc.setTextColor(...colors.gray);
     const destinyDesc = doc.splitTextToSize(destinyData.description, 170);
     doc.text(destinyDesc, 20, yPos + 12);
-    yPos += 12 + (destinyDesc.length * 5) + 8;
+    yPos += 12 + destinyDesc.length * 5 + 8;
 
     const basicData = KARMANK_CONSTANTS.numberDetails[profile.basicNumber];
     doc.setFontSize(11);
@@ -518,10 +857,15 @@ function generatePDF(report) {
   // Footer
   doc.setFontSize(8);
   doc.setTextColor(...colors.gray);
-  doc.text('Generated by KarmAnk - Vedic Numerology & Name Analysis', 105, 285, { align: 'center' });
+  doc.text(
+    "Generated by KarmAnk - Vedic Numerology & Name Analysis",
+    105,
+    285,
+    { align: "center" }
+  );
 
   // Save the PDF
-  doc.save(`${profile.name.replace(/\s+/g, '_')}_Numerology_Report.pdf`);
+  doc.save(`${profile.name.replace(/\s+/g, "_")}_Numerology_Report.pdf`);
 }
 
 // --- GEMINI API FUNCTION (DISABLED FOR PRODUCTION) ---
@@ -537,12 +881,18 @@ const TabButton = ({ active, onClick, children, icon: Icon }) => (
     onClick={onClick}
     className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
       active
-        ? 'bg-cyan-500/20 border border-cyan-500/50'
-        : 'bg-gray-800/50 hover:bg-gray-700/50 border border-transparent'
+        ? "bg-cyan-500/20 border border-cyan-500/50"
+        : "bg-gray-800/50 hover:bg-gray-700/50 border border-transparent"
     }`}
   >
     {Icon && <Icon className="w-4 h-4" />}
-    <span className={active ? 'text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-blue-400 to-purple-500' : 'text-gray-400 hover:text-gray-200'}>
+    <span
+      className={
+        active
+          ? "text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-blue-400 to-purple-500"
+          : "text-gray-400 hover:text-gray-200"
+      }
+    >
       {children}
     </span>
   </button>
@@ -551,24 +901,25 @@ const TabButton = ({ active, onClick, children, icon: Icon }) => (
 const FuturisticGate = () => (
   <div className="relative w-full h-40 mb-8 overflow-hidden rounded-xl border border-cyan-500/20">
     <div className="absolute inset-0 bg-gradient-to-b from-cyan-950/40 via-gray-950 to-black" />
-    <div className="absolute inset-0" style={{
-      backgroundImage: `
+    <div
+      className="absolute inset-0"
+      style={{
+        backgroundImage: `
         linear-gradient(to right, rgba(34, 211, 238, 0.1) 1px, transparent 1px),
         linear-gradient(to bottom, rgba(34, 211, 238, 0.1) 1px, transparent 1px)
       `,
-      backgroundSize: '40px 40px',
-      transform: 'perspective(500px) rotateX(60deg)',
-      transformOrigin: 'center bottom'
-    }} />
+        backgroundSize: "40px 40px",
+        transform: "perspective(500px) rotateX(60deg)",
+        transformOrigin: "center bottom",
+      }}
+    />
     <div className="absolute inset-0 flex items-center justify-center">
       <div className="text-center space-y-2 relative z-10">
         <div className="text-4xl font-bold">
           <GradientText as="span" size="4xl" className="font-serif">
             KarmAnk
           </GradientText>
-          <sup className={`text-2xl -top-2 ${gradientUtils.text}`}>
-            ™
-          </sup>
+          <sup className={`text-2xl -top-2 ${gradientUtils.text}`}>™</sup>
         </div>
         <div className="text-sm text-cyan-400/60 tracking-widest">
           NAME ANALYSIS SYSTEM
@@ -601,7 +952,9 @@ const ShareableIdentityCard = ({ name, pythagoreanProfile }) => {
           </div>
           <div>
             <div className="text-xs text-gray-400 mb-1">Interface</div>
-            <div className="text-3xl font-bold text-yellow-400">{personality}</div>
+            <div className="text-3xl font-bold text-yellow-400">
+              {personality}
+            </div>
           </div>
         </div>
         {zodiac && (
@@ -619,26 +972,44 @@ const ArtisticNarrative = ({ report }) => {
   const name = profile.name.toUpperCase().replace(/[^A-Z]/g, "");
   const letters = name.split("");
 
-  const distinctTraits = letters.reduce((acc, char) => {
-    const meaning = PYTHAGOREAN_CONSTANTS.letterData[char]?.meaning;
-    if (meaning && !acc.some(t => t.meaning === meaning)) {
-      acc.push({ char, meaning });
-    }
-    return acc;
-  }, []).slice(0, 5);
+  const distinctTraits = letters
+    .reduce((acc, char) => {
+      const meaning = PYTHAGOREAN_CONSTANTS.letterData[char]?.meaning;
+      if (meaning && !acc.some((t) => t.meaning === meaning)) {
+        acc.push({ char, meaning });
+      }
+      return acc;
+    }, [])
+    .slice(0, 5);
 
-  const traitsList = distinctTraits.map(t => `**${t.meaning}**`).join(", ");
+  const traitsList = distinctTraits.map((t) => `**${t.meaning}**`).join(", ");
 
   const narrativeParagraphs = [
     `Using the Pythagorean method, the name **${profile.name}** carries a unique vibrational signature. Each letter holds a specific frequency, and together they compose a symphony of traits: ${traitsList}.`,
-    `Your **Blueprint** (Expression Number **${pythagoreanProfile.expression}**) reveals: ${STATIC_NARRATIVES.blueprint[pythagoreanProfile.expression]}`,
-    `Your **Core Drive** (Soul Urge Number **${pythagoreanProfile.soulUrge}**) whispers: ${STATIC_NARRATIVES.soulUrge[pythagoreanProfile.soulUrge]}`,
-    `Your **Interface** (Personality Number **${pythagoreanProfile.personality}**) projects: ${STATIC_NARRATIVES.interface[pythagoreanProfile.personality]}`
+    `Your **Blueprint** (Expression Number **${
+      pythagoreanProfile.expression
+    }**) reveals: ${
+      STATIC_NARRATIVES.blueprint[pythagoreanProfile.expression]
+    }`,
+    `Your **Core Drive** (Soul Urge Number **${
+      pythagoreanProfile.soulUrge
+    }**) whispers: ${STATIC_NARRATIVES.soulUrge[pythagoreanProfile.soulUrge]}`,
+    `Your **Interface** (Personality Number **${
+      pythagoreanProfile.personality
+    }**) projects: ${
+      STATIC_NARRATIVES.interface[pythagoreanProfile.personality]
+    }`,
   ];
 
   const renderMarkdown = (text) => {
-    return text.split('**').map((part, i) =>
-      i % 2 === 0 ? part : <strong key={i} className="text-cyan-300">{part}</strong>
+    return text.split("**").map((part, i) =>
+      i % 2 === 0 ? (
+        part
+      ) : (
+        <strong key={i} className="text-cyan-300">
+          {part}
+        </strong>
+      )
     );
   };
 
@@ -663,39 +1034,42 @@ const NameDeepDiveTab = ({ report }) => {
   const { pythagoreanProfile, profile } = report;
   const [activeDefinition, setActiveDefinition] = useState(null);
 
-  const vibrationalStatus = getVibrationalStatus(pythagoreanProfile.expression, pythagoreanProfile.soulUrge);
+  const vibrationalStatus = getVibrationalStatus(
+    pythagoreanProfile.expression,
+    pythagoreanProfile.soulUrge
+  );
 
   const cards = [
     {
-      id: 'blueprint',
-      label: 'Blueprint',
-      sublabel: 'Expression',
+      id: "blueprint",
+      label: "Blueprint",
+      sublabel: "Expression",
       val: pythagoreanProfile.expression,
-      color: 'text-cyan-400',
-      bgGradient: 'from-cyan-900/40 to-cyan-800/20',
-      borderColor: 'border-cyan-700/50',
-      text: STATIC_NARRATIVES.blueprint[pythagoreanProfile.expression]
+      color: "text-cyan-400",
+      bgGradient: "from-cyan-900/40 to-cyan-800/20",
+      borderColor: "border-cyan-700/50",
+      text: STATIC_NARRATIVES.blueprint[pythagoreanProfile.expression],
     },
     {
-      id: 'soulUrge',
-      label: 'Core Drive',
-      sublabel: 'Soul Urge',
+      id: "soulUrge",
+      label: "Core Drive",
+      sublabel: "Soul Urge",
       val: pythagoreanProfile.soulUrge,
-      color: 'text-purple-400',
-      bgGradient: 'from-purple-900/40 to-purple-800/20',
-      borderColor: 'border-purple-700/50',
-      text: STATIC_NARRATIVES.soulUrge[pythagoreanProfile.soulUrge]
+      color: "text-purple-400",
+      bgGradient: "from-purple-900/40 to-purple-800/20",
+      borderColor: "border-purple-700/50",
+      text: STATIC_NARRATIVES.soulUrge[pythagoreanProfile.soulUrge],
     },
     {
-      id: 'interface',
-      label: 'Interface',
-      sublabel: 'Personality',
+      id: "interface",
+      label: "Interface",
+      sublabel: "Personality",
       val: pythagoreanProfile.personality,
-      color: 'text-yellow-400',
-      bgGradient: 'from-yellow-900/40 to-yellow-800/20',
-      borderColor: 'border-yellow-700/50',
-      text: STATIC_NARRATIVES.interface[pythagoreanProfile.personality]
-    }
+      color: "text-yellow-400",
+      bgGradient: "from-yellow-900/40 to-yellow-800/20",
+      borderColor: "border-yellow-700/50",
+      text: STATIC_NARRATIVES.interface[pythagoreanProfile.personality],
+    },
   ];
 
   return (
@@ -712,7 +1086,9 @@ const NameDeepDiveTab = ({ report }) => {
             </button>
 
             {/* The Big Number */}
-            <div className={`text-8xl font-bold mb-2 font-mono ${activeDefinition.color}`}>
+            <div
+              className={`text-8xl font-bold mb-2 font-mono ${activeDefinition.color}`}
+            >
               {activeDefinition.val}
             </div>
 
@@ -725,7 +1101,9 @@ const NameDeepDiveTab = ({ report }) => {
             <div className="bg-gray-800/50 p-5 rounded-xl mb-6 border border-gray-700 text-left">
               <div className="flex items-center gap-2 mb-2">
                 <AlertCircle className="w-4 h-4 text-gray-400" />
-                <p className="text-xs text-gray-400 uppercase tracking-widest">What is this?</p>
+                <p className="text-xs text-gray-400 uppercase tracking-widest">
+                  What is this?
+                </p>
               </div>
               <p className="text-gray-300 text-sm italic leading-relaxed">
                 "{CORE_DEFINITIONS[activeDefinition.id].def}"
@@ -736,7 +1114,9 @@ const NameDeepDiveTab = ({ report }) => {
             <div className="bg-gray-900/80 p-6 rounded-xl border border-yellow-500/20 text-left shadow-xl">
               <div className="flex items-center gap-2 mb-3">
                 <Sparkles className="w-4 h-4 text-yellow-500" />
-                <p className="text-xs text-yellow-500 uppercase tracking-widest">Your Analysis</p>
+                <p className="text-xs text-yellow-500 uppercase tracking-widest">
+                  Your Analysis
+                </p>
               </div>
               <p className="text-white text-lg leading-relaxed font-medium">
                 {activeDefinition.text}
@@ -748,7 +1128,7 @@ const NameDeepDiveTab = ({ report }) => {
 
       {/* Main Cards Grid */}
       <div className="grid md:grid-cols-4 gap-4">
-        {cards.map(card => (
+        {cards.map((card) => (
           <div
             key={card.id}
             onClick={() => setActiveDefinition(card)}
@@ -766,8 +1146,12 @@ const NameDeepDiveTab = ({ report }) => {
           <Sun className="w-4 h-4 text-yellow-400 mx-auto mb-2" />
           <p className="text-xs text-gray-400 mb-1">Zodiac</p>
           <p className="text-2xl mb-1">{pythagoreanProfile.zodiac.symbol}</p>
-          <p className="text-sm text-white font-medium">{pythagoreanProfile.zodiac.name}</p>
-          <p className="text-xs text-gray-500">{pythagoreanProfile.zodiac.element}</p>
+          <p className="text-sm text-white font-medium">
+            {pythagoreanProfile.zodiac.name}
+          </p>
+          <p className="text-xs text-gray-500">
+            {pythagoreanProfile.zodiac.element}
+          </p>
         </div>
       </div>
 
@@ -779,7 +1163,9 @@ const NameDeepDiveTab = ({ report }) => {
             <span className={`text-sm font-bold ${vibrationalStatus.color}`}>
               {vibrationalStatus.label}
             </span>
-            <span className={`text-xs font-mono ${vibrationalStatus.color} bg-gray-800/50 px-2 py-0.5 rounded`}>
+            <span
+              className={`text-xs font-mono ${vibrationalStatus.color} bg-gray-800/50 px-2 py-0.5 rounded`}
+            >
               {vibrationalStatus.percent}%
             </span>
           </div>
@@ -807,10 +1193,17 @@ const NameDeepDiveTab = ({ report }) => {
           </h3>
           <div className="space-y-3">
             {pythagoreanProfile.amplifiedTraits.map((trait, idx) => (
-              <div key={idx} className="bg-gray-950/50 p-4 rounded-lg border border-gray-700">
+              <div
+                key={idx}
+                className="bg-gray-950/50 p-4 rounded-lg border border-gray-700"
+              >
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-2xl font-bold text-yellow-400">{trait.letter}</span>
-                  <span className="text-sm text-gray-400">appears {trait.count}× in your name</span>
+                  <span className="text-2xl font-bold text-yellow-400">
+                    {trait.letter}
+                  </span>
+                  <span className="text-sm text-gray-400">
+                    appears {trait.count}× in your name
+                  </span>
                 </div>
                 <p className="text-sm text-white mb-1">{trait.meaning}</p>
                 <p className="text-xs text-gray-500 italic">{trait.effect}</p>
@@ -834,18 +1227,30 @@ const NameDeepDiveTab = ({ report }) => {
               Career Strengths (Expression {pythagoreanProfile.expression})
             </h4>
             <p className="text-gray-300 text-sm leading-relaxed">
-              {pythagoreanProfile.expression === 1 && "Leadership roles, entrepreneurship, innovation, and pioneering ventures. You excel when working independently and driving new initiatives."}
-              {pythagoreanProfile.expression === 2 && "Diplomacy, counseling, teamwork, mediation, and partnership-based roles. You thrive in collaborative environments and excel at bringing people together."}
-              {pythagoreanProfile.expression === 3 && "Creative fields, communication, entertainment, marketing, and artistic expression. Your natural charisma and creativity make you shine in public-facing roles."}
-              {pythagoreanProfile.expression === 4 && "Organization, project management, engineering, accounting, and systematic work. You excel at building solid foundations and maintaining structure."}
-              {pythagoreanProfile.expression === 5 && "Sales, travel, media, public relations, and dynamic environments. Your adaptability and communication skills thrive in fast-paced, varied work."}
-              {pythagoreanProfile.expression === 6 && "Healthcare, teaching, counseling, hospitality, and service industries. Your nurturing nature excels in roles that help and support others."}
-              {pythagoreanProfile.expression === 7 && "Research, analysis, technology, spirituality, and specialized expertise. You thrive in roles requiring deep knowledge and independent thinking."}
-              {pythagoreanProfile.expression === 8 && "Business leadership, finance, executive roles, and high-stakes negotiations. Your natural authority excels in positions of power and resource management."}
-              {pythagoreanProfile.expression === 9 && "Humanitarian work, arts, global ventures, healing professions, and transformative roles. You excel when your work serves a higher purpose."}
-              {pythagoreanProfile.expression === 11 && "Inspirational leadership, spiritual teaching, counseling, and visionary roles. Your intuitive gifts excel in guiding and uplifting others."}
-              {pythagoreanProfile.expression === 22 && "Master building, large-scale projects, architecture, international business, and legacy creation. You excel at manifesting grand visions into reality."}
-              {pythagoreanProfile.expression === 33 && "Master healing, education, spiritual guidance, and compassionate service. You excel when combining wisdom with selfless service to humanity."}
+              {pythagoreanProfile.expression === 1 &&
+                "Leadership roles, entrepreneurship, innovation, and pioneering ventures. You excel when working independently and driving new initiatives."}
+              {pythagoreanProfile.expression === 2 &&
+                "Diplomacy, counseling, teamwork, mediation, and partnership-based roles. You thrive in collaborative environments and excel at bringing people together."}
+              {pythagoreanProfile.expression === 3 &&
+                "Creative fields, communication, entertainment, marketing, and artistic expression. Your natural charisma and creativity make you shine in public-facing roles."}
+              {pythagoreanProfile.expression === 4 &&
+                "Organization, project management, engineering, accounting, and systematic work. You excel at building solid foundations and maintaining structure."}
+              {pythagoreanProfile.expression === 5 &&
+                "Sales, travel, media, public relations, and dynamic environments. Your adaptability and communication skills thrive in fast-paced, varied work."}
+              {pythagoreanProfile.expression === 6 &&
+                "Healthcare, teaching, counseling, hospitality, and service industries. Your nurturing nature excels in roles that help and support others."}
+              {pythagoreanProfile.expression === 7 &&
+                "Research, analysis, technology, spirituality, and specialized expertise. You thrive in roles requiring deep knowledge and independent thinking."}
+              {pythagoreanProfile.expression === 8 &&
+                "Business leadership, finance, executive roles, and high-stakes negotiations. Your natural authority excels in positions of power and resource management."}
+              {pythagoreanProfile.expression === 9 &&
+                "Humanitarian work, arts, global ventures, healing professions, and transformative roles. You excel when your work serves a higher purpose."}
+              {pythagoreanProfile.expression === 11 &&
+                "Inspirational leadership, spiritual teaching, counseling, and visionary roles. Your intuitive gifts excel in guiding and uplifting others."}
+              {pythagoreanProfile.expression === 22 &&
+                "Master building, large-scale projects, architecture, international business, and legacy creation. You excel at manifesting grand visions into reality."}
+              {pythagoreanProfile.expression === 33 &&
+                "Master healing, education, spiritual guidance, and compassionate service. You excel when combining wisdom with selfless service to humanity."}
             </p>
           </div>
 
@@ -855,18 +1260,30 @@ const NameDeepDiveTab = ({ report }) => {
               Inner Motivation (Soul Urge {pythagoreanProfile.soulUrge})
             </h4>
             <p className="text-gray-300 text-sm leading-relaxed">
-              {pythagoreanProfile.soulUrge === 1 && "You are driven by the need for independence, achievement, and being first. Your satisfaction comes from pioneering new paths and maintaining autonomy."}
-              {pythagoreanProfile.soulUrge === 2 && "You seek harmony, partnership, and peaceful connections. Your fulfillment comes from creating balance and fostering meaningful relationships."}
-              {pythagoreanProfile.soulUrge === 3 && "You crave creative expression, joy, and social interaction. Your happiness comes from sharing your talents and bringing light to others."}
-              {pythagoreanProfile.soulUrge === 4 && "You desire stability, order, and tangible results. Your satisfaction comes from building something lasting and seeing concrete progress."}
-              {pythagoreanProfile.soulUrge === 5 && "You long for freedom, variety, and adventure. Your fulfillment comes from experiencing life's diversity and maintaining flexibility."}
-              {pythagoreanProfile.soulUrge === 6 && "You seek to nurture, heal, and create harmony in your environment. Your joy comes from caring for others and beautifying your world."}
-              {pythagoreanProfile.soulUrge === 7 && "You desire truth, wisdom, and spiritual understanding. Your satisfaction comes from deep contemplation and uncovering hidden knowledge."}
-              {pythagoreanProfile.soulUrge === 8 && "You are driven by material success, power, and tangible achievement. Your fulfillment comes from mastering the material world and wielding influence."}
-              {pythagoreanProfile.soulUrge === 9 && "You seek to serve humanity, create transformation, and contribute to the greater good. Your joy comes from selfless giving and universal love."}
-              {pythagoreanProfile.soulUrge === 11 && "You are driven by spiritual insight, inspiration, and illuminating others. Your fulfillment comes from channeling higher wisdom and uplifting consciousness."}
-              {pythagoreanProfile.soulUrge === 22 && "You desire to build something of lasting global significance. Your satisfaction comes from manifesting ambitious visions that benefit humanity."}
-              {pythagoreanProfile.soulUrge === 33 && "You seek to heal and uplift humanity through compassionate service. Your joy comes from selfless devotion to the welfare of all beings."}
+              {pythagoreanProfile.soulUrge === 1 &&
+                "You are driven by the need for independence, achievement, and being first. Your satisfaction comes from pioneering new paths and maintaining autonomy."}
+              {pythagoreanProfile.soulUrge === 2 &&
+                "You seek harmony, partnership, and peaceful connections. Your fulfillment comes from creating balance and fostering meaningful relationships."}
+              {pythagoreanProfile.soulUrge === 3 &&
+                "You crave creative expression, joy, and social interaction. Your happiness comes from sharing your talents and bringing light to others."}
+              {pythagoreanProfile.soulUrge === 4 &&
+                "You desire stability, order, and tangible results. Your satisfaction comes from building something lasting and seeing concrete progress."}
+              {pythagoreanProfile.soulUrge === 5 &&
+                "You long for freedom, variety, and adventure. Your fulfillment comes from experiencing life's diversity and maintaining flexibility."}
+              {pythagoreanProfile.soulUrge === 6 &&
+                "You seek to nurture, heal, and create harmony in your environment. Your joy comes from caring for others and beautifying your world."}
+              {pythagoreanProfile.soulUrge === 7 &&
+                "You desire truth, wisdom, and spiritual understanding. Your satisfaction comes from deep contemplation and uncovering hidden knowledge."}
+              {pythagoreanProfile.soulUrge === 8 &&
+                "You are driven by material success, power, and tangible achievement. Your fulfillment comes from mastering the material world and wielding influence."}
+              {pythagoreanProfile.soulUrge === 9 &&
+                "You seek to serve humanity, create transformation, and contribute to the greater good. Your joy comes from selfless giving and universal love."}
+              {pythagoreanProfile.soulUrge === 11 &&
+                "You are driven by spiritual insight, inspiration, and illuminating others. Your fulfillment comes from channeling higher wisdom and uplifting consciousness."}
+              {pythagoreanProfile.soulUrge === 22 &&
+                "You desire to build something of lasting global significance. Your satisfaction comes from manifesting ambitious visions that benefit humanity."}
+              {pythagoreanProfile.soulUrge === 33 &&
+                "You seek to heal and uplift humanity through compassionate service. Your joy comes from selfless devotion to the welfare of all beings."}
             </p>
           </div>
 
@@ -877,18 +1294,27 @@ const NameDeepDiveTab = ({ report }) => {
               Alignment Recommendations
             </h4>
             <p className="text-gray-300 text-sm leading-relaxed">
-              For optimal career satisfaction, seek roles that align your Expression Number's natural talents ({pythagoreanProfile.expression})
-              with your Soul Urge's inner desires ({pythagoreanProfile.soulUrge}).
-              {vibrationalStatus.percent >= 80 && " Your high natural alignment suggests you'll find fulfillment in careers that allow authentic self-expression."}
-              {vibrationalStatus.percent < 80 && vibrationalStatus.percent >= 60 && " Consider roles that bridge your outer capabilities with your inner motivations for greater satisfaction."}
-              {vibrationalStatus.percent < 60 && " Focus on finding work environments that honor both your professional strengths and personal values to reduce internal friction."}
+              For optimal career satisfaction, seek roles that align your
+              Expression Number's natural talents (
+              {pythagoreanProfile.expression}) with your Soul Urge's inner
+              desires ({pythagoreanProfile.soulUrge}).
+              {vibrationalStatus.percent >= 80 &&
+                " Your high natural alignment suggests you'll find fulfillment in careers that allow authentic self-expression."}
+              {vibrationalStatus.percent < 80 &&
+                vibrationalStatus.percent >= 60 &&
+                " Consider roles that bridge your outer capabilities with your inner motivations for greater satisfaction."}
+              {vibrationalStatus.percent < 60 &&
+                " Focus on finding work environments that honor both your professional strengths and personal values to reduce internal friction."}
             </p>
           </div>
         </div>
       </div>
 
       {/* Identity Card */}
-      <ShareableIdentityCard name={profile.name} pythagoreanProfile={pythagoreanProfile} />
+      <ShareableIdentityCard
+        name={profile.name}
+        pythagoreanProfile={pythagoreanProfile}
+      />
 
       {/* Download PDF Button */}
       <div className="flex justify-center mt-6">
@@ -925,58 +1351,96 @@ const SandboxTab = ({ profile }) => {
 
     return (
       <div className="p-5 bg-gray-900/60 rounded-xl border border-gray-800 mb-4 hover:border-yellow-500/30 transition-all group">
-         <div className="flex justify-between items-center mb-3">
-             <span className="text-xs uppercase text-gray-500 font-bold tracking-widest">{label}</span>
-             <div className="flex items-center gap-3 font-mono">
-                <span className="text-gray-600 text-lg">{v1}</span>
-                <ArrowRight className={`w-4 h-4 ${hasChanged ? 'text-yellow-500' : 'text-gray-700'}`} />
-                <span className={`text-2xl font-bold ${hasChanged ? 'text-yellow-400' : 'text-gray-400'}`}>{v2}</span>
-             </div>
-         </div>
+        <div className="flex justify-between items-center mb-3">
+          <span className="text-xs uppercase text-gray-500 font-bold tracking-widest">
+            {label}
+          </span>
+          <div className="flex items-center gap-3 font-mono">
+            <span className="text-gray-600 text-lg">{v1}</span>
+            <ArrowRight
+              className={`w-4 h-4 ${
+                hasChanged ? "text-yellow-500" : "text-gray-700"
+              }`}
+            />
+            <span
+              className={`text-2xl font-bold ${
+                hasChanged ? "text-yellow-400" : "text-gray-400"
+              }`}
+            >
+              {v2}
+            </span>
+          </div>
+        </div>
 
-         {/* Contextual Insight */}
-         {hasChanged ? (
-             <div className="mt-3 pt-3 border-t border-gray-800/50 animate-in fade-in slide-in-from-top-2">
-                 <div className="flex items-center gap-2 mb-1">
-                    <Sparkles className="w-3 h-3 text-cyan-400" />
-                    <p className="text-xs text-cyan-400 font-bold uppercase tracking-wider">Vibrational Shift</p>
-                 </div>
-                 <p className="text-sm text-gray-300 leading-relaxed font-light pl-5 border-l-2 border-cyan-900">
-                    {narrative}
-                 </p>
-             </div>
-         ) : (
-             <p className="text-xs text-gray-600 italic text-right mt-2">No shift detected.</p>
-         )}
+        {/* Contextual Insight */}
+        {hasChanged ? (
+          <div className="mt-3 pt-3 border-t border-gray-800/50 animate-in fade-in slide-in-from-top-2">
+            <div className="flex items-center gap-2 mb-1">
+              <Sparkles className="w-3 h-3 text-cyan-400" />
+              <p className="text-xs text-cyan-400 font-bold uppercase tracking-wider">
+                Vibrational Shift
+              </p>
+            </div>
+            <p className="text-sm text-gray-300 leading-relaxed font-light pl-5 border-l-2 border-cyan-900">
+              {narrative}
+            </p>
+          </div>
+        ) : (
+          <p className="text-xs text-gray-600 italic text-right mt-2">
+            No shift detected.
+          </p>
+        )}
       </div>
     );
   };
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-       <div className="bg-gray-900/60 p-6 rounded-xl border border-gray-800">
-          <div className="flex items-center gap-3 mb-4">
-             <div className="bg-cyan-500/10 p-2 rounded-lg"><Wand2 className="w-6 h-6 text-cyan-400"/></div>
-             <div>
-                <h3 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-blue-400 to-purple-500">Name Simulator</h3>
-                <p className="text-xs text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-blue-400 to-purple-500">Test nicknames or business aliases to see how they shift your vibration.</p>
-             </div>
+      <div className="bg-gray-900/60 p-6 rounded-xl border border-gray-800">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="bg-cyan-500/10 p-2 rounded-lg">
+            <Wand2 className="w-6 h-6 text-cyan-400" />
           </div>
+          <div>
+            <h3 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-blue-400 to-purple-500">
+              Name Simulator
+            </h3>
+            <p className="text-xs text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-blue-400 to-purple-500">
+              Test nicknames or business aliases to see how they shift your
+              vibration.
+            </p>
+          </div>
+        </div>
 
-          <input
-            type="text"
-            value={testName}
-            onChange={e => setTestName(e.target.value)}
-            className="w-full bg-black border border-gray-700 rounded-lg px-4 py-4 text-xl text-white font-mono mb-8 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 outline-none placeholder-gray-700 text-center uppercase tracking-wider"
-            placeholder="ENTER NEW NAME"
+        <input
+          type="text"
+          value={testName}
+          onChange={(e) => setTestName(e.target.value)}
+          className="w-full bg-black border border-gray-700 rounded-lg px-4 py-4 text-xl text-white font-mono mb-8 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 outline-none placeholder-gray-700 text-center uppercase tracking-wider"
+          placeholder="ENTER NEW NAME"
+        />
+
+        <div className="space-y-2">
+          <ComparisonCard
+            id="blueprint"
+            label="The Blueprint (Expression)"
+            v1={birthProfile.expression}
+            v2={testProfile.expression}
           />
-
-          <div className="space-y-2">
-             <ComparisonCard id="blueprint" label="The Blueprint (Expression)" v1={birthProfile.expression} v2={testProfile.expression} />
-             <ComparisonCard id="soulUrge" label="The Core Drive (Soul Urge)" v1={birthProfile.soulUrge} v2={testProfile.soulUrge} />
-             <ComparisonCard id="interface" label="The Interface (Personality)" v1={birthProfile.personality} v2={testProfile.personality} />
-          </div>
-       </div>
+          <ComparisonCard
+            id="soulUrge"
+            label="The Core Drive (Soul Urge)"
+            v1={birthProfile.soulUrge}
+            v2={testProfile.soulUrge}
+          />
+          <ComparisonCard
+            id="interface"
+            label="The Interface (Personality)"
+            v1={birthProfile.personality}
+            v2={testProfile.personality}
+          />
+        </div>
+      </div>
     </div>
   );
 };
@@ -987,16 +1451,23 @@ const SynergyTab = ({ report }) => {
 
   const toggleGoal = (goal) => {
     if (selectedGoals.includes(goal)) {
-      setSelectedGoals(selectedGoals.filter(g => g !== goal));
+      setSelectedGoals(selectedGoals.filter((g) => g !== goal));
     } else if (selectedGoals.length < 2) {
       setSelectedGoals([...selectedGoals, goal]);
     }
   };
 
   const suggestions = useMemo(() => {
-    if (selectedGoals.length === 0 || !pythagoreanProfile.expressionSingle) return [];
-    const targetNums = selectedGoals.flatMap(g => KARMANK_CONSTANTS.goalVibrations[g].numbers);
-    return calculateHarmonicAdjustments(pythagoreanProfile.expressionSingle, targetNums, profile.name);
+    if (selectedGoals.length === 0 || !pythagoreanProfile.expressionSingle)
+      return [];
+    const targetNums = selectedGoals.flatMap(
+      (g) => KARMANK_CONSTANTS.goalVibrations[g].numbers
+    );
+    return calculateHarmonicAdjustments(
+      pythagoreanProfile.expressionSingle,
+      targetNums,
+      profile.name
+    );
   }, [selectedGoals, pythagoreanProfile.expressionSingle, profile.name]);
 
   return (
@@ -1005,12 +1476,15 @@ const SynergyTab = ({ report }) => {
       {profile.destinyNumber && (
         <div className="bg-gray-900/60 p-6 rounded-xl border border-gray-800">
           <div className="text-center">
-            <h4 className="text-xs uppercase tracking-widest mb-3 text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-blue-400 to-purple-500">Cosmic Alignment</h4>
+            <h4 className="text-xs uppercase tracking-widest mb-3 text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-blue-400 to-purple-500">
+              Cosmic Alignment
+            </h4>
             <div className="text-3xl font-bold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-blue-400 to-purple-500">
               {pythagoreanProfile.karmicStatus}
             </div>
             <div className="text-xs text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-blue-400 to-purple-500">
-              Name ({pythagoreanProfile.expression}) vs Destiny ({profile.destinyNumber})
+              Name ({pythagoreanProfile.expression}) vs Destiny (
+              {profile.destinyNumber})
             </div>
           </div>
         </div>
@@ -1022,9 +1496,12 @@ const SynergyTab = ({ report }) => {
           <div className="flex items-center gap-3">
             <AlertCircle className="w-6 h-6 text-yellow-400" />
             <div>
-              <h4 className="text-yellow-400 font-bold mb-1">Date of Birth Required</h4>
+              <h4 className="text-yellow-400 font-bold mb-1">
+                Date of Birth Required
+              </h4>
               <p className="text-gray-300 text-sm">
-                To unlock Cosmic Alignment Status and Vedic Synergy insights, please include your date of birth when generating the report.
+                To unlock Cosmic Alignment Status and Vedic Synergy insights,
+                please include your date of birth when generating the report.
               </p>
             </div>
           </div>
@@ -1035,28 +1512,35 @@ const SynergyTab = ({ report }) => {
       <div className="bg-gray-900/60 p-6 rounded-xl border border-gray-800">
         <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
           <Wand2 className="w-5 h-5 text-cyan-400" />
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-blue-400 to-purple-500">Goal Harmonizer</span>
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-blue-400 to-purple-500">
+            Goal Harmonizer
+          </span>
         </h3>
         <p className="text-xs text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-blue-400 to-purple-500 mb-4">
-          Select up to 2 goals to receive harmonic adjustment suggestions for your name.
+          Select up to 2 goals to receive harmonic adjustment suggestions for
+          your name.
         </p>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-          {Object.entries(KARMANK_CONSTANTS.goalVibrations).map(([key, data]) => (
-            <button
-              key={key}
-              onClick={() => toggleGoal(key)}
-              disabled={!selectedGoals.includes(key) && selectedGoals.length >= 2}
-              className={`p-3 rounded-lg border text-left transition-all ${
-                selectedGoals.includes(key)
-                  ? 'bg-cyan-900/40 border-cyan-500 text-cyan-100'
-                  : 'bg-gray-900 border-gray-800 text-gray-500 hover:border-gray-600 disabled:opacity-50 disabled:cursor-not-allowed'
-              }`}
-            >
-              <div className="text-xs font-bold uppercase mb-1">{key}</div>
-              <div className="text-[10px] text-gray-500">{data.desc}</div>
-            </button>
-          ))}
+          {Object.entries(KARMANK_CONSTANTS.goalVibrations).map(
+            ([key, data]) => (
+              <button
+                key={key}
+                onClick={() => toggleGoal(key)}
+                disabled={
+                  !selectedGoals.includes(key) && selectedGoals.length >= 2
+                }
+                className={`p-3 rounded-lg border text-left transition-all ${
+                  selectedGoals.includes(key)
+                    ? "bg-cyan-900/40 border-cyan-500 text-cyan-100"
+                    : "bg-gray-900 border-gray-800 text-gray-500 hover:border-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                }`}
+              >
+                <div className="text-xs font-bold uppercase mb-1">{key}</div>
+                <div className="text-[10px] text-gray-500">{data.desc}</div>
+              </button>
+            )
+          )}
         </div>
 
         {/* Suggestions */}
@@ -1066,19 +1550,25 @@ const SynergyTab = ({ report }) => {
               Harmonic Adjustments
             </h4>
             {suggestions.map((s, i) => (
-              <div key={i} className="bg-black/40 p-4 rounded-lg border-l-2 border-cyan-500">
+              <div
+                key={i}
+                className="bg-black/40 p-4 rounded-lg border-l-2 border-cyan-500"
+              >
                 <div className="text-sm font-bold text-cyan-400 mb-1">
                   Target Vibration: {s.target}
                 </div>
                 <div className="text-xs text-gray-400">
-                  To align, try <strong className="text-white">adding</strong> letters with value {s.add.value} (
-                  {s.add.letters.join(', ')})
+                  To align, try <strong className="text-white">adding</strong>{" "}
+                  letters with value {s.add.value} ({s.add.letters.join(", ")})
                   {s.remove.letters.length > 0 && (
                     <span>
-                      {' '}or <strong className="text-white">removing</strong> letters with value {s.remove.value} (
-                      {s.remove.letters.join(', ')})
+                      {" "}
+                      or <strong className="text-white">removing</strong>{" "}
+                      letters with value {s.remove.value} (
+                      {s.remove.letters.join(", ")})
                     </span>
-                  )}.
+                  )}
+                  .
                 </div>
               </div>
             ))}
@@ -1096,32 +1586,68 @@ const SynergyTab = ({ report }) => {
 
           <div className="grid md:grid-cols-2 gap-6 mb-6">
             <div className="bg-gray-950/50 p-4 rounded-lg border border-cyan-500/30">
-              <div className="text-sm text-gray-400 mb-2">Pythagorean Expression</div>
-              <div className="text-4xl font-bold text-cyan-400 mb-2">{pythagoreanProfile.expression}</div>
-              <p className="text-sm text-gray-300">{NUMBER_MEANINGS[pythagoreanProfile.expression].slice(0, 150)}...</p>
+              <div className="text-sm text-gray-400 mb-2">
+                Pythagorean Expression
+              </div>
+              <div className="text-4xl font-bold text-cyan-400 mb-2">
+                {pythagoreanProfile.expression}
+              </div>
+              <p className="text-sm text-gray-300">
+                {NUMBER_MEANINGS[pythagoreanProfile.expression].slice(0, 150)}
+                ...
+              </p>
             </div>
 
             <div className="bg-gray-950/50 p-4 rounded-lg border border-green-500/30">
-              <div className="text-sm text-gray-400 mb-2">Vedic Destiny (Bhagyank)</div>
-              <div className="text-4xl font-bold text-green-400 mb-2">{profile.destinyNumber}</div>
-              <div className="text-sm text-green-300 mb-1">{KARMANK_CONSTANTS.numberDetails[profile.destinyNumber].name}</div>
-              <p className="text-sm text-gray-300">{KARMANK_CONSTANTS.numberDetails[profile.destinyNumber].description}</p>
+              <div className="text-sm text-gray-400 mb-2">
+                Vedic Destiny (Bhagyank)
+              </div>
+              <div className="text-4xl font-bold text-green-400 mb-2">
+                {profile.destinyNumber}
+              </div>
+              <div className="text-sm text-green-300 mb-1">
+                {KARMANK_CONSTANTS.numberDetails[profile.destinyNumber].name}
+              </div>
+              <p className="text-sm text-gray-300">
+                {
+                  KARMANK_CONSTANTS.numberDetails[profile.destinyNumber]
+                    .description
+                }
+              </p>
             </div>
           </div>
 
           <div className="bg-green-900/20 border border-green-500/30 rounded-lg p-4">
             <h4 className="text-green-400 font-bold mb-2">Synergy Insight</h4>
             <p className="text-gray-300 text-sm leading-relaxed">
-              Your Pythagorean Expression Number ({pythagoreanProfile.expression}) represents how you naturally express yourself through your name, while your Vedic Destiny Number ({profile.destinyNumber} - {KARMANK_CONSTANTS.numberDetails[profile.destinyNumber].name}) reflects your life path from birth. When these energies align harmoniously, you experience greater ease in manifesting your purpose.
+              Your Pythagorean Expression Number (
+              {pythagoreanProfile.expression}) represents how you naturally
+              express yourself through your name, while your Vedic Destiny
+              Number ({profile.destinyNumber} -{" "}
+              {KARMANK_CONSTANTS.numberDetails[profile.destinyNumber].name})
+              reflects your life path from birth. When these energies align
+              harmoniously, you experience greater ease in manifesting your
+              purpose.
             </p>
           </div>
 
           {profile.basicNumber && (
             <div className="mt-6 bg-gray-950/50 p-4 rounded-lg border border-rose-500/30">
-              <div className="text-sm text-gray-400 mb-2">Vedic Basic (Moolank)</div>
-              <div className="text-3xl font-bold text-rose-400 mb-2">{profile.basicNumber}</div>
-              <div className="text-sm text-rose-300 mb-1">{KARMANK_CONSTANTS.numberDetails[profile.basicNumber].name}</div>
-              <p className="text-sm text-gray-300">{KARMANK_CONSTANTS.numberDetails[profile.basicNumber].description}</p>
+              <div className="text-sm text-gray-400 mb-2">
+                Vedic Basic (Moolank)
+              </div>
+              <div className="text-3xl font-bold text-rose-400 mb-2">
+                {profile.basicNumber}
+              </div>
+              <div className="text-sm text-rose-300 mb-1">
+                {KARMANK_CONSTANTS.numberDetails[profile.basicNumber].name}
+              </div>
+              <p className="text-sm text-gray-300">
+                {
+                  KARMANK_CONSTANTS.numberDetails[profile.basicNumber]
+                    .description
+                }
+              </p>
             </div>
           )}
         </div>
@@ -1133,7 +1659,7 @@ const SynergyTab = ({ report }) => {
 const SignatureTab = () => {
   const canvasRef = useRef(null);
   const fileInputRef = useRef(null);
-  const [mode, setMode] = useState('draw');
+  const [mode, setMode] = useState("draw");
   const [isDrawing, setIsDrawing] = useState(false);
   const [hasSignature, setHasSignature] = useState(false);
   const [uploadedImage, setUploadedImage] = useState(null);
@@ -1142,24 +1668,37 @@ const SignatureTab = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (canvasRef.current && mode === 'draw') {
+    if (canvasRef.current && mode === "draw") {
       const canvas = canvasRef.current;
-      const ctx = canvas.getContext('2d');
-      ctx.fillStyle = '#000000';
+      const ctx = canvas.getContext("2d");
+      ctx.fillStyle = "#000000";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
   }, [mode]);
 
+  // Coming Soon overlay component
+  const ComingSoonOverlay = () => (
+    <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] flex items-center justify-center rounded-xl z-50">
+      <div className="text-center">
+        <Sparkles className="w-16 h-16 text-yellow-400 mx-auto mb-4 animate-pulse" />
+        <h3 className="text-3xl font-bold text-yellow-400 mb-2">Coming Soon</h3>
+        <p className="text-gray-300 text-lg">
+          The Signature Alchemist feature is being enhanced
+        </p>
+      </div>
+    </div>
+  );
+
   const startDrawing = (e) => {
     const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext("2d");
     const rect = canvas.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
-    ctx.strokeStyle = '#FACC15';
+    ctx.strokeStyle = "#FACC15";
     ctx.lineWidth = 2;
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
     ctx.beginPath();
     ctx.moveTo(x, y);
     setIsDrawing(true);
@@ -1168,7 +1707,7 @@ const SignatureTab = () => {
   const draw = (e) => {
     if (!isDrawing) return;
     const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext("2d");
     const rect = canvas.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
@@ -1183,8 +1722,8 @@ const SignatureTab = () => {
 
   const clearSignature = () => {
     const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d');
-    ctx.fillStyle = '#000000';
+    const ctx = canvas.getContext("2d");
+    ctx.fillStyle = "#000000";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     setHasSignature(false);
     setAnalysis(null);
@@ -1210,10 +1749,10 @@ const SignatureTab = () => {
     setError(null);
     try {
       let imageBase64;
-      if (mode === 'draw') {
-        imageBase64 = canvasRef.current.toDataURL('image/png').split(',')[1];
+      if (mode === "draw") {
+        imageBase64 = canvasRef.current.toDataURL("image/png").split(",")[1];
       } else {
-        imageBase64 = uploadedImage.split(',')[1];
+        imageBase64 = uploadedImage.split(",")[1];
       }
 
       const prompt = `Analyze this signature from a numerological and graphological perspective. Provide insights about:
@@ -1235,110 +1774,117 @@ Keep the response concise and insightful (3-4 sentences).`;
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="bg-gray-900/60 p-6 rounded-xl border border-yellow-500/20">
-        <h3 className="text-xl font-bold text-yellow-400 mb-4 flex items-center gap-2">
-          <PenTool className="w-5 h-5" />
-          The Signature Alchemist
-        </h3>
+      <div className="bg-gray-900/60 p-6 rounded-xl border border-yellow-500/20 relative">
+        <div className="blur-xs opacity-70 pointer-events-none">
+          <h3 className="text-xl font-bold text-yellow-400 mb-4 flex items-center gap-2">
+            <PenTool className="w-5 h-5" />
+            The Signature Alchemist
+          </h3>
 
-        <div className="flex gap-2 mb-4">
-          <button
-            onClick={() => {
-              setMode('draw');
-              setHasSignature(false);
-              setAnalysis(null);
-              setUploadedImage(null);
-            }}
-            className={`flex-1 py-2 rounded-lg font-medium transition-all ${
-              mode === 'draw'
-                ? 'bg-yellow-500/20 text-yellow-300 border border-yellow-500/50'
-                : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
-            }`}
-          >
-            <PenTool className="w-4 h-4 inline mr-2" />
-            DRAW
-          </button>
-          <button
-            onClick={() => {
-              setMode('upload');
-              setHasSignature(false);
-              setAnalysis(null);
-            }}
-            className={`flex-1 py-2 rounded-lg font-medium transition-all ${
-              mode === 'upload'
-                ? 'bg-yellow-500/20 text-yellow-300 border border-yellow-500/50'
-                : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
-            }`}
-          >
-            <Upload className="w-4 h-4 inline mr-2" />
-            UPLOAD
-          </button>
-        </div>
+          <div className="flex gap-2 mb-4">
+            <button
+              onClick={() => {
+                setMode("draw");
+                setHasSignature(false);
+                setAnalysis(null);
+                setUploadedImage(null);
+              }}
+              className={`flex-1 py-2 rounded-lg font-medium transition-all ${
+                mode === "draw"
+                  ? "bg-yellow-500/20 text-yellow-300 border border-yellow-500/50"
+                  : "bg-gray-800 text-gray-400 hover:bg-gray-700"
+              }`}
+            >
+              <PenTool className="w-4 h-4 inline mr-2" />
+              DRAW
+            </button>
+            <button
+              onClick={() => {
+                setMode("upload");
+                setHasSignature(false);
+                setAnalysis(null);
+              }}
+              className={`flex-1 py-2 rounded-lg font-medium transition-all ${
+                mode === "upload"
+                  ? "bg-yellow-500/20 text-yellow-300 border border-yellow-500/50"
+                  : "bg-gray-800 text-gray-400 hover:bg-gray-700"
+              }`}
+            >
+              <Upload className="w-4 h-4 inline mr-2" />
+              UPLOAD
+            </button>
+          </div>
 
-        <div className="border border-dashed border-gray-700 rounded-xl bg-gray-950 mb-4 overflow-hidden">
-          {mode === 'draw' ? (
-            <canvas
-              ref={canvasRef}
-              width={600}
-              height={200}
-              onMouseDown={startDrawing}
-              onMouseMove={draw}
-              onMouseUp={stopDrawing}
-              onMouseLeave={stopDrawing}
-              className="w-full cursor-crosshair"
-              style={{ touchAction: 'none' }}
-            />
-          ) : (
-            <div className="p-8 text-center">
-              <input
-                type="file"
-                accept="image/*"
-                ref={fileInputRef}
-                onChange={handleFileUpload}
-                className="hidden"
+          <div className="border border-dashed border-gray-700 rounded-xl bg-gray-950 mb-4 overflow-hidden">
+            {mode === "draw" ? (
+              <canvas
+                ref={canvasRef}
+                width={600}
+                height={200}
+                onMouseDown={startDrawing}
+                onMouseMove={draw}
+                onMouseUp={stopDrawing}
+                onMouseLeave={stopDrawing}
+                className="w-full cursor-crosshair"
+                style={{ touchAction: "none" }}
               />
-              {uploadedImage ? (
-                <img src={uploadedImage} alt="Uploaded signature" className="max-h-48 mx-auto" />
-              ) : (
-                <button
-                  onClick={() => fileInputRef.current?.click()}
-                  className="px-6 py-3 bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-300 border border-yellow-500/50 rounded-lg font-medium transition-all"
-                >
-                  <Upload className="w-5 h-5 inline mr-2" />
-                  Choose Image
-                </button>
-              )}
-            </div>
-          )}
-        </div>
-
-        <div className="flex gap-2">
-          <button
-            onClick={clearSignature}
-            disabled={!hasSignature}
-            className="flex-1 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <Trash2 className="w-4 h-4 inline mr-2" />
-            Clear
-          </button>
-          <button
-            onClick={analyzeSignature}
-            disabled={!hasSignature || loading}
-            className="flex-1 py-2 bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-300 border border-yellow-500/50 rounded-lg font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {loading ? (
-              <>
-                <Loader2 className="w-4 h-4 inline mr-2 animate-spin" />
-                Analyzing...
-              </>
             ) : (
-              <>
-                <Wand2 className="w-4 h-4 inline mr-2" />
-                Analyze
-              </>
+              <div className="p-8 text-center">
+                <input
+                  type="file"
+                  accept="image/*"
+                  ref={fileInputRef}
+                  onChange={handleFileUpload}
+                  className="hidden"
+                />
+                {uploadedImage ? (
+                  <img
+                    src={uploadedImage}
+                    alt="Uploaded signature"
+                    className="max-h-48 mx-auto"
+                  />
+                ) : (
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    className="px-6 py-3 bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-300 border border-yellow-500/50 rounded-lg font-medium transition-all"
+                  >
+                    <Upload className="w-5 h-5 inline mr-2" />
+                    Choose Image
+                  </button>
+                )}
+              </div>
             )}
-          </button>
+          </div>
+
+          <div className="flex gap-2">
+            <button
+              onClick={clearSignature}
+              disabled={!hasSignature}
+              className="flex-1 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Trash2 className="w-4 h-4 inline mr-2" />
+              Clear
+            </button>
+            <button
+              onClick={analyzeSignature}
+              disabled={!hasSignature || loading}
+              className="flex-1 py-2 bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-300 border border-yellow-500/50 rounded-lg font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="w-4 h-4 inline mr-2 animate-spin" />
+                  Analyzing...
+                </>
+              ) : (
+                <>
+                  <Wand2 className="w-4 h-4 inline mr-2" />
+                  Analyze
+                </>
+              )}
+            </button>
+          </div>
         </div>
+        <ComingSoonOverlay />
       </div>
 
       {error && (
@@ -1354,7 +1900,9 @@ Keep the response concise and insightful (3-4 sentences).`;
             <Sparkles className="w-5 h-5" />
             Signature Analysis
           </h4>
-          <p className="text-gray-300 leading-relaxed whitespace-pre-wrap">{analysis}</p>
+          <p className="text-gray-300 leading-relaxed whitespace-pre-wrap">
+            {analysis}
+          </p>
         </div>
       )}
     </div>
@@ -1368,21 +1916,53 @@ const BusinessTab = () => {
 
   // Business categories with icons
   const businessCategories = {
-    'Food & Creative': { numbers: [6, 3, 5], icon: Disc, desc: "Restaurants, cafes, arts, fashion." },
-    'Authority/CEO': { numbers: [1, 8], icon: Briefcase, desc: "Consulting, management, leadership." },
-    'Finance': { numbers: [5, 8], icon: TrendingUp, desc: "Banking, investing, fintech." },
-    'Travel & Logistics': { numbers: [5, 7], icon: Globe, desc: "Tourism, transport, import/export." },
-    'Education': { numbers: [3, 7, 9], icon: BookOpen, desc: "Schools, coaching, training." },
-    'Real Estate': { numbers: [4, 8], icon: Building2, desc: "Construction, architecture, property." },
-    'Manufacturing': { numbers: [4, 8], icon: Factory, desc: "Industrial, production, hardware." },
-    'Media & Ent': { numbers: [3, 5, 6], icon: Camera, desc: "Film, music, social media, ads." }
+    "Food & Creative": {
+      numbers: [6, 3, 5],
+      icon: Disc,
+      desc: "Restaurants, cafes, arts, fashion.",
+    },
+    "Authority/CEO": {
+      numbers: [1, 8],
+      icon: Briefcase,
+      desc: "Consulting, management, leadership.",
+    },
+    Finance: {
+      numbers: [5, 8],
+      icon: TrendingUp,
+      desc: "Banking, investing, fintech.",
+    },
+    "Travel & Logistics": {
+      numbers: [5, 7],
+      icon: Globe,
+      desc: "Tourism, transport, import/export.",
+    },
+    Education: {
+      numbers: [3, 7, 9],
+      icon: BookOpen,
+      desc: "Schools, coaching, training.",
+    },
+    "Real Estate": {
+      numbers: [4, 8],
+      icon: Building2,
+      desc: "Construction, architecture, property.",
+    },
+    Manufacturing: {
+      numbers: [4, 8],
+      icon: Factory,
+      desc: "Industrial, production, hardware.",
+    },
+    "Media & Ent": {
+      numbers: [3, 5, 6],
+      icon: Camera,
+      desc: "Film, music, social media, ads.",
+    },
   };
 
   const analyzeBusiness = () => {
     if (!businessName || !category) return;
 
     // Calculate business name number
-    const upperName = businessName.toUpperCase().replace(/[^A-Z]/g, '');
+    const upperName = businessName.toUpperCase().replace(/[^A-Z]/g, "");
     let nameSum = 0;
     for (let char of upperName) {
       nameSum += KARMANK_CONSTANTS.letterValues[char] || 0;
@@ -1395,13 +1975,13 @@ const BusinessTab = () => {
 
     // Calculate harmonic adjustments
     let suggestions = [];
-    targetNums.forEach(idealNum => {
+    targetNums.forEach((idealNum) => {
       let addValue = idealNum - num;
       if (addValue <= 0) addValue += 9;
       const addLetters = KARMANK_CONSTANTS.valueToLetters[addValue] || [];
       suggestions.push({
         target: idealNum,
-        add: { value: addValue, letters: addLetters }
+        add: { value: addValue, letters: addLetters },
       });
     });
 
@@ -1442,15 +2022,23 @@ const BusinessTab = () => {
                 onClick={() => setCategory(key)}
                 className={`p-3 rounded-lg border text-left transition-all group ${
                   category === key
-                    ? 'bg-cyan-900/40 border-cyan-500 text-cyan-100'
-                    : 'bg-gray-900 border-gray-800 text-gray-500 hover:border-gray-600 hover:bg-gray-800'
+                    ? "bg-cyan-900/40 border-cyan-500 text-cyan-100"
+                    : "bg-gray-900 border-gray-800 text-gray-500 hover:border-gray-600 hover:bg-gray-800"
                 }`}
               >
-                <div className={`${category === key ? 'text-cyan-400' : 'text-gray-600 group-hover:text-gray-400'} mb-2 transition-colors`}>
+                <div
+                  className={`${
+                    category === key
+                      ? "text-cyan-400"
+                      : "text-gray-600 group-hover:text-gray-400"
+                  } mb-2 transition-colors`}
+                >
                   <IconComponent className="w-5 h-5" />
                 </div>
                 <div className="text-xs font-bold uppercase mb-1">{key}</div>
-                <div className="text-[10px] text-gray-600 leading-tight">{data.desc}</div>
+                <div className="text-[10px] text-gray-600 leading-tight">
+                  {data.desc}
+                </div>
               </button>
             );
           })}
@@ -1469,8 +2057,8 @@ const BusinessTab = () => {
         <div
           className={`p-6 rounded-xl border ${
             result.isAligned
-              ? 'bg-cyan-900/20 border-cyan-500'
-              : 'bg-orange-900/20 border-orange-500'
+              ? "bg-cyan-900/20 border-cyan-500"
+              : "bg-orange-900/20 border-orange-500"
           }`}
         >
           <div className="flex items-start gap-4">
@@ -1480,11 +2068,17 @@ const BusinessTab = () => {
               <XCircle className="w-8 h-8 text-orange-400 flex-shrink-0" />
             )}
             <div>
-              <h4 className={`text-lg font-bold mb-1 ${result.isAligned ? 'text-cyan-400' : 'text-orange-400'}`}>
-                {result.isAligned ? "Perfect Brand Alignment" : "Vibrational Misalignment"}
+              <h4
+                className={`text-lg font-bold mb-1 ${
+                  result.isAligned ? "text-cyan-400" : "text-orange-400"
+                }`}
+              >
+                {result.isAligned
+                  ? "Perfect Brand Alignment"
+                  : "Vibrational Misalignment"}
               </h4>
               <p className="text-sm text-gray-300 mb-4 leading-relaxed">
-                Your brand resonates at <strong>Number {result.num}</strong>.{' '}
+                Your brand resonates at <strong>Number {result.num}</strong>.{" "}
                 {result.isAligned
                   ? " This frequency naturally attracts success in your selected industry."
                   : " This frequency creates friction with your industry's natural rhythm."}
@@ -1494,12 +2088,19 @@ const BusinessTab = () => {
 
           {!result.isAligned && (
             <div className="bg-black/40 p-5 rounded-lg mt-2 border-l-2 border-orange-500">
-              <div className="text-xs font-bold uppercase text-orange-400 mb-3">Correction Protocols</div>
+              <div className="text-xs font-bold uppercase text-orange-400 mb-3">
+                Correction Protocols
+              </div>
               <div className="space-y-3">
                 {result.suggestions.slice(0, 2).map((s, i) => (
                   <div key={i} className="text-sm text-gray-300">
-                    <span className="text-gray-500 block text-xs mb-1">OPTION {i + 1}: SHIFT TO {s.target}</span>
-                    To reach vibration <strong>{s.target}</strong>, add a letter with value <strong>{s.add.value}</strong> (e.g., <strong>{s.add.letters.join(', ')}</strong>) to your brand name.
+                    <span className="text-gray-500 block text-xs mb-1">
+                      OPTION {i + 1}: SHIFT TO {s.target}
+                    </span>
+                    To reach vibration <strong>{s.target}</strong>, add a letter
+                    with value <strong>{s.add.value}</strong> (e.g.,{" "}
+                    <strong>{s.add.letters.join(", ")}</strong>) to your brand
+                    name.
                   </div>
                 ))}
               </div>
@@ -1509,7 +2110,9 @@ const BusinessTab = () => {
           {result.isAligned && (
             <div className="bg-cyan-900/20 p-4 rounded-lg border border-cyan-500/30 mt-4">
               <p className="text-sm text-cyan-200">
-                Your business name is vibrationally aligned with the {category} industry. This harmony will support your business growth and success.
+                Your business name is vibrationally aligned with the {category}{" "}
+                industry. This harmony will support your business growth and
+                success.
               </p>
             </div>
           )}
@@ -1526,12 +2129,13 @@ export default function NameAnalysisPage() {
   const { user, signOut } = useAuth();
   const { members, getFamilyMembersData } = useFamilyMembers();
 
-  const [name, setName] = useState('');
-  const [dateOfBirth, setDateOfBirth] = useState('');
+  const [name, setName] = useState("");
+  const [dateOfBirth, setDateOfBirth] = useState("");
   const [selectedFamilyMemberId, setSelectedFamilyMemberId] = useState(null);
   const [report, setReport] = useState(null);
-  const [activeTab, setActiveTab] = useState('deepDive');
+  const [activeTab, setActiveTab] = useState("deepDive");
   const [memberDropdownOpen, setMemberDropdownOpen] = useState(false);
+  const [isLoadingMemberChange, setIsLoadingMemberChange] = useState(false);
 
   // Fetch family members and auto-select first one
   useEffect(() => {
@@ -1544,10 +2148,13 @@ export default function NameAnalysisPage() {
         setDateOfBirth(firstMember.date_of_birth);
         // Auto-generate report for first family member
         try {
-          const profile = calculateProfile(firstMember.name, firstMember.date_of_birth);
+          const profile = calculateProfile(
+            firstMember.name,
+            firstMember.date_of_birth
+          );
           setReport({
             profile,
-            pythagoreanProfile: profile
+            pythagoreanProfile: profile,
           });
         } catch (error) {
           // Error generating initial report - user can manually generate
@@ -1557,7 +2164,7 @@ export default function NameAnalysisPage() {
     loadMembers();
   }, []);
 
-  const handleBackToHome = () => navigate('/');
+  const handleBackToHome = () => navigate("/");
 
   const handleFamilyMemberSelect = (memberId) => {
     setSelectedFamilyMemberId(memberId);
@@ -1570,35 +2177,35 @@ export default function NameAnalysisPage() {
 
   const handleSignOut = async () => {
     await signOut();
-    navigate('/login');
+    navigate("/login");
   };
 
   const handleGenerate = () => {
     if (!selectedFamilyMemberId || !name.trim()) {
-      alert('Please select a family member first');
+      alert("Please select a family member first");
       return;
     }
 
     const profile = calculateProfile(name.trim(), dateOfBirth || null);
     setReport({
       profile,
-      pythagoreanProfile: profile
+      pythagoreanProfile: profile,
     });
   };
 
   const handleReset = () => {
     setReport(null);
-    setName('');
-    setDateOfBirth('');
-    setActiveTab('deepDive');
+    setName("");
+    setDateOfBirth("");
+    setActiveTab("deepDive");
   };
 
   const tabs = [
-    { id: 'deepDive', label: 'Deep Dive', icon: BookOpen },
-    { id: 'sandbox', label: 'Sandbox', icon: FlaskConical },
-    { id: 'synergy', label: 'Synergy', icon: LinkIcon },
-    { id: 'business', label: 'Business', icon: Briefcase },
-    { id: 'signature', label: 'Signature', icon: PenTool }
+    { id: "deepDive", label: "Deep Dive", icon: BookOpen },
+    { id: "sandbox", label: "Sandbox", icon: FlaskConical },
+    { id: "synergy", label: "Synergy", icon: LinkIcon },
+    { id: "business", label: "Business", icon: Briefcase },
+    { id: "signature", label: "Signature", icon: PenTool },
   ];
 
   return (
@@ -1620,34 +2227,54 @@ export default function NameAnalysisPage() {
               <div className="relative">
                 <button
                   onClick={() => setMemberDropdownOpen(!memberDropdownOpen)}
-                  className="flex items-center gap-2 px-4 py-2 bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-400/50 rounded-lg text-cyan-300 text-sm font-medium transition"
+                  disabled={isLoadingMemberChange}
+                  className="flex items-center gap-2 px-4 py-2 bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-400/50 rounded-lg text-cyan-300 text-sm font-medium transition disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {selectedFamilyMemberId && members.find(m => m.id === selectedFamilyMemberId)?.name || 'Select Member'}
+                  {(selectedFamilyMemberId &&
+                    members.find((m) => m.id === selectedFamilyMemberId)
+                      ?.name) ||
+                    "Select Member"}
                   <ChevronDown className="h-4 w-4" />
                 </button>
-                {memberDropdownOpen && (
+                {memberDropdownOpen && !isLoadingMemberChange && (
                   <div className="absolute top-full right-0 mt-2 bg-gray-900 border border-cyan-400/50 rounded-lg shadow-lg z-50 min-w-64">
-                    {members.map(member => (
+                    {members.map((member) => (
                       <button
                         key={member.id}
                         onClick={() => {
-                          setSelectedFamilyMemberId(member.id);
-                          setName(member.name);
-                          setDateOfBirth(member.date_of_birth);
+                          setIsLoadingMemberChange(true);
                           setMemberDropdownOpen(false);
-                          // Auto-generate report when member is selected
-                          const profile = calculateProfile(member.name, member.date_of_birth);
-                          setReport({
-                            profile,
-                            pythagoreanProfile: profile
-                          });
+
+                          try {
+                            setSelectedFamilyMemberId(member.id);
+                            setName(member.name);
+                            setDateOfBirth(member.date_of_birth);
+                            // Auto-generate report when member is selected
+                            const profile = calculateProfile(
+                              member.name,
+                              member.date_of_birth
+                            );
+                            setReport({
+                              profile,
+                              pythagoreanProfile: profile,
+                            });
+                          } finally {
+                            setIsLoadingMemberChange(false);
+                          }
                         }}
                         className={`w-full text-left px-4 py-3 hover:bg-cyan-400/10 transition ${
-                          selectedFamilyMemberId === member.id ? 'bg-cyan-400/20 border-l-2 border-l-cyan-400' : ''
+                          selectedFamilyMemberId === member.id
+                            ? "bg-cyan-400/20 border-l-2 border-l-cyan-400"
+                            : ""
                         }`}
                       >
-                        <div className="font-semibold text-white">{member.name}</div>
-                        <div className="text-xs text-white/60">{member.gender} • DOB: {new Date(member.date_of_birth).toLocaleDateString()}</div>
+                        <div className="font-semibold text-white">
+                          {member.name}
+                        </div>
+                        <div className="text-xs text-white/60">
+                          {member.gender} • DOB:{" "}
+                          {new Date(member.date_of_birth).toLocaleDateString()}
+                        </div>
                       </button>
                     ))}
                   </div>
@@ -1658,11 +2285,21 @@ export default function NameAnalysisPage() {
 
           <FuturisticGate />
 
+          {/* Member Change Loading Overlay */}
+          {isLoadingMemberChange && (
+            <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 rounded-lg">
+              <div className="bg-gray-900/90 border border-cyan-400/50 rounded-xl p-8 text-center">
+                <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-cyan-400 mb-4"></div>
+                <p className="text-cyan-300 font-medium">Loading {name}'s analysis...</p>
+              </div>
+            </div>
+          )}
+
           {!report ? (
             <div className="max-w-2xl mx-auto">
               <div className="bg-gray-900/60 backdrop-blur-md p-8 rounded-xl border border-cyan-500/20 shadow-2xl">
                 <h3 className="text-lg font-semibold text-center text-cyan-300 mb-4">
-                  {name || 'Select a member to begin'}
+                  {name || "Select a member to begin"}
                 </h3>
 
                 <div className="text-center text-white/70 text-sm">
@@ -1674,7 +2311,7 @@ export default function NameAnalysisPage() {
             <div className="space-y-6">
               {/* Tab Navigation */}
               <div className="flex flex-wrap gap-2 justify-center">
-                {tabs.map(tab => (
+                {tabs.map((tab) => (
                   <TabButton
                     key={tab.id}
                     active={activeTab === tab.id}
@@ -1688,11 +2325,15 @@ export default function NameAnalysisPage() {
 
               {/* Tab Content */}
               <div>
-                {activeTab === 'deepDive' && <NameDeepDiveTab report={report} />}
-                {activeTab === 'sandbox' && <SandboxTab profile={report.profile} />}
-                {activeTab === 'synergy' && <SynergyTab report={report} />}
-                {activeTab === 'business' && <BusinessTab />}
-                {activeTab === 'signature' && <SignatureTab />}
+                {activeTab === "deepDive" && (
+                  <NameDeepDiveTab report={report} />
+                )}
+                {activeTab === "sandbox" && (
+                  <SandboxTab profile={report.profile} />
+                )}
+                {activeTab === "synergy" && <SynergyTab report={report} />}
+                {activeTab === "business" && <BusinessTab />}
+                {activeTab === "signature" && <SignatureTab />}
               </div>
 
               {/* Reset Button */}
