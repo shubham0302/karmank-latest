@@ -74,7 +74,7 @@ export default function FamilyMembersPage() {
 
             <div className="flex items-center gap-3 mb-2">
               <Users className="h-8 w-8 text-cyan-400" />
-              <h1 className="text-4xl md:text-5xl font-serif font-bold">
+              <h1 className="text-2xl sm:text-3xl md:text-5xl font-serif font-bold">
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-purple-400 to-pink-400">
                   Family Members
                 </span>

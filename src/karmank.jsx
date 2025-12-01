@@ -61,6 +61,7 @@ export default function KarmAnkApp() {
   const [formError, setFormError] = useState("");
   const [memberDropdownOpen, setMemberDropdownOpen] = useState(false);
   const [isLoadingMemberChange, setIsLoadingMemberChange] = useState(false);
+  const [languageDropdownOpen, setLanguageDropdownOpen] = useState(false);
 
   // Language state with localStorage persistence
   const [language, setLanguage] = useState(() => {
@@ -248,8 +249,41 @@ export default function KarmAnkApp() {
             </button>
 
             <div className="flex items-center gap-4">
-              {/* Language Selector */}
-              <div className="flex gap-2">
+              {/* Language Selector - Dropdown on Mobile, Tabs on Desktop */}
+
+              {/* Mobile Dropdown */}
+              <div className="relative md:hidden">
+                <button
+                  onClick={() => setLanguageDropdownOpen(!languageDropdownOpen)}
+                  className="flex items-center gap-2 px-3 py-1.5 bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-400/50 rounded-lg text-cyan-300 text-xs font-semibold transition"
+                >
+                  {language.toUpperCase()}
+                  <ChevronDown className="h-3 w-3" />
+                </button>
+                {languageDropdownOpen && (
+                  <div className="absolute top-full right-0 mt-2 bg-gray-900 border border-cyan-400/50 rounded-lg shadow-lg z-50 w-32">
+                    {["en", "hi", "en-hi"].map((lang) => (
+                      <button
+                        key={lang}
+                        onClick={() => {
+                          setLanguage(lang);
+                          setLanguageDropdownOpen(false);
+                        }}
+                        className={`w-full text-left px-4 py-2 text-xs font-semibold hover:bg-cyan-400/10 transition ${
+                          language === lang
+                            ? "bg-cyan-400/20 border-l-2 border-l-cyan-400 text-cyan-300"
+                            : "text-white/70"
+                        }`}
+                      >
+                        {lang.toUpperCase()}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Desktop Tabs */}
+              <div className="hidden md:flex gap-2">
                 <button
                   onClick={() => setLanguage("en")}
                   className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all duration-200 ${

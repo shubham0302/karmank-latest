@@ -139,11 +139,11 @@ export default function FamilyMemberForm({
         <Label className="text-white font-medium">
           Gender <span className="text-red-400">*</span>
         </Label>
-        <div className="flex gap-4">
+        <div className="flex gap-2 sm:gap-4 flex-col sm:flex-row">
           {['male', 'female', 'other'].map((option) => (
             <label
               key={option}
-              className="flex items-center gap-2 cursor-pointer"
+              className="flex items-center gap-1.5 sm:gap-2 cursor-pointer"
             >
               <input
                 type="radio"

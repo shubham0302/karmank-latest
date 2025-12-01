@@ -879,13 +879,13 @@ async function fetchGeminiAnalysis(prompt, imageBase64 = null) {
 const TabButton = ({ active, onClick, children, icon: Icon }) => (
   <button
     onClick={onClick}
-    className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+    className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-lg font-medium text-xs sm:text-base transition-all duration-200 ${
       active
         ? "bg-cyan-500/20 border border-cyan-500/50"
         : "bg-gray-800/50 hover:bg-gray-700/50 border border-transparent"
     }`}
   >
-    {Icon && <Icon className="w-4 h-4" />}
+    {Icon && <Icon className="w-3 h-3 sm:w-4 sm:h-4" />}
     <span
       className={
         active
@@ -899,7 +899,7 @@ const TabButton = ({ active, onClick, children, icon: Icon }) => (
 );
 
 const FuturisticGate = () => (
-  <div className="relative w-full h-40 mb-8 overflow-hidden rounded-xl border border-cyan-500/20">
+  <div className="relative w-full h-32 sm:h-40 mb-6 sm:mb-8 overflow-hidden rounded-xl border border-cyan-500/20">
     <div className="absolute inset-0 bg-gradient-to-b from-cyan-950/40 via-gray-950 to-black" />
     <div
       className="absolute inset-0"
@@ -914,20 +914,20 @@ const FuturisticGate = () => (
       }}
     />
     <div className="absolute inset-0 flex items-center justify-center">
-      <div className="text-center space-y-2 relative z-10">
-        <div className="text-4xl font-bold">
-          <GradientText as="span" size="4xl" className="font-serif">
+      <div className="text-center space-y-1 sm:space-y-2 relative z-10 px-2">
+        <div className="text-2xl sm:text-4xl font-bold">
+          <GradientText as="span" size="3xl" className="font-serif sm:size-4xl">
             KarmAnk
           </GradientText>
-          <sup className={`text-2xl -top-2 ${gradientUtils.text}`}>™</sup>
+          <sup className={`text-lg sm:text-2xl -top-2 ${gradientUtils.text}`}>™</sup>
         </div>
-        <div className="text-sm text-cyan-400/60 tracking-widest">
+        <div className="text-xs sm:text-sm text-cyan-400/60 tracking-widest">
           NAME ANALYSIS SYSTEM
         </div>
-        <div className="flex items-center justify-center gap-2 mt-3">
-          <div className="h-px w-16 bg-gradient-to-r from-transparent via-cyan-400/50 to-transparent"></div>
+        <div className="flex items-center justify-center gap-2 mt-2 sm:mt-3">
+          <div className="h-px w-8 sm:w-16 bg-gradient-to-r from-transparent via-cyan-400/50 to-transparent"></div>
           <div className="text-xs text-cyan-400/40">★</div>
-          <div className="h-px w-16 bg-gradient-to-r from-transparent via-cyan-400/50 to-transparent"></div>
+          <div className="h-px w-8 sm:w-16 bg-gradient-to-r from-transparent via-cyan-400/50 to-transparent"></div>
         </div>
       </div>
     </div>
@@ -1076,24 +1076,24 @@ const NameDeepDiveTab = ({ report }) => {
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 relative">
       {/* Definition Modal */}
       {activeDefinition && (
-        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/95 rounded-xl backdrop-blur-md p-6 animate-in zoom-in duration-200">
-          <div className="text-center relative max-w-md h-full overflow-y-auto scrollbar-none">
+        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/95 rounded-xl backdrop-blur-md p-3 sm:p-6 animate-in zoom-in duration-200">
+          <div className="text-center relative max-w-sm sm:max-w-md h-full overflow-y-auto scrollbar-none">
             <button
               onClick={() => setActiveDefinition(null)}
-              className="absolute top-0 right-0 text-gray-500 hover:text-white p-2 transition-colors"
+              className="absolute top-0 right-0 text-gray-500 hover:text-white p-1 sm:p-2 transition-colors"
             >
-              <XCircle className="w-8 h-8" />
+              <XCircle className="w-6 h-6 sm:w-8 sm:h-8" />
             </button>
 
             {/* The Big Number */}
             <div
-              className={`text-8xl font-bold mb-2 font-mono ${activeDefinition.color}`}
+              className={`text-6xl sm:text-8xl font-bold mb-2 font-mono ${activeDefinition.color}`}
             >
               {activeDefinition.val}
             </div>
 
             {/* The Title */}
-            <h4 className="text-yellow-400 font-bold uppercase tracking-widest mb-6 text-xl">
+            <h4 className="text-yellow-400 font-bold uppercase tracking-widest mb-4 sm:mb-6 text-lg sm:text-xl">
               {CORE_DEFINITIONS[activeDefinition.id].title}
             </h4>
 
@@ -1127,29 +1127,29 @@ const NameDeepDiveTab = ({ report }) => {
       )}
 
       {/* Main Cards Grid */}
-      <div className="grid md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4">
         {cards.map((card) => (
           <div
             key={card.id}
             onClick={() => setActiveDefinition(card)}
-            className={`cursor-pointer hover:scale-[1.02] transition-all duration-200 text-center p-4 bg-gradient-to-br ${card.bgGradient} border ${card.borderColor} rounded-xl relative group`}
+            className={`cursor-pointer hover:scale-[1.02] transition-all duration-200 text-center p-2 sm:p-4 bg-gradient-to-br ${card.bgGradient} border ${card.borderColor} rounded-xl relative group`}
           >
-            <MousePointerClick className="absolute top-2 right-2 w-4 h-4 text-gray-500 group-hover:text-white transition-colors" />
+            <MousePointerClick className="absolute top-1 right-1 sm:top-2 sm:right-2 w-3 h-3 sm:w-4 sm:h-4 text-gray-500 group-hover:text-white transition-colors" />
             <p className={`text-xs ${card.color} mb-0.5`}>{card.label}</p>
-            <p className="text-xs text-gray-400 mb-2">({card.sublabel})</p>
-            <p className={`text-6xl font-bold ${card.color}`}>{card.val}</p>
+            <p className="text-[10px] sm:text-xs text-gray-400 mb-2">({card.sublabel})</p>
+            <p className={`text-4xl sm:text-6xl font-bold ${card.color}`}>{card.val}</p>
           </div>
         ))}
 
         {/* Zodiac Card */}
-        <div className="bg-gray-900/60 p-4 rounded-xl border border-gray-700 text-center">
-          <Sun className="w-4 h-4 text-yellow-400 mx-auto mb-2" />
-          <p className="text-xs text-gray-400 mb-1">Zodiac</p>
-          <p className="text-2xl mb-1">{pythagoreanProfile.zodiac.symbol}</p>
-          <p className="text-sm text-white font-medium">
+        <div className="bg-gray-900/60 p-2 sm:p-4 rounded-xl border border-gray-700 text-center">
+          <Sun className="w-3 h-3 sm:w-4 sm:h-4 text-yellow-400 mx-auto mb-2" />
+          <p className="text-[10px] sm:text-xs text-gray-400 mb-1">Zodiac</p>
+          <p className="text-xl sm:text-2xl mb-1">{pythagoreanProfile.zodiac.symbol}</p>
+          <p className="text-xs sm:text-sm text-white font-medium">
             {pythagoreanProfile.zodiac.name}
           </p>
-          <p className="text-xs text-gray-500">
+          <p className="text-[10px] sm:text-xs text-gray-500">
             {pythagoreanProfile.zodiac.element}
           </p>
         </div>
@@ -1416,7 +1416,7 @@ const SandboxTab = ({ profile }) => {
           type="text"
           value={testName}
           onChange={(e) => setTestName(e.target.value)}
-          className="w-full bg-black border border-gray-700 rounded-lg px-4 py-4 text-xl text-white font-mono mb-8 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 outline-none placeholder-gray-700 text-center uppercase tracking-wider"
+          className="w-full bg-black border border-gray-700 rounded-lg px-3 sm:px-4 py-3 sm:py-4 text-base sm:text-xl text-white font-mono mb-6 sm:mb-8 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 outline-none placeholder-gray-700 text-center uppercase tracking-wider"
           placeholder="ENTER NEW NAME"
         />
 
@@ -1521,7 +1521,7 @@ const SynergyTab = ({ report }) => {
           your name.
         </p>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3 mb-6">
           {Object.entries(KARMANK_CONSTANTS.goalVibrations).map(
             ([key, data]) => (
               <button
@@ -1530,14 +1530,14 @@ const SynergyTab = ({ report }) => {
                 disabled={
                   !selectedGoals.includes(key) && selectedGoals.length >= 2
                 }
-                className={`p-3 rounded-lg border text-left transition-all ${
+                className={`p-2 sm:p-3 rounded-lg border text-left transition-all ${
                   selectedGoals.includes(key)
                     ? "bg-cyan-900/40 border-cyan-500 text-cyan-100"
                     : "bg-gray-900 border-gray-800 text-gray-500 hover:border-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
                 }`}
               >
-                <div className="text-xs font-bold uppercase mb-1">{key}</div>
-                <div className="text-[10px] text-gray-500">{data.desc}</div>
+                <div className="text-[10px] sm:text-xs font-bold uppercase mb-1">{key}</div>
+                <div className="text-[8px] sm:text-[10px] text-gray-500">{data.desc}</div>
               </button>
             )
           )}
@@ -1584,31 +1584,31 @@ const SynergyTab = ({ report }) => {
             Name-Destiny Synergy
           </h3>
 
-          <div className="grid md:grid-cols-2 gap-6 mb-6">
-            <div className="bg-gray-950/50 p-4 rounded-lg border border-cyan-500/30">
-              <div className="text-sm text-gray-400 mb-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-6">
+            <div className="bg-gray-950/50 p-3 sm:p-4 rounded-lg border border-cyan-500/30">
+              <div className="text-xs sm:text-sm text-gray-400 mb-2">
                 Pythagorean Expression
               </div>
-              <div className="text-4xl font-bold text-cyan-400 mb-2">
+              <div className="text-3xl sm:text-4xl font-bold text-cyan-400 mb-2">
                 {pythagoreanProfile.expression}
               </div>
-              <p className="text-sm text-gray-300">
+              <p className="text-xs sm:text-sm text-gray-300">
                 {NUMBER_MEANINGS[pythagoreanProfile.expression].slice(0, 150)}
                 ...
               </p>
             </div>
 
-            <div className="bg-gray-950/50 p-4 rounded-lg border border-green-500/30">
-              <div className="text-sm text-gray-400 mb-2">
+            <div className="bg-gray-950/50 p-3 sm:p-4 rounded-lg border border-green-500/30">
+              <div className="text-xs sm:text-sm text-gray-400 mb-2">
                 Vedic Destiny (Bhagyank)
               </div>
-              <div className="text-4xl font-bold text-green-400 mb-2">
+              <div className="text-3xl sm:text-4xl font-bold text-green-400 mb-2">
                 {profile.destinyNumber}
               </div>
-              <div className="text-sm text-green-300 mb-1">
+              <div className="text-xs sm:text-sm text-green-300 mb-1">
                 {KARMANK_CONSTANTS.numberDetails[profile.destinyNumber].name}
               </div>
-              <p className="text-sm text-gray-300">
+              <p className="text-xs sm:text-sm text-gray-300">
                 {
                   KARMANK_CONSTANTS.numberDetails[profile.destinyNumber]
                     .description
@@ -2010,17 +2010,17 @@ const BusinessTab = () => {
           placeholder="ENTER BRAND NAME"
           value={businessName}
           onChange={(e) => setBusinessName(e.target.value)}
-          className="w-full bg-black border border-gray-700 rounded-lg px-4 py-4 text-xl text-white font-mono mb-8 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 outline-none placeholder-gray-700 text-center uppercase tracking-wider"
+          className="w-full bg-black border border-gray-700 rounded-lg px-3 sm:px-4 py-3 sm:py-4 text-base sm:text-xl text-white font-mono mb-6 sm:mb-8 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 outline-none placeholder-gray-700 text-center uppercase tracking-wider"
         />
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3 mb-8">
           {Object.entries(businessCategories).map(([key, data]) => {
             const IconComponent = data.icon;
             return (
               <button
                 key={key}
                 onClick={() => setCategory(key)}
-                className={`p-3 rounded-lg border text-left transition-all group ${
+                className={`p-2 sm:p-3 rounded-lg border text-left transition-all group ${
                   category === key
                     ? "bg-cyan-900/40 border-cyan-500 text-cyan-100"
                     : "bg-gray-900 border-gray-800 text-gray-500 hover:border-gray-600 hover:bg-gray-800"
@@ -2033,10 +2033,10 @@ const BusinessTab = () => {
                       : "text-gray-600 group-hover:text-gray-400"
                   } mb-2 transition-colors`}
                 >
-                  <IconComponent className="w-5 h-5" />
+                  <IconComponent className="w-4 h-4 sm:w-5 sm:h-5" />
                 </div>
-                <div className="text-xs font-bold uppercase mb-1">{key}</div>
-                <div className="text-[10px] text-gray-600 leading-tight">
+                <div className="text-[10px] sm:text-xs font-bold uppercase mb-1">{key}</div>
+                <div className="text-[8px] sm:text-[10px] text-gray-600 leading-tight">
                   {data.desc}
                 </div>
               </button>
@@ -2210,34 +2210,37 @@ export default function NameAnalysisPage() {
 
   return (
     <CosmicBackground density={140} useVideo={true}>
-      <div className="min-h-screen relative px-4 md:px-6 py-6">
+      <div className="min-h-screen relative px-3 sm:px-4 md:px-6 py-4 sm:py-6">
         <div className="max-w-6xl mx-auto relative z-10">
           {/* Top Navigation - Back Button on Left, Controls on Right */}
-          <div className="flex justify-between items-center mb-6">
+          <div className="flex justify-between items-center gap-2 mb-4 sm:mb-6 flex-wrap sm:flex-nowrap">
             <button
               onClick={handleBackToHome}
-              className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white border border-white/30 px-4 py-2 rounded-md text-sm font-medium transition duration-200"
+              className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white border border-white/30 px-3 sm:px-4 py-2 rounded-md text-xs sm:text-sm font-medium transition duration-200"
             >
-              <ArrowLeft className="h-4 w-4" />
-              Back
+              <ArrowLeft className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="hidden sm:inline">Back</span>
+              <span className="sm:hidden">Back</span>
             </button>
 
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 sm:gap-4">
               {/* Member Selector Dropdown */}
               <div className="relative">
                 <button
                   onClick={() => setMemberDropdownOpen(!memberDropdownOpen)}
                   disabled={isLoadingMemberChange}
-                  className="flex items-center gap-2 px-4 py-2 bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-400/50 rounded-lg text-cyan-300 text-sm font-medium transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex items-center gap-2 px-2 sm:px-4 py-2 bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-400/50 rounded-lg text-cyan-300 text-xs sm:text-sm font-medium transition disabled:opacity-50 disabled:cursor-not-allowed truncate"
                 >
-                  {(selectedFamilyMemberId &&
-                    members.find((m) => m.id === selectedFamilyMemberId)
-                      ?.name) ||
-                    "Select Member"}
-                  <ChevronDown className="h-4 w-4" />
+                  <span className="truncate max-w-[100px] sm:max-w-none">
+                    {(selectedFamilyMemberId &&
+                      members.find((m) => m.id === selectedFamilyMemberId)
+                        ?.name) ||
+                      "Member"}
+                  </span>
+                  <ChevronDown className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
                 </button>
                 {memberDropdownOpen && !isLoadingMemberChange && (
-                  <div className="absolute top-full right-0 mt-2 bg-gray-900 border border-cyan-400/50 rounded-lg shadow-lg z-50 min-w-64">
+                  <div className="absolute top-full right-0 mt-2 bg-gray-900 border border-cyan-400/50 rounded-lg shadow-lg z-50 min-w-56 sm:min-w-64 max-h-64 overflow-y-auto">
                     {members.map((member) => (
                       <button
                         key={member.id}
@@ -2310,7 +2313,7 @@ export default function NameAnalysisPage() {
           ) : (
             <div className="space-y-6">
               {/* Tab Navigation */}
-              <div className="flex flex-wrap gap-2 justify-center">
+              <div className="flex flex-wrap gap-1 sm:gap-2 justify-center">
                 {tabs.map((tab) => (
                   <TabButton
                     key={tab.id}

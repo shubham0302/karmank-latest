@@ -1820,22 +1820,22 @@ function DashboardScreen({ userData, path, bigFiveScores, riasecScores, aptitude
       </motion.div>
 
       {/* Futuristic Dashboard Grid - 3 Columns */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
         {/* Column 1: RIASEC Radar Chart */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="bg-gradient-to-br from-gray-900 via-cyan-900/20 to-black backdrop-blur-xl border border-cyan-400/30 rounded-2xl p-6 hover:scale-[1.02] transition-all duration-300"
+          className="bg-gradient-to-br from-gray-900 via-cyan-900/20 to-black backdrop-blur-xl border border-cyan-400/30 rounded-2xl p-3 sm:p-6 hover:scale-[1.02] transition-all duration-300"
           style={{
             boxShadow: '0 0 15px rgba(0, 255, 255, 0.3)',
           }}
         >
           <div className="flex items-center gap-3 mb-4">
-            <Target className="h-6 w-6 text-cyan-400" />
-            <h3 className="text-lg font-serif font-bold text-white">Interest Hexagon</h3>
+            <Target className="h-5 w-5 sm:h-6 sm:w-6 text-cyan-400" />
+            <h3 className="text-base sm:text-lg font-serif font-bold text-white">Interest Hexagon</h3>
           </div>
-          <p className="text-white/60 text-xs mb-4">RIASEC Model Visualization</p>
+          <p className="text-white/60 text-[10px] sm:text-xs mb-4">RIASEC Model Visualization</p>
 
           <div className="aspect-square">
             <RadarChart
@@ -1918,16 +1918,16 @@ function DashboardScreen({ userData, path, bigFiveScores, riasecScores, aptitude
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="bg-gradient-to-br from-gray-900 via-purple-900/20 to-black backdrop-blur-xl border border-purple-400/30 rounded-2xl p-6 hover:scale-[1.02] transition-all duration-300"
+          className="bg-gradient-to-br from-gray-900 via-purple-900/20 to-black backdrop-blur-xl border border-purple-400/30 rounded-2xl p-3 sm:p-6 hover:scale-[1.02] transition-all duration-300"
           style={{
             boxShadow: '0 0 15px rgba(138, 43, 226, 0.3)',
           }}
         >
           <div className="flex items-center gap-3 mb-4">
-            <Brain className="h-6 w-6 text-purple-400" />
-            <h3 className="text-lg font-serif font-bold text-white">Personality Spectrum</h3>
+            <Brain className="h-5 w-5 sm:h-6 sm:w-6 text-purple-400" />
+            <h3 className="text-base sm:text-lg font-serif font-bold text-white">Personality Spectrum</h3>
           </div>
-          <p className="text-white/60 text-xs mb-4">Big Five Trait Rankings</p>
+          <p className="text-white/60 text-[10px] sm:text-xs mb-4">Big Five Trait Rankings</p>
 
           <div className="aspect-[4/3]">
             <BarChart

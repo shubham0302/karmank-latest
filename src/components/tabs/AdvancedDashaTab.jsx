@@ -77,7 +77,7 @@ const AdvancedDashaTab = ({
     // Use allYogaDefinitions if available (from backend), otherwise fall back to yogas
     const allYogaDefinitions = relevantData?.allYogaDefinitions
       ? Object.values(relevantData.allYogaDefinitions)
-      : (relevantData?.yogas || foundationalYogas);
+      : relevantData?.yogas || foundationalYogas;
 
     const allPossibleYogas = new Set();
     allYogaDefinitions.forEach((yoga) => {
@@ -256,7 +256,9 @@ const AdvancedDashaTab = ({
     let startIndex = 0;
     if (activeDasha) {
       const activeIndex = timeline.findIndex(
-        (d) => toDate(d.startDate).getTime() === toDate(activeDasha.startDate).getTime()
+        (d) =>
+          toDate(d.startDate).getTime() ===
+          toDate(activeDasha.startDate).getTime()
       );
       startIndex = Math.max(0, activeIndex - 5);
     }
@@ -281,7 +283,8 @@ const AdvancedDashaTab = ({
                 key={i}
                 className={`border-b border-gray-700 ${
                   activeDasha &&
-                  toDate(p.startDate).getTime() === toDate(activeDasha.startDate).getTime()
+                  toDate(p.startDate).getTime() ===
+                    toDate(activeDasha.startDate).getTime()
                     ? "bg-yellow-500/20"
                     : ""
                 }`}
@@ -489,12 +492,12 @@ const AdvancedDashaTab = ({
         <DynamicAdvancedRemediesDisplay
           dynamicGrid={dynamicAnalysis.tempGrid}
         />
-        <DynamicSpecialGuidanceDisplay
+        {/* <DynamicSpecialGuidanceDisplay
           dynamicGrid={dynamicAnalysis.tempGrid}
           destinyNumber={destinyNumber}
           mahaDasha={currentMaha?.dashaNumber}
           annualDasha={currentYearly?.dashaNumber}
-        />
+        /> */}
       </div>
     </div>
   );

@@ -84,14 +84,14 @@ const WelcomeTab = ({ report, userData, language = 'en' }) => {
             </Card>
 
             <Card>
-                <div className="grid lg:grid-cols-5 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-6">
                     {/* Left Section - Base Kundli (3/5 width on large screens) */}
-                    <div className="lg:col-span-3">
-                        <GradientText as="h3" size="2xl" className="text-center mb-3">
+                    <div className="md:col-span-1 lg:col-span-3">
+                        <GradientText as="h3" size="xl" className="text-center mb-3 sm:text-2xl">
                             Base Kundli
                         </GradientText>
                         <div className="flex justify-center items-center">
-                            <div className="w-full max-w-xs">
+                            <div className="w-full max-w-full sm:max-w-xs">
                                 <div className="grid grid-cols-3 gap-1.5 bg-gray-900/50 p-2 rounded-md aspect-square">
                                     {[3, 1, 9, 6, 7, 5, 2, 8, 4].map((num, i) => (
                                         <div
@@ -106,7 +106,7 @@ const WelcomeTab = ({ report, userData, language = 'en' }) => {
                             </div>
                         </div>
                         {/* Legend */}
-                        <div className="mt-3 flex flex-wrap justify-center gap-2 text-xs">
+                        <div className="mt-2 sm:mt-3 flex flex-wrap justify-center gap-1 sm:gap-2 text-[10px] sm:text-xs">
                             <div className="flex items-center gap-1.5">
                                 <div className="w-3 h-3 rounded" style={{ backgroundColor: colorMap.basic }}></div>
                                 <span className="text-white/70">Basic</span>
@@ -123,16 +123,16 @@ const WelcomeTab = ({ report, userData, language = 'en' }) => {
                     </div>
 
                     {/* Right Section - Numbers (2/5 width on large screens) */}
-                    <div className="lg:col-span-2 flex flex-col justify-center space-y-3">
-                        <div className="text-center p-4 bg-gradient-to-br from-rose-900/40 to-rose-800/20 border border-rose-700/50 rounded-lg">
-                            <p className="text-xs text-rose-400 mb-0.5">Basic Number</p>
-                            <p className="text-xs text-rose-300/70 mb-2">(Moolank)</p>
-                            <p className="text-6xl font-bold text-rose-300">{report.basicNumber}</p>
+                    <div className="md:col-span-1 lg:col-span-2 flex flex-col justify-center space-y-2 sm:space-y-3">
+                        <div className="text-center p-3 sm:p-4 bg-gradient-to-br from-rose-900/40 to-rose-800/20 border border-rose-700/50 rounded-lg">
+                            <p className="text-[10px] sm:text-xs text-rose-400 mb-0.5">Basic Number</p>
+                            <p className="text-[10px] sm:text-xs text-rose-300/70 mb-2">(Moolank)</p>
+                            <p className="text-4xl sm:text-6xl font-bold text-rose-300">{report.basicNumber}</p>
                         </div>
-                        <div className="text-center p-4 bg-gradient-to-br from-green-900/40 to-green-800/20 border border-green-700/50 rounded-lg">
-                            <p className="text-xs text-green-400 mb-0.5">Destiny Number</p>
-                            <p className="text-xs text-green-300/70 mb-2">(Bhagyank)</p>
-                            <p className="text-6xl font-bold text-green-300">{report.destinyNumber}</p>
+                        <div className="text-center p-3 sm:p-4 bg-gradient-to-br from-green-900/40 to-green-800/20 border border-green-700/50 rounded-lg">
+                            <p className="text-[10px] sm:text-xs text-green-400 mb-0.5">Destiny Number</p>
+                            <p className="text-[10px] sm:text-xs text-green-300/70 mb-2">(Bhagyank)</p>
+                            <p className="text-4xl sm:text-6xl font-bold text-green-300">{report.destinyNumber}</p>
                         </div>
                     </div>
                 </div>

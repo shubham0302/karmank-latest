@@ -181,23 +181,24 @@ const CompatibilityPage = () => {
 
   return (
     <CosmicBackground density={140} useVideo={true}>
-      <div className="min-h-screen relative px-4 md:px-6 py-6">
+      <div className="min-h-screen relative px-3 sm:px-4 md:px-6 py-4 sm:py-6">
         <div className="max-w-5xl mx-auto relative z-10">
           {/* Header */}
-          <div className="flex justify-between items-center mb-6">
+          <div className="flex justify-between items-center gap-2 mb-6 flex-wrap sm:flex-nowrap">
             <button
               onClick={handleBackToHome}
-              className="flex items-center gap-2 text-white/70 hover:text-auric-gold transition-colors duration-200"
+              className="flex items-center gap-2 text-white/70 hover:text-auric-gold transition-colors duration-200 text-xs sm:text-sm"
             >
-              <ArrowLeft className="h-5 w-5" />
-              <span className="font-medium">Back to Home</span>
+              <ArrowLeft className="h-3 w-3 sm:h-5 sm:w-5" />
+              <span className="font-medium hidden sm:inline">Back to Home</span>
+              <span className="sm:hidden">Back</span>
             </button>
 
-            <div className="flex items-center gap-3">
-              <span className="text-sm text-white/70 hidden md:block">{user?.email}</span>
+            <div className="flex items-center gap-2 sm:gap-3">
+              <span className="text-[10px] sm:text-sm text-white/70 hidden md:block">{user?.email}</span>
               <button
                 onClick={handleSignOut}
-                className="bg-red-500/20 hover:bg-red-500/30 text-red-300 border border-red-500/50 px-4 py-2 rounded-md text-sm font-medium transition duration-200"
+                className="bg-red-500/20 hover:bg-red-500/30 text-red-300 border border-red-500/50 px-2 sm:px-4 py-2 rounded-md text-xs sm:text-sm font-medium transition duration-200"
               >
                 Sign Out
               </button>
@@ -233,9 +234,9 @@ const CompatibilityPage = () => {
               </h2>
               <form onSubmit={handleAnalyzeCompatibility} className="space-y-6">
                 {/* Family Member Selectors - Required */}
-                <div className="p-4 bg-gradient-to-r from-yellow-500/10 to-amber-500/10 border border-yellow-400/30 rounded-lg">
-                  <p className="text-sm text-yellow-300 mb-4 font-semibold">Select Two Different Family Members to Check Compatibility:</p>
-                  <div className="grid md:grid-cols-2 gap-4">
+                <div className="p-3 sm:p-4 bg-gradient-to-r from-yellow-500/10 to-amber-500/10 border border-yellow-400/30 rounded-lg">
+                  <p className="text-xs sm:text-sm text-yellow-300 mb-4 font-semibold">Select Two Different Family Members to Check Compatibility:</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4">
                     <div>
                       <p className="text-xs text-yellow-300 mb-2">Person 1:</p>
                       <FamilyMemberSelector
@@ -298,11 +299,11 @@ const CompatibilityPage = () => {
               </div>
 
               {/* Individual Destiny Numbers */}
-              <div className="grid md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                 {/* Person 1 */}
-                <div className="bg-gray-800/60 p-6 rounded-lg shadow-lg border border-yellow-400/20">
-                  <h4 className="font-bold text-xl text-yellow-300 mb-4 text-center flex items-center justify-center gap-2">
-                    <Users className="w-5 h-5" />
+                <div className="bg-gray-800/60 p-4 sm:p-6 rounded-lg shadow-lg border border-yellow-400/20">
+                  <h4 className="font-bold text-lg sm:text-xl text-yellow-300 mb-4 text-center flex items-center justify-center gap-2">
+                    <Users className="w-4 h-4 sm:w-5 sm:h-5" />
                     {compatibilityReport.person1.name}
                   </h4>
                   <div className="space-y-3">
@@ -330,9 +331,9 @@ const CompatibilityPage = () => {
                 </div>
 
                 {/* Person 2 */}
-                <div className="bg-gray-800/60 p-6 rounded-lg shadow-lg border border-yellow-400/20">
-                  <h4 className="font-bold text-xl text-yellow-300 mb-4 text-center flex items-center justify-center gap-2">
-                    <Users className="w-5 h-5" />
+                <div className="bg-gray-800/60 p-4 sm:p-6 rounded-lg shadow-lg border border-yellow-400/20">
+                  <h4 className="font-bold text-lg sm:text-xl text-yellow-300 mb-4 text-center flex items-center justify-center gap-2">
+                    <Users className="w-4 h-4 sm:w-5 sm:h-5" />
                     {compatibilityReport.person2.name}
                   </h4>
                   <div className="space-y-3">
@@ -361,18 +362,18 @@ const CompatibilityPage = () => {
               </div>
 
               {/* Detailed Compatibility Matrix */}
-              <div className="bg-gray-800/60 p-6 rounded-lg shadow-lg border border-yellow-400/20">
-                <h3 className="text-2xl font-bold text-yellow-400 mb-6 font-serif tracking-wider text-center flex items-center justify-center gap-2">
-                  <Info className="w-6 h-6" />
+              <div className="bg-gray-800/60 p-4 sm:p-6 rounded-lg shadow-lg border border-yellow-400/20">
+                <h3 className="text-xl sm:text-2xl font-bold text-yellow-400 mb-4 sm:mb-6 font-serif tracking-wider text-center flex items-center justify-center gap-2">
+                  <Info className="w-5 h-5 sm:w-6 sm:h-6" />
                   Compatibility Analysis
                 </h3>
-                <div className="space-y-6">
+                <div className="space-y-4 sm:space-y-6">
                   {/* From Person 1 to Person 2 */}
-                  <div className="bg-gray-900/50 p-5 rounded-lg">
-                    <h4 className="text-lg font-semibold text-yellow-300 mb-3">
+                  <div className="bg-gray-900/50 p-3 sm:p-5 rounded-lg">
+                    <h4 className="text-base sm:text-lg font-semibold text-yellow-300 mb-3">
                       {compatibilityReport.person1.name} → {compatibilityReport.person2.name}
                     </h4>
-                    <div className="grid md:grid-cols-4 gap-4 mb-4">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4 mb-4">
                       {DATA.destinyCompatibility[compatibilityReport.person1.destiny]?.good && (
                         <div className="bg-green-900/20 p-3 rounded-md border border-green-400/30">
                           <p className="text-xs text-green-300 mb-2 font-semibold">Good Matches</p>
@@ -412,11 +413,11 @@ const CompatibilityPage = () => {
                   </div>
 
                   {/* From Person 2 to Person 1 */}
-                  <div className="bg-gray-900/50 p-5 rounded-lg">
-                    <h4 className="text-lg font-semibold text-yellow-300 mb-3">
+                  <div className="bg-gray-900/50 p-3 sm:p-5 rounded-lg">
+                    <h4 className="text-base sm:text-lg font-semibold text-yellow-300 mb-3">
                       {compatibilityReport.person2.name} → {compatibilityReport.person1.name}
                     </h4>
-                    <div className="grid md:grid-cols-4 gap-4 mb-4">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4 mb-4">
                       {DATA.destinyCompatibility[compatibilityReport.person2.destiny]?.good && (
                         <div className="bg-green-900/20 p-3 rounded-md border border-green-400/30">
                           <p className="text-xs text-green-300 mb-2 font-semibold">Good Matches</p>

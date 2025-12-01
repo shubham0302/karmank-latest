@@ -114,22 +114,24 @@ export default function LoginPage() {
 
   return (
     <CosmicBackground density={180}>
-      <div className="min-h-screen relative flex items-center justify-center p-4">
+      <div className="min-h-screen relative flex items-center justify-center px-2 sm:px-4 py-4">
         {/* Feedback Button - Fixed Position */}
         <motion.button
           onClick={() => navigate("/feedback")}
           initial={{ opacity: 0, x: 100 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.8, delay: 1.5 }}
-          className="fixed top-6 right-6 z-50 flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 hover:from-cyan-500/30 hover:to-blue-500/30 backdrop-blur-md border border-cyan-400/30 rounded-full text-cyan-300 hover:text-cyan-200 transition-all duration-300 shadow-lg hover:shadow-cyan-500/50 group"
+          className="fixed bottom-6 sm:top-6 right-3 sm:right-6 z-50 inline-flex items-center justify-center gap-1 sm:gap-2 px-2 sm:px-3 py-2 h-fit bg-gradient-to-r from-cyan-500/20 to-blue-500/20 hover:from-cyan-500/30 hover:to-blue-500/30 backdrop-blur-md border border-cyan-400/30 rounded-full text-cyan-300 hover:text-cyan-200 transition-all duration-300 shadow-lg hover:shadow-cyan-500/50 group text-xs sm:text-sm"
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
         >
-          <MessageSquare className="h-4 w-4 group-hover:rotate-12 transition-transform duration-300" />
-          <span className="text-sm font-medium hidden sm:inline">Feedback</span>
+          <MessageSquare className="h-3 w-3 sm:h-4 sm:w-4 group-hover:rotate-12 transition-transform duration-300 flex-shrink-0" />
+          <span className="font-medium hidden sm:inline text-nowrap">
+            Feedback
+          </span>
         </motion.button>
 
-        <div className="container mx-auto max-w-7xl grid grid-cols-1 lg:grid-cols-2 gap-16 items-center relative z-10">
+        <div className="container mx-auto max-w-7xl grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-16 items-center relative z-10 px-3">
           {/* Branding */}
           <motion.div
             initial={{ opacity: 0, x: -60 }}
@@ -144,7 +146,7 @@ export default function LoginPage() {
                 transition={{ duration: 0.8, delay: 0.3, ease: "easeOut" }}
                 className="relative"
               >
-                <h1 className="text-6xl lg:text-8xl font-serif font-bold leading-tight tracking-tight">
+                <h1 className="text-4xl sm:text-6xl lg:text-8xl font-serif font-bold leading-tight tracking-tight">
                   <span
                     className="bg-clip-text text-transparent"
                     style={{
@@ -155,7 +157,7 @@ export default function LoginPage() {
                     KarmAnk
                   </span>
                   <sup
-                    className="text-[2.75rem] lg:text-[3.75rem] -top-4 lg:-top-6 bg-clip-text text-transparent"
+                    className="text-xl sm:text-[2.75rem] lg:text-[3.75rem] -top-2 sm:-top-4 lg:-top-6 bg-clip-text text-transparent"
                     style={{
                       backgroundImage:
                         "linear-gradient(90deg, hsl(186, 100%, 40%), hsl(184, 100%, 45%), hsl(211, 100%, 50%))",
@@ -171,7 +173,7 @@ export default function LoginPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.6 }}
-                className="text-xl lg:text-2xl font-light italic text-gradient"
+                className="text-sm sm:text-xl lg:text-2xl font-light italic text-gradient"
               >
                 Cosmic Numerology, Reimagined.
               </motion.p>
@@ -184,13 +186,13 @@ export default function LoginPage() {
               className="space-y-6"
             >
               {/* Paragraph */}
-              <p className="text-lg lg:text-xl font-light leading-relaxed text-gradient">
+              <p className="text-xs sm:text-lg lg:text-xl font-light leading-relaxed text-gradient">
                 Unlock the mysteries of the universe through authentic Vedic
                 numerology, sacred geometry, and cosmic wisdom.
               </p>
 
               {/* Feature List */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm lg:text-base">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4 text-xs sm:text-sm lg:text-base">
                 {[
                   "Vedic Compatibility Analysis",
                   "Sacred Name Vibrations",
@@ -234,7 +236,11 @@ export default function LoginPage() {
             transition={{ duration: 1.0, ease: "easeOut", delay: 0.4 }}
             className="flex justify-center lg:justify-end"
           >
-            <GlassCard variant="elevated" size="lg" className="w-full max-w-md">
+            <GlassCard
+              variant="elevated"
+              size="lg"
+              className="w-full max-w-md px-3 sm:px-6 py-5 sm:py-8"
+            >
               <motion.div
                 className="space-y-8"
                 initial={{ opacity: 0, y: 20 }}
@@ -291,14 +297,14 @@ export default function LoginPage() {
                         Email Address
                       </Label>
                       <div className="relative group">
-                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-auric-gold/60 group-focus-within:text-auric-gold transition-colors" />
+                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-auric-gold/60 group-focus-within:text-auric-gold transition-colors" />
                         <Input
                           id="email"
                           type="email"
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
                           placeholder="your.cosmic.email@domain.com"
-                          className="bg-white/10 backdrop-blur-sm border-white/20 focus:border-auric-gold focus:ring-2 focus:ring-auric-gold/30 text-white placeholder:text-white/40 h-14 pl-11 text-base shadow-lg hover:bg-white/15 transition-all"
+                          className="bg-white/10 backdrop-blur-sm border-white/20 focus:border-auric-gold focus:ring-2 focus:ring-auric-gold/30 text-white placeholder:text-white/40 h-12 sm:h-14 pl-10 sm:pl-11 text-sm sm:text-base shadow-lg hover:bg-white/15 transition-all"
                           disabled={loading}
                           required
                           autoComplete="email"
@@ -376,7 +382,7 @@ export default function LoginPage() {
                     >
                       <Button
                         type="submit"
-                        className="w-full h-14 hover:shadow-2xl hover:shadow-auric-gold/50 text-white font-bold text-lg relative overflow-hidden transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full h-12 sm:h-14 hover:shadow-2xl hover:shadow-auric-gold/50 text-white font-bold text-sm sm:text-lg relative overflow-hidden transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                         style={{
                           backgroundImage:
                             "linear-gradient(90deg, hsl(186, 100%, 40%), hsl(184, 100%, 45%), hsl(211, 100%, 50%))",
@@ -433,7 +439,7 @@ export default function LoginPage() {
                         </span>
                       </p>
                       <div className="relative group">
-                        <KeyRound className="absolute left-4 top-1/2 -translate-y-1/2 h-6 w-6 text-auric-gold/60 group-focus-within:text-auric-gold transition-colors" />
+                        <KeyRound className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 h-5 w-5 sm:h-6 sm:w-6 text-auric-gold/60 group-focus-within:text-auric-gold transition-colors" />
                         <Input
                           type="text"
                           value={otp}
@@ -445,7 +451,7 @@ export default function LoginPage() {
                           placeholder="● ● ● ● ● ●"
                           disabled={loading}
                           maxLength={6}
-                          className="bg-white/10 backdrop-blur-sm border-white/20 focus:border-auric-gold focus:ring-2 focus:ring-auric-gold/30 text-white text-center text-3xl tracking-[1rem] placeholder:text-white/30 h-16 pl-14 font-bold shadow-lg hover:bg-white/15 transition-all"
+                          className="bg-white/10 backdrop-blur-sm border-white/20 focus:border-auric-gold focus:ring-2 focus:ring-auric-gold/30 text-white text-center text-sm sm:text-2xl md:text-3xl tracking-[0.5rem] sm:tracking-[0.75rem] md:tracking-[1rem] placeholder:text-white/30 h-14 sm:h-16 pl-12 sm:pl-14 font-bold shadow-lg hover:bg-white/15 transition-all"
                           required
                           autoComplete="one-time-code"
                           autoFocus
@@ -498,7 +504,7 @@ export default function LoginPage() {
                       <Button
                         type="submit"
                         disabled={loading || otp.length !== 6}
-                        className="w-full h-14 hover:shadow-2xl hover:shadow-auric-gold/50 text-white font-bold text-lg relative overflow-hidden transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full h-12 sm:h-14 hover:shadow-2xl hover:shadow-auric-gold/50 text-white font-bold text-sm sm:text-lg relative overflow-hidden transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                         style={{
                           backgroundImage:
                             "linear-gradient(90deg, hsl(186, 100%, 40%), hsl(184, 100%, 45%), hsl(211, 100%, 50%))",

@@ -38,12 +38,12 @@ const VedicDashaKundli = ({ report, baseGrid, activeNumbers, basicNumber, destin
     };
 
     return (
-        <div className="grid grid-cols-3 gap-2 max-w-xs mx-auto bg-gray-900/50 p-2 rounded-md aspect-square">
+        <div className="grid grid-cols-3 gap-2 w-full max-w-xs sm:max-w-sm md:max-w-xs mx-auto bg-gray-900/50 p-2 rounded-md aspect-square">
             {layout.map((num, i) => (
                 <div 
                     key={i} 
                     style={{ background: getCellBackground(num) }}
-                    className="flex items-center justify-center text-2xl font-bold rounded-md aspect-square text-white transition-all duration-300 ease-in-out"
+                    className="flex items-center justify-center text-lg sm:text-xl md:text-lg sm:text-xl md:text-2xl font-bold rounded-md aspect-square text-white transition-all duration-300 ease-in-out"
                 >
                     {displayGrid[num] > 0 
                         ? String(num).repeat(displayGrid[num]) : ''}

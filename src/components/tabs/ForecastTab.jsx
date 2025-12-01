@@ -48,20 +48,20 @@ const ForecastTab = ({ report, dashaReport, gender, language = 'en' }) => {
 
     return (
         <div>
-            <div className="flex flex-wrap gap-2 mb-4 border-b border-gray-700">
-                <button onClick={() => setActiveSubTab('Profession')} className={`py-2 px-4 font-semibold transition-colors duration-200 ${activeSubTab === 'Profession' ? 'text-yellow-400 border-b-2 border-yellow-400' : 'text-yellow-200/70 hover:text-yellow-300'}`}>
+            <div className="flex flex-wrap gap-1 sm:gap-2 mb-2 sm:mb-4 border-b border-gray-700">
+                <button onClick={() => setActiveSubTab('Profession')} className={`py-1.5 px-2 sm:py-2 sm:px-4 font-semibold transition-colors duration-200 ${activeSubTab === 'Profession' ? 'text-yellow-400 border-b-2 border-yellow-400' : 'text-yellow-200/70 hover:text-yellow-300'}`}>
                     Profession
                 </button>
-                <button onClick={() => setActiveSubTab('Travel')} className={`py-2 px-4 font-semibold transition-colors duration-200 ${activeSubTab === 'Travel' ? 'text-yellow-400 border-b-2 border-yellow-400' : 'text-yellow-200/70 hover:text-yellow-300'}`}>
+                <button onClick={() => setActiveSubTab('Travel')} className={`py-1.5 px-2 sm:py-2 sm:px-4 font-semibold transition-colors duration-200 ${activeSubTab === 'Travel' ? 'text-yellow-400 border-b-2 border-yellow-400' : 'text-yellow-200/70 hover:text-yellow-300'}`}>
                     Travel
                 </button>
-                <button onClick={() => setActiveSubTab('Property')} className={`py-2 px-4 font-semibold transition-colors duration-200 ${activeSubTab === 'Property' ? 'text-yellow-400 border-b-2 border-yellow-400' : 'text-yellow-200/70 hover:text-yellow-300'}`}>
+                <button onClick={() => setActiveSubTab('Property')} className={`py-1.5 px-2 sm:py-2 sm:px-4 font-semibold transition-colors duration-200 ${activeSubTab === 'Property' ? 'text-yellow-400 border-b-2 border-yellow-400' : 'text-yellow-200/70 hover:text-yellow-300'}`}>
                     Property
                 </button>
-                <button onClick={() => setActiveSubTab('Marriage')} className={`py-2 px-4 font-semibold transition-colors duration-200 ${activeSubTab === 'Marriage' ? 'text-yellow-400 border-b-2 border-yellow-400' : 'text-yellow-200/70 hover:text-yellow-300'}`}>
+                <button onClick={() => setActiveSubTab('Marriage')} className={`py-1.5 px-2 sm:py-2 sm:px-4 font-semibold transition-colors duration-200 ${activeSubTab === 'Marriage' ? 'text-yellow-400 border-b-2 border-yellow-400' : 'text-yellow-200/70 hover:text-yellow-300'}`}>
                     Marriage
                 </button>
-                <button onClick={() => setActiveSubTab('Child Birth')} className={`py-2 px-4 font-semibold transition-colors duration-200 ${activeSubTab === 'Child Birth' ? 'text-yellow-400 border-b-2 border-yellow-400' : 'text-yellow-200/70 hover:text-yellow-300'}`}>
+                <button onClick={() => setActiveSubTab('Child Birth')} className={`py-1.5 px-2 sm:py-2 sm:px-4 font-semibold transition-colors duration-200 ${activeSubTab === 'Child Birth' ? 'text-yellow-400 border-b-2 border-yellow-400' : 'text-yellow-200/70 hover:text-yellow-300'}`}>
                     Child Birth
                 </button>
             </div>

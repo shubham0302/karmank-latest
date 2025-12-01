@@ -42,10 +42,10 @@ const RudrakshaTab = ({ report, language = 'en' }) => {
                 <GradientText as="h2" size="2xl" className="mb-4">
                     Rudraksha for Number {number} ({getText(rudrakshaData.planet, language)})
                 </GradientText>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                     <div>
                         <h3 className="font-semibold text-yellow-300 text-lg mb-2">Details</h3>
-                        <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4 text-xs sm:text-sm">
                             <div className="bg-gray-900/50 p-3 rounded-md"><strong>Primary Mukhi:</strong> {getText(advancedData.primary, language)}</div>
                             <div className="bg-gray-900/50 p-3 rounded-md"><strong>Secondary Mukhi:</strong> {getText(advancedData.secondary, language)}</div>
                             <div className="bg-gray-900/50 p-3 rounded-md"><strong>Deity:</strong> {getText(rudrakshaData.deity, language)}</div>

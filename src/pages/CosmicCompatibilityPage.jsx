@@ -472,11 +472,11 @@ function CosmicOnceReport({ report, onBack }) {
         </div>
 
         {/* Hero Section */}
-        <div className="relative py-12 px-4 md:px-8 lg:px-16">
+        <div className="relative py-6 sm:py-12 px-3 sm:px-4 md:px-8 lg:px-16">
           <div className="max-w-7xl mx-auto">
             {/* Cosmic Header */}
-            <div className="text-center mb-12 relative">
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-purple-600/10 rounded-full blur-3xl"></div>
+            <div className="text-center mb-6 sm:mb-12 relative">
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 sm:w-96 h-48 sm:h-96 bg-purple-600/10 rounded-full blur-3xl"></div>
 
               <button
                 onClick={onBack}
@@ -485,23 +485,25 @@ function CosmicOnceReport({ report, onBack }) {
                 <ArrowLeft size={16} /> Back
               </button>
 
-              <div className="flex justify-center items-center gap-4 mb-4">
-                <Sparkles size={40} className="text-cyan-400 animate-pulse" />
-                <h1 className="text-5xl md:text-7xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-purple-400 to-pink-400">
+              <div className="flex justify-center items-center gap-2 sm:gap-4 mb-4">
+                <Sparkles size={24} className="text-cyan-400 animate-pulse sm:block hidden" />
+                <Sparkles size={16} className="text-cyan-400 animate-pulse sm:hidden" />
+                <h1 className="text-2xl sm:text-5xl md:text-7xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-purple-400 to-pink-400">
                   COSMIC CHRONICLE
                 </h1>
-                <Sparkles size={40} className="text-pink-400 animate-pulse" />
+                <Sparkles size={24} className="text-pink-400 animate-pulse sm:block hidden" />
+                <Sparkles size={16} className="text-pink-400 animate-pulse sm:hidden" />
               </div>
 
-              <div className="text-sm md:text-base text-cyan-300/60 uppercase tracking-[0.3em] mb-6">
+              <div className="text-xs sm:text-sm md:text-base text-cyan-300/60 uppercase tracking-[0.3em] mb-4 sm:mb-6">
                 A Once-in-a-Lifetime Compatibility Report
               </div>
 
-              <h2 className="text-3xl md:text-4xl font-bold text-white mb-2">
+              <h2 className="text-xl sm:text-3xl md:text-4xl font-bold text-white mb-2">
                 {title}
               </h2>
 
-              <p className="text-lg text-slate-300 max-w-3xl mx-auto leading-relaxed">
+              <p className="text-sm sm:text-base md:text-lg text-slate-300 max-w-3xl mx-auto leading-relaxed px-2">
                 This comprehensive cosmic dossier synthesizes ancient Vedic
                 wisdom, numerological destiny patterns, name vibrations, Western
                 biorhythm science, and elemental temperaments to reveal the
@@ -510,15 +512,15 @@ function CosmicOnceReport({ report, onBack }) {
             </div>
 
             {/* Score Showcase */}
-            <div className="flex flex-col md:flex-row items-center justify-center gap-8 mb-12">
+            <div className="flex flex-col md:flex-row items-center justify-center gap-4 sm:gap-8 mb-12">
               <div className="relative">
-                <div className="w-48 h-48 rounded-full flex items-center justify-center bg-gradient-to-tr from-cyan-600 via-purple-600 to-pink-600 shadow-2xl shadow-purple-500/50 relative overflow-hidden">
+                <div className="w-32 sm:w-48 h-32 sm:h-48 rounded-full flex items-center justify-center bg-gradient-to-tr from-cyan-600 via-purple-600 to-pink-600 shadow-2xl shadow-purple-500/50 relative overflow-hidden">
                   <div className="absolute inset-1 rounded-full bg-black/90"></div>
                   <div className="text-center relative z-10">
-                    <div className="text-6xl font-black text-transparent bg-clip-text bg-gradient-to-br from-cyan-300 to-pink-300">
+                    <div className="text-4xl sm:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-br from-cyan-300 to-pink-300">
                       {total}%
                     </div>
-                    <div className="text-xs text-slate-400 uppercase tracking-widest mt-2">
+                    <div className="text-[10px] sm:text-xs text-slate-400 uppercase tracking-widest mt-2">
                       Cosmic Score
                     </div>
                   </div>
@@ -566,47 +568,49 @@ function CosmicOnceReport({ report, onBack }) {
         </div>
 
         {/* Person Cards */}
-        <div className="px-4 md:px-8 lg:px-16 pb-12">
-          <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-6">
-            <div className="bg-gradient-to-br from-cyan-900/20 via-indigo-900/20 to-purple-900/20 border border-cyan-500/30 p-8 rounded-2xl backdrop-blur-md shadow-2xl relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-500/10 rounded-full blur-3xl"></div>
+        <div className="px-3 sm:px-4 md:px-8 lg:px-16 pb-12">
+          <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-4 sm:gap-6">
+            <div className="bg-gradient-to-br from-cyan-900/20 via-indigo-900/20 to-purple-900/20 border border-cyan-500/30 p-4 sm:p-8 rounded-2xl backdrop-blur-md shadow-2xl relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-16 sm:w-32 h-16 sm:h-32 bg-cyan-500/10 rounded-full blur-3xl"></div>
               <div className="relative z-10">
                 <div className="flex items-center gap-3 mb-4">
-                  <User size={24} className="text-cyan-400" />
-                  <div className="text-xs text-cyan-300/60 uppercase tracking-widest">
+                  <User size={20} className="text-cyan-400 sm:block" />
+                  <User size={16} className="text-cyan-400 sm:hidden" />
+                  <div className="text-[10px] sm:text-xs text-cyan-300/60 uppercase tracking-widest">
                     Person 1
                   </div>
                 </div>
-                <div className="text-3xl font-bold text-white mb-2">
+                <div className="text-xl sm:text-3xl font-bold text-white mb-2">
                   {report.p1?.name || "Unknown"}
                 </div>
-                <div className="text-lg text-cyan-200">
+                <div className="text-base sm:text-lg text-cyan-200">
                   {report.p1?.nak || report.details?.p1Nak || "Unknown"}{" "}
                   Nakshatra
                 </div>
-                <div className="text-md text-cyan-300/70">
+                <div className="text-sm sm:text-base text-cyan-300/70">
                   {report.p1?.rashi || report.details?.p1Rashi || ""}
                 </div>
               </div>
             </div>
 
-            <div className="bg-gradient-to-br from-pink-900/20 via-purple-900/20 to-fuchsia-900/20 border border-pink-500/30 p-8 rounded-2xl backdrop-blur-md shadow-2xl relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-pink-500/10 rounded-full blur-3xl"></div>
+            <div className="bg-gradient-to-br from-pink-900/20 via-purple-900/20 to-fuchsia-900/20 border border-pink-500/30 p-4 sm:p-8 rounded-2xl backdrop-blur-md shadow-2xl relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-16 sm:w-32 h-16 sm:h-32 bg-pink-500/10 rounded-full blur-3xl"></div>
               <div className="relative z-10">
                 <div className="flex items-center gap-3 mb-4">
-                  <User size={24} className="text-pink-400" />
-                  <div className="text-xs text-pink-300/60 uppercase tracking-widest">
+                  <User size={20} className="text-pink-400 sm:block" />
+                  <User size={16} className="text-pink-400 sm:hidden" />
+                  <div className="text-[10px] sm:text-xs text-pink-300/60 uppercase tracking-widest">
                     Person 2
                   </div>
                 </div>
-                <div className="text-3xl font-bold text-white mb-2">
+                <div className="text-xl sm:text-3xl font-bold text-white mb-2">
                   {report.p2?.name || "Unknown"}
                 </div>
-                <div className="text-lg text-pink-200">
+                <div className="text-base sm:text-lg text-pink-200">
                   {report.p2?.nak || report.details?.p2Nak || "Unknown"}{" "}
                   Nakshatra
                 </div>
-                <div className="text-md text-pink-300/70">
+                <div className="text-sm sm:text-base text-pink-300/70">
                   {report.p2?.rashi || report.details?.p2Rashi || ""}
                 </div>
               </div>
