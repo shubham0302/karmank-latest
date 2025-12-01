@@ -5,9 +5,6 @@ import { Sparkles } from "lucide-react";
 import GeneralRemediesTab from "../Remedies/GeneralRemediesTab";
 import AdvancedRemediesTab from "../Remedies/AdvancedRemediesTab";
 import SpecialGuidanceTab from "../Remedies/SpecialGuidanceTab";
-import MantrasTab from "../Remedies/MantrasTab";
-import RudrakshaTab from "../Remedies/RudrakshaTab";
-import ChakraTab from "../Remedies/ChakraTab";
 import ShaktiBeejMantraTab from "../Remedies/ShaktiBeejMantraTab";
 
 const ComingSoonOverlay = ({ feature, showIcon = true }) => (
@@ -121,24 +118,67 @@ const RemediesAndGuidanceTab = ({ report, language = "en" }) => {
       )}
       {activeSubTab === "Mantras" && (
         <div className="relative">
-          <div className="opacity-50 pointer-events-none">
-            <MantrasTab report={report} language={language} />
+          <div className="space-y-6">
+            <div className="bg-gray-800/40 border border-yellow-400/20 rounded-lg p-8 text-center mb-6">
+              <h3 className="text-2xl font-bold text-yellow-400 mb-3 font-serif">Sacred Mantras</h3>
+              <p className="text-gray-400">Harness the vibrational power of sacred chants aligned with your numerological profile</p>
+            </div>
+            <div className="space-y-4">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="bg-gray-800/40 border border-yellow-400/10 rounded-lg p-4">
+                  <div className="h-4 bg-gray-700/50 rounded w-32 mb-3 animate-pulse"></div>
+                  <div className="space-y-2">
+                    <div className="h-3 bg-gray-700/30 rounded w-full animate-pulse"></div>
+                    <div className="h-3 bg-gray-700/30 rounded w-5/6 animate-pulse"></div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
           <ComingSoonOverlay feature="Mantras" />
         </div>
       )}
       {activeSubTab === "Rudraksha" && (
         <div className="relative">
-          <div className="opacity-50 pointer-events-none">
-            <RudrakshaTab report={report} language={language} />
+          <div className="space-y-6">
+            <div className="bg-gray-800/40 border border-yellow-400/20 rounded-lg p-8 text-center mb-6">
+              <h3 className="text-2xl font-bold text-yellow-400 mb-3 font-serif">Rudraksha Beads</h3>
+              <p className="text-gray-400">Discover sacred beads and gemstones that amplify your personal vibration</p>
+            </div>
+            <div className="grid md:grid-cols-3 gap-4">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="bg-gray-800/40 border border-yellow-400/10 rounded-lg p-4 text-center">
+                  <div className="w-16 h-16 bg-gray-700/50 rounded-full mx-auto mb-3 animate-pulse"></div>
+                  <div className="h-4 bg-gray-700/50 rounded w-20 mx-auto mb-2 animate-pulse"></div>
+                  <div className="space-y-2">
+                    <div className="h-3 bg-gray-700/30 rounded animate-pulse"></div>
+                    <div className="h-3 bg-gray-700/30 rounded animate-pulse"></div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
           <ComingSoonOverlay feature="Rudraksha" />
         </div>
       )}
       {activeSubTab === "Chakra" && (
         <div className="relative">
-          <div className="opacity-50 pointer-events-none">
-            <ChakraTab report={report} language={language} />
+          <div className="space-y-6">
+            <div className="bg-gray-800/40 border border-yellow-400/20 rounded-lg p-8 text-center mb-6">
+              <h3 className="text-2xl font-bold text-yellow-400 mb-3 font-serif">Chakra Activation</h3>
+              <p className="text-gray-400">Awaken and balance your energy centers through numerological practices</p>
+            </div>
+            <div className="space-y-3">
+              {[1, 2, 3, 4, 5, 6, 7].map((i) => (
+                <div key={i} className="flex items-center gap-4 bg-gray-800/40 border border-yellow-400/10 rounded-lg p-4">
+                  <div className="w-12 h-12 bg-gray-700/50 rounded-full animate-pulse flex-shrink-0"></div>
+                  <div className="flex-1 space-y-2">
+                    <div className="h-4 bg-gray-700/50 rounded w-24 animate-pulse"></div>
+                    <div className="h-3 bg-gray-700/30 rounded w-full animate-pulse"></div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
           <ComingSoonOverlay feature="Chakra Activation" showIcon={false} />
         </div>
