@@ -259,13 +259,21 @@ export default function FamilyMemberForm({
         )}
       </div>
 
+      {/* Info Text */}
+      <div className="bg-cyan-500/10 border border-cyan-400/30 rounded-lg p-3 mt-4">
+        <p className="text-cyan-300 text-xs flex items-center gap-2">
+          <AlertCircle className="h-4 w-4 flex-shrink-0" />
+          <span>Each member is saved individually. You can add 1, 2, or 3 members - it's your choice!</span>
+        </p>
+      </div>
+
       {/* Submit Button */}
       <Button
         type="submit"
         disabled={loading}
-        className="w-full mt-6 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white font-semibold py-2 rounded-lg transition duration-200 disabled:opacity-50"
+        className="w-full mt-6 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white font-semibold py-3 rounded-lg transition duration-200 disabled:opacity-50 shadow-lg hover:shadow-cyan-500/50"
       >
-        {loading ? 'Adding...' : 'Add Member'}
+        {loading ? 'Saving Member...' : 'Save Member'}
       </Button>
     </motion.form>
   )

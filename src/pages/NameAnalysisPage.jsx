@@ -7,11 +7,13 @@ import {
   TrendingUp, Globe, Disc, CheckCircle2, Building2, Factory, Camera, DollarSign
 } from 'lucide-react';
 import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 import CosmicBackground from '../components/CosmicBackground';
 import FamilyMemberSelector from '../components/FamilyMemberSelector';
 import { useAuth } from '../contexts/AuthContext';
 import { useFamilyMembers } from '../hooks/useFamilyMembers';
 import { ChevronDown } from 'lucide-react';
+import { exportToPDF } from '../utils/pdfExport';
 
 // --- PYTHAGOREAN CONSTANTS ---
 const PYTHAGOREAN_CONSTANTS = {
@@ -326,7 +328,7 @@ function calculateHarmonicAdjustments(currentNameNumber, targetNumbers, currentN
   return suggestions;
 }
 
-// --- PDF GENERATION FUNCTION ---
+// --- OLD PDF GENERATION FUNCTION (keeping for backward compatibility) ---
 function generatePDF(report) {
   const { pythagoreanProfile, profile } = report;
   const doc = new jsPDF();
@@ -523,29 +525,21 @@ function generatePDF(report) {
   doc.save(`${profile.name.replace(/\s+/g, '_')}_Numerology_Report.pdf`);
 }
 
-// --- GEMINI API FUNCTION ---
+// --- SECURE BACKEND API FUNCTION ---
+// ✅ API key is now secure on backend, not exposed in frontend
 async function fetchGeminiAnalysis(prompt, imageBase64 = null) {
-  const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
-  if (!GEMINI_API_KEY) throw new Error("Gemini API key not configured");
+  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080';
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${GEMINI_API_KEY}`;
-
-  const parts = [{ text: prompt }];
+  // Note: Image analysis not supported yet via backend, only text analysis
   if (imageBase64) {
-    parts.push({
-      inline_data: {
-        mime_type: "image/png",
-        data: imageBase64
-      }
-    });
+    console.warn('⚠️ Image analysis via backend not yet implemented, skipping image');
   }
 
+  const url = `${BACKEND_URL}/nlg/generate`;
+
   const payload = {
-    contents: [{ parts }],
-    generationConfig: {
-      temperature: 0.7,
-      maxOutputTokens: 2048
-    }
+    prompt: prompt,
+    language: 'en' // Can be made dynamic if needed
   };
 
   const response = await fetch(url, {
@@ -556,11 +550,12 @@ async function fetchGeminiAnalysis(prompt, imageBase64 = null) {
 
   if (!response.ok) {
     const errorData = await response.json();
-    throw new Error(errorData.error?.message || 'Gemini API request failed');
+    throw new Error(errorData.message || 'Backend API request failed');
   }
 
   const data = await response.json();
-  return data.candidates[0].content.parts[0].text;
+  // Backend returns: { success: true, data: { text: "..." } }
+  return data.data?.text || data.text || '';
 }
 
 // --- UI COMPONENTS ---
@@ -779,88 +774,93 @@ const NameDeepDiveTab = ({ report }) => {
         </div>
       )}
 
-      {/* Main Cards Grid */}
-      <div className="grid md:grid-cols-4 gap-4">
-        {cards.map(card => (
-          <div
-            key={card.id}
-            onClick={() => setActiveDefinition(card)}
-            className={`cursor-pointer hover:scale-[1.02] transition-all duration-200 text-center p-4 bg-gradient-to-br ${card.bgGradient} border ${card.borderColor} rounded-xl relative group`}
-          >
-            <MousePointerClick className="absolute top-2 right-2 w-4 h-4 text-gray-500 group-hover:text-white transition-colors" />
-            <p className={`text-xs ${card.color} mb-0.5`}>{card.label}</p>
-            <p className="text-xs text-gray-400 mb-2">({card.sublabel})</p>
-            <p className={`text-6xl font-bold ${card.color}`}>{card.val}</p>
-          </div>
-        ))}
+      {/* PAGE 2: Cards + Vibrational Alignment + Chronos Narrative */}
+      <div className="pdf-page-break-after space-y-8">
+        {/* Main Cards Grid */}
+        <div className="grid md:grid-cols-4 gap-4">
+          {cards.map(card => (
+            <div
+              key={card.id}
+              onClick={() => setActiveDefinition(card)}
+              className={`cursor-pointer hover:scale-[1.02] transition-all duration-200 text-center p-4 bg-gradient-to-br ${card.bgGradient} border ${card.borderColor} rounded-xl relative group`}
+            >
+              <MousePointerClick className="absolute top-2 right-2 w-4 h-4 text-gray-500 group-hover:text-white transition-colors" />
+              <p className={`text-xs ${card.color} mb-0.5`}>{card.label}</p>
+              <p className="text-xs text-gray-400 mb-2">({card.sublabel})</p>
+              <p className={`text-6xl font-bold ${card.color}`}>{card.val}</p>
+            </div>
+          ))}
 
-        {/* Zodiac Card */}
-        <div className="bg-gray-900/60 p-4 rounded-xl border border-gray-700 text-center">
-          <Sun className="w-4 h-4 text-yellow-400 mx-auto mb-2" />
-          <p className="text-xs text-gray-400 mb-1">Zodiac</p>
-          <p className="text-2xl mb-1">{pythagoreanProfile.zodiac.symbol}</p>
-          <p className="text-sm text-white font-medium">{pythagoreanProfile.zodiac.name}</p>
-          <p className="text-xs text-gray-500">{pythagoreanProfile.zodiac.element}</p>
-        </div>
-      </div>
-
-      {/* Vibrational Friction Bar */}
-      <div className="bg-gray-900/50 p-6 rounded-xl border border-gray-700">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-sm text-gray-400">Vibrational Alignment</span>
-          <div className="flex items-center gap-2">
-            <span className={`text-sm font-bold ${vibrationalStatus.color}`}>
-              {vibrationalStatus.label}
-            </span>
-            <span className={`text-xs font-mono ${vibrationalStatus.color} bg-gray-800/50 px-2 py-0.5 rounded`}>
-              {vibrationalStatus.percent}%
-            </span>
+          {/* Zodiac Card */}
+          <div className="bg-gray-900/60 p-4 rounded-xl border border-gray-700 text-center">
+            <Sun className="w-4 h-4 text-yellow-400 mx-auto mb-2" />
+            <p className="text-xs text-gray-400 mb-1">Zodiac</p>
+            <p className="text-2xl mb-1">{pythagoreanProfile.zodiac.symbol}</p>
+            <p className="text-sm text-white font-medium">{pythagoreanProfile.zodiac.name}</p>
+            <p className="text-xs text-gray-500">{pythagoreanProfile.zodiac.element}</p>
           </div>
         </div>
-        <div className="w-full bg-gray-800 rounded-full h-3 overflow-hidden">
-          <div
-            className={`h-full ${vibrationalStatus.bgColor} transition-all duration-1000 ease-out`}
-            style={{ width: `${vibrationalStatus.percent}%` }}
-          />
+
+        {/* Vibrational Friction Bar */}
+        <div className="bg-gray-900/50 p-6 rounded-xl border border-gray-700">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm text-gray-400">Vibrational Alignment</span>
+            <div className="flex items-center gap-2">
+              <span className={`text-sm font-bold ${vibrationalStatus.color}`}>
+                {vibrationalStatus.label}
+              </span>
+              <span className={`text-xs font-mono ${vibrationalStatus.color} bg-gray-800/50 px-2 py-0.5 rounded`}>
+                {vibrationalStatus.percent}%
+              </span>
+            </div>
+          </div>
+          <div className="w-full bg-gray-800 rounded-full h-3 overflow-hidden">
+            <div
+              className={`h-full ${vibrationalStatus.bgColor} transition-all duration-1000 ease-out`}
+              style={{ width: `${vibrationalStatus.percent}%` }}
+            />
+          </div>
+          <p className="text-xs text-gray-500 mt-2">
+            Measures the harmony between your outer expression and inner desires.
+          </p>
         </div>
-        <p className="text-xs text-gray-500 mt-2">
-          Measures the harmony between your outer expression and inner desires.
-        </p>
+
+        {/* Artistic Narrative */}
+        <ArtisticNarrative report={report} />
       </div>
 
-      {/* Artistic Narrative */}
-      <ArtisticNarrative report={report} />
-
-      {/* High-Intensity Zones */}
-      {pythagoreanProfile.amplifiedTraits.length > 0 && (
-        <div className="bg-gray-900/50 p-6 rounded-xl border border-yellow-500/20">
-          <h3 className="text-lg font-bold text-yellow-400 mb-4 flex items-center gap-2">
-            <Sparkles className="w-5 h-5" />
-            High-Intensity Zones
-          </h3>
-          <div className="space-y-3">
-            {pythagoreanProfile.amplifiedTraits.map((trait, idx) => (
-              <div key={idx} className="bg-gray-950/50 p-4 rounded-lg border border-gray-700">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-2xl font-bold text-yellow-400">{trait.letter}</span>
-                  <span className="text-sm text-gray-400">appears {trait.count}× in your name</span>
+      {/* PAGE 3: High-Intensity Zones + Professional Alignment */}
+      <div className="pdf-page-break-after space-y-8">
+        {/* High-Intensity Zones */}
+        {pythagoreanProfile.amplifiedTraits.length > 0 && (
+          <div className="bg-gray-900/50 p-6 rounded-xl border border-yellow-500/20">
+            <h3 className="text-lg font-bold text-yellow-400 mb-6 flex items-center gap-2">
+              <Sparkles className="w-5 h-5" />
+              High-Intensity Zones
+            </h3>
+            <div className="space-y-4">
+              {pythagoreanProfile.amplifiedTraits.map((trait, idx) => (
+                <div key={idx} className="bg-gray-950/50 p-4 rounded-lg border border-gray-700">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-2xl font-bold text-yellow-400">{trait.letter}</span>
+                    <span className="text-sm text-gray-400">appears {trait.count}× in your name</span>
+                  </div>
+                  <p className="text-sm text-white mb-1">{trait.meaning}</p>
+                  <p className="text-xs text-gray-500 italic">{trait.effect}</p>
                 </div>
-                <p className="text-sm text-white mb-1">{trait.meaning}</p>
-                <p className="text-xs text-gray-500 italic">{trait.effect}</p>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Professional Alignment */}
-      <div className="bg-gray-900/60 p-6 rounded-xl border border-green-500/20">
-        <h3 className="text-xl font-bold text-green-400 mb-4 flex items-center gap-2">
+        {/* Professional Alignment */}
+        <div className="bg-gray-900/60 p-6 rounded-xl border border-green-500/20">
+        <h3 className="text-xl font-bold text-green-400 mb-6 flex items-center gap-2">
           <Briefcase className="w-5 h-5" />
           Professional Alignment
         </h3>
 
-        <div className="space-y-4">
+        <div className="space-y-5">
           {/* Career Strengths based on Expression Number */}
           <div className="bg-gray-950/50 p-4 rounded-lg border border-cyan-500/30">
             <h4 className="text-sm font-bold text-cyan-400 uppercase tracking-wider mb-2">
@@ -919,19 +919,6 @@ const NameDeepDiveTab = ({ report }) => {
           </div>
         </div>
       </div>
-
-      {/* Identity Card */}
-      <ShareableIdentityCard name={profile.name} pythagoreanProfile={pythagoreanProfile} />
-
-      {/* Download PDF Button */}
-      <div className="flex justify-center mt-6">
-        <button
-          onClick={() => generatePDF(report)}
-          className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-cyan-600 to-purple-600 hover:from-cyan-500 hover:to-purple-500 text-white font-bold rounded-lg transition-all duration-200 transform hover:scale-[1.02] shadow-lg shadow-cyan-500/20"
-        >
-          <Download className="w-5 h-5" />
-          Download PDF Report
-        </button>
       </div>
     </div>
   );
@@ -1034,9 +1021,9 @@ const SynergyTab = ({ report }) => {
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      {/* Cosmic Alignment Status */}
+      {/* Cosmic Alignment Status - Hide in PDF */}
       {profile.destinyNumber && (
-        <div className="bg-gray-900/60 p-6 rounded-xl border border-gray-800">
+        <div className="bg-gray-900/60 p-6 rounded-xl border border-gray-800 print:hidden">
           <div className="text-center">
             <h4 className="text-xs uppercase tracking-widest mb-3 text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-blue-400 to-purple-500">Cosmic Alignment</h4>
             <div className="text-3xl font-bold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-blue-400 to-purple-500">
@@ -1049,9 +1036,9 @@ const SynergyTab = ({ report }) => {
         </div>
       )}
 
-      {/* DOB Required Message */}
+      {/* DOB Required Message - Hide in PDF */}
       {!profile.destinyNumber && (
-        <div className="p-6 bg-yellow-900/20 border border-yellow-500/50 rounded-xl">
+        <div className="p-6 bg-yellow-900/20 border border-yellow-500/50 rounded-xl print:hidden">
           <div className="flex items-center gap-3">
             <AlertCircle className="w-6 h-6 text-yellow-400" />
             <div>
@@ -1064,8 +1051,8 @@ const SynergyTab = ({ report }) => {
         </div>
       )}
 
-      {/* Goal Harmonizer */}
-      <div className="bg-gray-900/60 p-6 rounded-xl border border-gray-800">
+      {/* Goal Harmonizer - Hide in PDF */}
+      <div className="bg-gray-900/60 p-6 rounded-xl border border-gray-800 print:hidden">
         <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
           <Wand2 className="w-5 h-5 text-cyan-400" />
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-blue-400 to-purple-500">Goal Harmonizer</span>
@@ -1119,15 +1106,15 @@ const SynergyTab = ({ report }) => {
         )}
       </div>
 
-      {/* Vedic Numerology Section */}
+      {/* PAGE 4: Name-Destiny Synergy */}
       {profile.destinyNumber && (
-        <div className="bg-gray-900/60 p-6 rounded-xl border border-green-500/20">
-          <h3 className="text-xl font-bold text-green-400 mb-4 flex items-center gap-2">
+        <div className="bg-gray-900/60 p-6 rounded-xl border border-green-500/20 pdf-page-break-after">
+          <h3 className="text-xl font-bold text-green-400 mb-6 flex items-center gap-2">
             <LinkIcon className="w-5 h-5" />
             Name-Destiny Synergy
           </h3>
 
-          <div className="grid md:grid-cols-2 gap-6 mb-6">
+          <div className="grid md:grid-cols-2 gap-6 mb-8">
             <div className="bg-gray-950/50 p-4 rounded-lg border border-cyan-500/30">
               <div className="text-sm text-gray-400 mb-2">Pythagorean Expression</div>
               <div className="text-4xl font-bold text-cyan-400 mb-2">{pythagoreanProfile.expression}</div>
@@ -1565,6 +1552,8 @@ export default function NameAnalysisPage() {
   const [report, setReport] = useState(null);
   const [activeTab, setActiveTab] = useState('deepDive');
   const [memberDropdownOpen, setMemberDropdownOpen] = useState(false);
+  const [downloadDropdownOpen, setDownloadDropdownOpen] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
 
   // Fetch family members and auto-select first one
   useEffect(() => {
@@ -1634,6 +1623,34 @@ export default function NameAnalysisPage() {
     { id: 'signature', label: 'Signature', icon: PenTool }
   ];
 
+  const handleExportPDF = async () => {
+    if (!report || isDownloading) return;
+
+    setIsDownloading(true);
+    setDownloadDropdownOpen(false);
+
+    try {
+      // Switch to Deep Dive tab first
+      setActiveTab('deepDive');
+
+      // Wait for tab to render
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      // Export using the same method as numerology
+      const sanitizedName = name.replace(/[^a-zA-Z0-9]/g, '_');
+      const fileName = `KarmAnk_${sanitizedName}_Name_Analysis_${new Date().toISOString().split('T')[0]}.pdf`;
+
+      await exportToPDF('report-content', fileName, { userName: name });
+
+      console.log('✅ PDF exported successfully');
+    } catch (error) {
+      console.error('❌ PDF export failed:', error);
+      alert('Failed to export PDF. Please try again.');
+    }
+
+    setIsDownloading(false);
+  };
+
   return (
     <CosmicBackground density={140} useVideo={true}>
       <div className="min-h-screen relative px-4 md:px-6 py-6">
@@ -1649,6 +1666,41 @@ export default function NameAnalysisPage() {
             </button>
 
             <div className="flex items-center gap-4">
+              {/* Download Dropdown */}
+              {report && (
+                <div className="relative">
+                  <button
+                    onClick={() => setDownloadDropdownOpen(!downloadDropdownOpen)}
+                    disabled={isDownloading}
+                    className="flex items-center gap-2 px-4 py-2 bg-green-500/20 hover:bg-green-500/30 border border-green-400/50 rounded-lg text-green-300 text-sm font-medium transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isDownloading ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <span>Downloading...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Download className="h-4 w-4" />
+                        <span>Download</span>
+                        <ChevronDown className="h-4 w-4" />
+                      </>
+                    )}
+                  </button>
+                  {downloadDropdownOpen && !isDownloading && (
+                    <div className="absolute top-full right-0 mt-2 bg-gray-900 border border-green-400/50 rounded-lg shadow-lg z-50 min-w-48">
+                      <button
+                        onClick={handleExportPDF}
+                        className="w-full text-left px-4 py-3 hover:bg-green-400/10 transition flex items-center gap-2 text-white"
+                      >
+                        <Download className="h-4 w-4 text-green-400" />
+                        <span>Full Report (PDF)</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* Member Selector Dropdown */}
               <div className="relative">
                 <button
@@ -1720,23 +1772,21 @@ export default function NameAnalysisPage() {
               </div>
 
               {/* Tab Content */}
-              <div>
-                {activeTab === 'deepDive' && <NameDeepDiveTab report={report} />}
+              <div id="report-content">
+                {/* Deep Dive Tab - Always render for PDF, hide if not active on screen */}
+                <div className={activeTab !== 'deepDive' ? 'hidden print:block' : ''}>
+                  <NameDeepDiveTab report={report} />
+                </div>
+
+                {/* Synergy Tab - Always render for PDF, hide if not active on screen */}
+                <div className={activeTab !== 'synergy' ? 'hidden print:block' : ''}>
+                  <SynergyTab report={report} />
+                </div>
+
+                {/* Other tabs - only render when active */}
                 {activeTab === 'sandbox' && <SandboxTab profile={report.profile} />}
-                {activeTab === 'synergy' && <SynergyTab report={report} />}
                 {activeTab === 'business' && <BusinessTab />}
                 {activeTab === 'signature' && <SignatureTab />}
-              </div>
-
-              {/* Reset Button */}
-              <div className="flex justify-center mt-8">
-                <button
-                  onClick={handleReset}
-                  className="px-6 py-3 bg-gray-800 hover:bg-gray-700 text-white rounded-lg font-medium transition-all duration-200 flex items-center gap-2"
-                >
-                  <ArrowLeft className="w-4 h-4" />
-                  New Analysis
-                </button>
               </div>
             </div>
           )}

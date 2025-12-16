@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { ArrowLeft, Plus, Users, Mail, LogOut } from 'lucide-react'
+import { ArrowLeft, Plus, Users, Mail, LogOut, CheckCircle } from 'lucide-react'
 import CosmicBackground from '../components/CosmicBackground'
 import { useFamilyMembers } from '@/hooks/useFamilyMembers'
 import { useAuth } from '@/contexts/AuthContext'
@@ -25,6 +25,7 @@ export default function ProfilePage() {
   const [showAddForm, setShowAddForm] = useState(false)
   const [addError, setAddError] = useState(null)
   const [addLoading, setAddLoading] = useState(false)
+  const [addSuccess, setAddSuccess] = useState(false)
   const [signingOut, setSigningOut] = useState(false)
 
   useEffect(() => {
@@ -34,6 +35,7 @@ export default function ProfilePage() {
   const handleAddMember = async (formData) => {
     setAddLoading(true)
     setAddError(null)
+    setAddSuccess(false)
 
     try {
       const { success, error } = await addMember(formData)
@@ -47,6 +49,12 @@ export default function ProfilePage() {
       await getFamilyMembersData()
       setShowAddForm(false)
       setAddLoading(false)
+      setAddSuccess(true)
+
+      // Clear success message after 5 seconds
+      setTimeout(() => {
+        setAddSuccess(false)
+      }, 5000)
     } catch (err) {
       console.error('Error adding member:', err)
       setAddError(err.message)
@@ -170,7 +178,11 @@ export default function ProfilePage() {
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-cyan-400 mt-0.5">✓</span>
-                    <span>You can add up to {MAX_MEMBERS} family members total</span>
+                    <span>You can add up to {MAX_MEMBERS} family members (optional - add 1, 2, or 3)</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-cyan-400 mt-0.5">✓</span>
+                    <span>Each member is saved individually when you click "Save Member"</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-cyan-400 mt-0.5">✓</span>
@@ -190,6 +202,21 @@ export default function ProfilePage() {
               transition={{ duration: 0.3 }}
               className="space-y-6"
             >
+              {/* Success Message */}
+              {addSuccess && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="p-4 bg-green-500/10 border border-green-500/30 rounded-lg flex items-center gap-3"
+                >
+                  <CheckCircle className="h-5 w-5 text-green-400 flex-shrink-0" />
+                  <div>
+                    <p className="text-green-300 font-semibold">Member saved successfully!</p>
+                    <p className="text-green-200/70 text-xs mt-1">You can add more members or you're all set.</p>
+                  </div>
+                </motion.div>
+              )}
+
               {/* Family Members Count */}
               {members.length > 0 && (
                 <div className="flex items-center justify-between">
@@ -257,18 +284,26 @@ export default function ProfilePage() {
                   className="space-y-4"
                 >
                   <div>
-                    <p className="text-white/70 text-sm text-center mb-3">
-                      {remainingSlots === 1
-                        ? `You can add 1 more member`
-                        : `You can add ${remainingSlots} more members`}
-                    </p>
+                    <div className="text-center mb-3">
+                      <p className="text-white/70 text-sm mb-1">
+                        {remainingSlots === 1
+                          ? `You can add 1 more member (optional)`
+                          : `You can add up to ${remainingSlots} more members (optional)`}
+                      </p>
+                      <p className="text-white/50 text-xs">
+                        Each member is saved individually - add as many or as few as you like!
+                      </p>
+                    </div>
                     {!showAddForm && (
                       <Button
-                        onClick={() => setShowAddForm(true)}
-                        className="w-full bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white font-semibold py-2 rounded-lg flex items-center justify-center gap-2"
+                        onClick={() => {
+                          setShowAddForm(true)
+                          setAddError(null)
+                        }}
+                        className="w-full bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white font-semibold py-3 rounded-lg flex items-center justify-center gap-2 shadow-lg hover:shadow-cyan-500/50"
                       >
                         <Plus className="h-5 w-5" />
-                        Add Family Member
+                        Add Another Member
                       </Button>
                     )}
                   </div>

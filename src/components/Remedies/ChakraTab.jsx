@@ -67,7 +67,7 @@ const ChakraTab = ({ report, language = 'en' }) => {
         }
 
         return (
-            <Card>
+            <Card className="pdf-page-break-after" style={{ pageBreakAfter: 'always', pageBreakInside: 'avoid' }}>
                 <SectionTitle>Chakra Activation through Rudraksha</SectionTitle>
                 <p className="mb-6 text-yellow-200/70">The Rudrakshas recommended for your Basic and Destiny numbers can help activate and balance the following Chakras:</p>
                 <div className="overflow-x-auto">

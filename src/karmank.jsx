@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 // --- Core Data & Logic ---
@@ -14,20 +14,30 @@ import StaticVedicKundli from './components/StaticVedicKundli';
 import NlgSummaryComponent from './components/NlgSummaryComponent';
 import CosmicBackground from './components/CosmicBackground';
 import FamilyMemberSelector from './components/FamilyMemberSelector';
-import { ArrowLeft, ChevronDown } from 'lucide-react';
+import { ArrowLeft, ChevronDown, Loader2, Download } from 'lucide-react';
+import { exportTabToPDF, exportFullReportToPDF } from './utils/pdfExport';
 
-// --- Main Tabs (Imported from sub-folders) ---
-import WelcomeTab from './components/tabs/WelcomeTab';
-import FoundationalAnalysisTab from './components/tabs/FoundationalAnalysisTab';
-import AdvancedDashaTab from './components/tabs/AdvancedDashaTab';
-import ForecastTab from './components/tabs/ForecastTab';
-import RemediesAndGuidanceTab from './components/tabs/RemediesAndGuidanceTab';
-import NumerologyTraitsTab from './components/tabs/NumerologyTraitsTab';
-import LifeCycleTab from './components/tabs/LifeCycleTab';
+// --- Lazy Load Main Tabs for Better Performance ---
+// Only load tabs when user clicks on them
+const WelcomeTab = lazy(() => import('./components/tabs/WelcomeTab'));
+const AdvancedDashaTab = lazy(() => import('./components/tabs/AdvancedDashaTab'));
+const ForecastTab = lazy(() => import('./components/tabs/ForecastTab'));
+const RemediesAndGuidanceTab = lazy(() => import('./components/tabs/RemediesAndGuidanceTab'));
+const NumerologyTraitsTab = lazy(() => import('./components/tabs/NumerologyTraitsTab'));
+const LifeCycleTab = lazy(() => import('./components/tabs/LifeCycleTab'));
 
 // --- Chat Widget ---
-// Temporarily disabled - backend not running on port 8080
-// import ChatWidget from './components/chat/ChatWidgetEnhanced';
+import ChatWidget from './components/chat/ChatWidgetEnhanced';
+
+// Loading fallback component for lazy-loaded tabs
+const TabLoadingFallback = () => (
+    <div className="flex items-center justify-center py-20">
+        <div className="text-center space-y-4">
+            <Loader2 className="w-12 h-12 animate-spin text-cyan-400 mx-auto" />
+            <p className="text-cyan-300 text-sm animate-pulse">Loading tab content...</p>
+        </div>
+    </div>
+);
 
 // A simple placeholder for any tab you haven't moved or want to disable
 const PlaceholderTab = ({ name }) => (
@@ -44,8 +54,11 @@ export default function KarmAnkApp() {
     const [report, setReport] = useState(null);
     const [dashaReport, setDashaReport] = useState(null);
     const [activeTab, setActiveTab] = useState('Welcome');
+    const [visitedTabs, setVisitedTabs] = useState(new Set(['Welcome'])); // Track which tabs have been clicked
     const [formError, setFormError] = useState('');
     const [memberDropdownOpen, setMemberDropdownOpen] = useState(false);
+    const [downloadDropdownOpen, setDownloadDropdownOpen] = useState(false);
+    const [isDownloading, setIsDownloading] = useState(false);
 
     // Language state with localStorage persistence
     const [language, setLanguage] = useState(() => {
@@ -86,6 +99,17 @@ export default function KarmAnkApp() {
     useEffect(() => {
         localStorage.setItem('karmank-numerology-language', language);
     }, [language]);
+
+    // Close download dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (downloadDropdownOpen && !event.target.closest('.relative')) {
+                setDownloadDropdownOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, [downloadDropdownOpen]);
 
     const handleSignOut = async () => {
         await signOut();
@@ -139,11 +163,49 @@ export default function KarmAnkApp() {
         }
     };
 
-    // UPDATED: Removed 'Name Analysis', 'Asset Vibration', and 'Education'
-    const tabs = ['Welcome', 'Numerology Traits', 'Foundational Analysis', 'Advanced Dasha', 'Forecast', 'Remedies & Guidance', 'Life Cycle'];
+    // UPDATED: Merged 'Foundational Analysis' into 'Welcome' tab
+    const tabs = ['Welcome', 'Numerology Traits', 'Advanced Dasha', 'Forecast', 'Remedies & Guidance', 'Life Cycle'];
+
+    // Handle tab click with lazy loading
+    const handleTabClick = (tabName) => {
+        setActiveTab(tabName);
+        setVisitedTabs(prev => new Set([...prev, tabName]));
+    };
+
+    // Download handlers
+    const handleDownloadCurrentTab = async () => {
+        try {
+            setIsDownloading(true);
+            setDownloadDropdownOpen(false);
+            await exportTabToPDF(activeTab, userData.name);
+        } catch (error) {
+            console.error('Error downloading tab:', error);
+            alert('Failed to download report. Please try again.');
+        } finally {
+            setIsDownloading(false);
+        }
+    };
+
+    const handleDownloadFullReport = async () => {
+        try {
+            setIsDownloading(true);
+            setDownloadDropdownOpen(false);
+            await exportFullReportToPDF(tabs, setActiveTab, userData.name);
+        } catch (error) {
+            console.error('Error downloading full report:', error);
+            alert('Failed to download full report. Please try again.');
+        } finally {
+            setIsDownloading(false);
+        }
+    };
 
     const renderTabContent = () => {
         if (!report) return null;
+
+        // Only render tab if it has been visited (clicked)
+        if (!visitedTabs.has(activeTab)) {
+            return null;
+        }
 
         // Props for tabs that need them
         const commonProps = { report, isPremium: false, onUpgradeClick: () => {}, language };
@@ -156,21 +218,44 @@ export default function KarmAnkApp() {
             language
         };
 
+        // Wrap each tab content in Suspense for lazy loading
         switch (activeTab) {
             case 'Welcome':
-                return <WelcomeTab report={report} userData={userData} language={language} />;
-            case 'Foundational Analysis':
-                return <FoundationalAnalysisTab analysis={report.recurringNumbersAnalysis} yogas={report.yogas} specialInsights={report.specialInsights} language={language} />;
+                return (
+                    <Suspense fallback={<TabLoadingFallback />}>
+                        <WelcomeTab report={report} userData={userData} language={language} />
+                    </Suspense>
+                );
             case 'Advanced Dasha':
-                return <AdvancedDashaTab {...dashaProps} />;
+                return (
+                    <Suspense fallback={<TabLoadingFallback />}>
+                        <AdvancedDashaTab {...dashaProps} />
+                    </Suspense>
+                );
             case 'Forecast':
-                return <ForecastTab report={report} dashaReport={dashaReport} gender={userData.gender} language={language} />;
+                return (
+                    <Suspense fallback={<TabLoadingFallback />}>
+                        <ForecastTab report={report} dashaReport={dashaReport} gender={userData.gender} language={language} />
+                    </Suspense>
+                );
             case 'Remedies & Guidance':
-                return <RemediesAndGuidanceTab report={report} language={language} />;
+                return (
+                    <Suspense fallback={<TabLoadingFallback />}>
+                        <RemediesAndGuidanceTab report={report} language={language} />
+                    </Suspense>
+                );
             case 'Numerology Traits':
-                return <NumerologyTraitsTab report={report} gender={userData.gender} language={language} />;
+                return (
+                    <Suspense fallback={<TabLoadingFallback />}>
+                        <NumerologyTraitsTab report={report} gender={userData.gender} language={language} />
+                    </Suspense>
+                );
             case 'Life Cycle':
-                return <LifeCycleTab report={report} dashaReport={dashaReport} name={userData.name} gender={userData.gender} language={language} />;
+                return (
+                    <Suspense fallback={<TabLoadingFallback />}>
+                        <LifeCycleTab report={report} dashaReport={dashaReport} name={userData.name} gender={userData.gender} language={language} />
+                    </Suspense>
+                );
             default:
                 return <PlaceholderTab name={activeTab} />;
         }
@@ -271,6 +356,48 @@ export default function KarmAnkApp() {
                                     </div>
                                 )}
                             </div>
+
+                            {/* Download Button with Dropdown */}
+                            {report && (
+                                <div className="relative">
+                                    <button
+                                        onClick={() => setDownloadDropdownOpen(!downloadDropdownOpen)}
+                                        disabled={isDownloading}
+                                        className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600/20 to-pink-600/20 hover:from-purple-600/30 hover:to-pink-600/30 border border-purple-400/50 rounded-lg text-purple-300 text-sm font-medium transition disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        {isDownloading ? (
+                                            <>
+                                                <Loader2 className="h-4 w-4 animate-spin" />
+                                                <span>Downloading...</span>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Download className="h-4 w-4" />
+                                                <span>Download PDF</span>
+                                                <ChevronDown className="h-4 w-4" />
+                                            </>
+                                        )}
+                                    </button>
+                                    {downloadDropdownOpen && !isDownloading && (
+                                        <div className="absolute top-full right-0 mt-2 bg-gray-900 border border-purple-400/50 rounded-lg shadow-lg z-50 min-w-56">
+                                            <button
+                                                onClick={handleDownloadCurrentTab}
+                                                className="w-full text-left px-4 py-3 hover:bg-purple-400/10 transition text-white"
+                                            >
+                                                <div className="font-semibold">Current Tab</div>
+                                                <div className="text-xs text-white/60">Download {activeTab} only</div>
+                                            </button>
+                                            <button
+                                                onClick={handleDownloadFullReport}
+                                                className="w-full text-left px-4 py-3 hover:bg-purple-400/10 transition text-white border-t border-purple-400/20"
+                                            >
+                                                <div className="font-semibold">Full Report</div>
+                                                <div className="text-xs text-white/60">Download all tabs (takes longer)</div>
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
                         </div>
                     </div>
 
@@ -326,29 +453,30 @@ export default function KarmAnkApp() {
                         <div>
                             <div className="mb-4 border-b border-cyan-400/20 flex flex-wrap">
                                 {tabs.map(tab => (
-                                    <button key={tab} onClick={() => setActiveTab(tab)} className={`py-2 px-4 font-medium transition-colors duration-300 ${activeTab === tab ? 'text-cyan-400 border-b-2 border-cyan-400' : 'text-cyan-200/70 hover:text-cyan-300'}`}>
+                                    <button key={tab} onClick={() => handleTabClick(tab)} className={`py-2 px-4 font-medium transition-colors duration-300 ${activeTab === tab ? 'text-cyan-400 border-b-2 border-cyan-400' : 'text-cyan-200/70 hover:text-cyan-300'}`}>
                                         {tab}
                                     </button>
                                 ))}
                             </div>
-                            <div className="mt-6">{renderTabContent()}</div>
+                            <div id="report-content" className="mt-6">{renderTabContent()}</div>
                         </div>
                     )}
 
                     {/* Chat Widget - Shows only after report is generated */}
-                    {/* Temporarily disabled - backend not running on port 8080 */}
-                    {/* {report && (
+                    {report && (
                         <ChatWidget
                             userContext={{
                                 destinyNumber: report.destinyNumber,
                                 basicNumber: report.basicNumber,
                                 currentDasha: dashaReport?.mahaDashaTimeline?.[0]?.planet,
                                 gender: userData.gender,
+                                name: userData.name,
                             }}
                             report={report}
                             dashaReport={dashaReport}
+                            language={language}
                         />
-                    )} */}
+                    )}
                 </div>
             </div>
         </CosmicBackground>

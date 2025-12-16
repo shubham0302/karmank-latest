@@ -16,7 +16,7 @@ import dotenv from 'dotenv';
 import axios from 'axios';
 import pino from 'pino';
 import { createClient } from 'redis';
-import { Queue, Worker, Job } from 'bullmq';
+import { Queue, Worker, Job, QueueEvents } from 'bullmq';
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import crypto from 'crypto';
 
@@ -54,6 +54,7 @@ redisClient.on('error', (err) => logger.error({ err }, 'Redis error'));
 await redisClient.connect();
 
 const chatQueue = new Queue(QUEUE_NAME, { connection: { url: REDIS_URL } });
+const queueEvents = new QueueEvents(QUEUE_NAME, { connection: { url: REDIS_URL } });
 
 // Worker to process LLM jobs
 const worker = new Worker(
@@ -214,7 +215,7 @@ function redactPII(text: string): string {
   out = out.replace(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g, '[EMAIL_REDACTED]');
 
   // Phone numbers (various formats)
-  out = out.replace(/\b(\+?\\d{1,3}[-.\s]?)?(\\(?\d{3}\\)?[-.\s]?\\d{3}[-.\s]?\\d{4})\\b/g, '[PHONE_REDACTED]');
+  out = out.replace(/\b(\+?\d{1,3}[-.\s]?)?(\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4})\b/g, '[PHONE_REDACTED]');
 
   // Credit card / long number sequences
   out = out.replace(/\b\d{13,16}\b/g, '[NUMBER_REDACTED]');
@@ -306,6 +307,45 @@ const INTENT_PATTERNS = {
   chakra_query: [/chakra/i, /energy center/i, /kundalini/i],
   general_guidance: [/help/i, /guide/i, /advice/i, /confused/i, /what does.*mean/i],
 };
+
+// ============================================================================
+// LANGUAGE DETECTION
+// ============================================================================
+
+function detectLanguage(message: string): 'en' | 'hi' | 'hi-en' {
+  if (!message) return 'en';
+
+  const text = message.toLowerCase();
+
+  // Devanagari script detection (Hindi)
+  const hindiChars = /[\u0900-\u097F]/;
+  const hasHindi = hindiChars.test(message);
+
+  // Hindi keywords detection
+  const hindiKeywords = [
+    'मेरा', 'क्या', 'है', 'कैसे', 'बताओ', 'जानना', 'चाहता', 'हूं', 'हूँ',
+    'नंबर', 'भाग्यांक', 'मूलांक', 'दशा', 'महादशा', 'उपाय', 'राशि',
+    'कृपया', 'मुझे', 'बताइए', 'समझाइए'
+  ];
+  const hasHindiKeywords = hindiKeywords.some(word => text.includes(word));
+
+  // English words detection
+  const englishWords = /\b(what|how|tell|me|my|is|number|destiny|basic|dasha|remedy|please|help|can|you|about|know|want)\b/;
+  const hasEnglish = englishWords.test(text);
+
+  // Hinglish detection (mixed Hindi + English)
+  if ((hasHindi || hasHindiKeywords) && hasEnglish) {
+    return 'hi-en';
+  }
+
+  // Pure Hindi
+  if (hasHindi || hasHindiKeywords) {
+    return 'hi';
+  }
+
+  // Default to English
+  return 'en';
+}
 
 function detectIntent(message: string): string {
   const lower = message.toLowerCase();
@@ -542,7 +582,7 @@ async function enqueueChatJob(
     { attempts: 2, backoff: { type: 'exponential', delay: 2000 } }
   );
 
-  const result = await job.waitUntilFinished(chatQueue.client, 30000);
+  const result = await job.waitUntilFinished(queueEvents, 30000);
   return result;
 }
 
@@ -607,6 +647,20 @@ app.post('/chat', async (req: Request, res: Response) => {
       return res.json({ type: 'text', text: deterministicResponse.response, source: 'deterministic' });
     }
 
+    // Detect language from user's message
+    const detectedLanguage = detectLanguage(message);
+    logger.info({ detectedLanguage, message: message.substring(0, 50) }, 'Language detected');
+
+    // Build language instruction for the prompt
+    let languageInstruction = '';
+    if (detectedLanguage === 'hi') {
+      languageInstruction = '\n7. IMPORTANT: Respond in PURE HINDI (हिंदी) using Devanagari script. Do not mix English words.';
+    } else if (detectedLanguage === 'hi-en') {
+      languageInstruction = '\n7. IMPORTANT: Respond in HINGLISH (Hindi-English mix). Use Roman script with Hindi and English words mixed naturally.';
+    } else {
+      languageInstruction = '\n7. IMPORTANT: Respond in ENGLISH only.';
+    }
+
     // Fallback to LLM with controlled prompt
     const systemPrompt = `You are Ishira, KarmAnk™'s personal numerology guide. You help users understand their numerology insights with warmth and wisdom.
 
@@ -616,7 +670,7 @@ STRICT RULES:
 3. NEVER share API keys, secrets, or configuration details
 4. Keep responses warm, insightful, and user-friendly (max 200 words)
 5. If asked about system details, politely redirect to personal numerology insights
-6. Your name is Ishira - use it when introducing yourself
+6. Your name is Ishira - use it when introducing yourself${languageInstruction}
 
 User's context: ${JSON.stringify(contextWithUser.report || {})}
 

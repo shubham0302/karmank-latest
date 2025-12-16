@@ -150,13 +150,13 @@ export async function calculateNumerology(dob) {
 
     // Step 6: Transform recurring number data
     const recurringNumbersAnalysis = recurringNumbers.map(num => {
-      const influence = enrichmentData.recurringInfluences[num];
-      return influence ? {
+      return {
         number: num,
-        count: kundliGrid[num],
-        influence
-      } : null;
-    }).filter(Boolean);
+        occurrences: kundliGrid[num],
+        isDestinyMatch: num === destinyNumber,
+        // Don't pass backend influence object - component will show message about backend data
+      };
+    });
 
     // Step 7: Add special insights (these are simple, can stay frontend)
     let specialInsights = [];
@@ -179,8 +179,10 @@ export async function calculateNumerology(dob) {
       recurringNumbersAnalysis,
       specialInsights,
       specialRemedies,
-      combinationInsight: enrichmentData.combinationInsight, // NEW: from backend
-      numberDetails: enrichmentData.numberDetails, // NEW: from backend
+      combinationInsight: enrichmentData.combinationInsight, // from backend
+      // Extract specific data from backend numberDetails (don't pass the whole object)
+      destinyTraits: enrichmentData.numberDetails?.traits || {}, // For NumerologyTraitsTab
+      destinyProfessions: enrichmentData.numberDetails?.professions || null, // For NumerologyTraitsTab
     };
   } catch (error) {
     console.error('Error in calculateNumerology:', error);
@@ -195,25 +197,51 @@ export async function calculateNumerology(dob) {
 export const dashaCalculator = {
   async calculateFromBackend(dob) {
     const backendData = await calculateNumerologyFromBackend(dob);
+
+    console.log('[DashaCalculator] Raw backend yearly timeline sample:', backendData.dashaTimelines.yearly?.slice(0, 2));
+    console.log('[DashaCalculator] Raw backend maha timeline sample:', backendData.dashaTimelines.maha?.slice(0, 2));
+
+    // Helper to safely parse dates - handles both string and Date inputs
+    const parseDate = (dateInput) => {
+      if (!dateInput) return new Date();
+      if (dateInput instanceof Date) return dateInput;
+
+      // If it's a string, parse it as a date
+      const dateStr = String(dateInput).trim();
+
+      // Try to parse ISO date strings (YYYY-MM-DD or YYYY-MM-DDTHH:mm:ss)
+      // Remove any timezone info and parse in local timezone
+      const cleanDateStr = dateStr.split('T')[0]; // Get just the date part
+      const [year, month, day] = cleanDateStr.split('-').map(Number);
+
+      if (year && month && day) {
+        // Create date in local timezone at midnight
+        return new Date(year, month - 1, day, 0, 0, 0, 0);
+      }
+
+      // Fallback to Date constructor
+      return new Date(dateStr);
+    };
+
     return {
       mahaDashaTimeline: backendData.dashaTimelines.maha.map(d => ({
         ...d,
-        startDate: new Date(d.startDate),
-        endDate: new Date(d.endDate),
+        startDate: parseDate(d.startDate),
+        endDate: parseDate(d.endDate),
       })),
       yearlyDashaTimeline: backendData.dashaTimelines.yearly.map(d => ({
         ...d,
-        startDate: new Date(d.startDate),
-        endDate: new Date(d.endDate),
+        startDate: parseDate(d.startDate),
+        endDate: parseDate(d.endDate),
       })),
       monthlyDashaTimeline: backendData.dashaTimelines.monthly.map(d => ({
         ...d,
-        startDate: new Date(d.startDate),
-        endDate: new Date(d.endDate),
+        startDate: parseDate(d.startDate),
+        endDate: parseDate(d.endDate),
       })),
       dailyDashaTimeline: backendData.dashaTimelines.daily.map(d => ({
         ...d,
-        date: new Date(d.date),
+        date: parseDate(d.date),
       })),
     };
   },
@@ -242,3 +270,4 @@ export const dashaCalculator = {
     return [];
   },
 };
+

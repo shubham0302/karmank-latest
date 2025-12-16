@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Crown, Heart, Users, Info } from 'lucide-react';
+import { ArrowLeft, Crown, Heart, Users, Info, Download, Loader2 } from 'lucide-react';
 import CosmicBackground from '../components/CosmicBackground';
 import FamilyMemberSelector from '../components/FamilyMemberSelector';
 import { useAuth } from '../contexts/AuthContext';
 import { DATA } from '../data/data';
 import { reduceToSingleDigit, getText } from '../utils/helpers';
+import { exportToPDF } from '../utils/pdfExport';
 
 const CompatibilityPage = () => {
   const navigate = useNavigate();
@@ -20,6 +21,7 @@ const CompatibilityPage = () => {
   const [selectedPerson2Id, setSelectedPerson2Id] = useState(null);
   const [compatibilityReport, setCompatibilityReport] = useState(null);
   const [error, setError] = useState("");
+  const [isDownloading, setIsDownloading] = useState(false);
 
   const handleSignOut = async () => {
     await signOut();
@@ -121,6 +123,29 @@ const CompatibilityPage = () => {
     }
   };
 
+  const handleExportPDF = async () => {
+    if (!compatibilityReport || isDownloading) return;
+
+    setIsDownloading(true);
+
+    try {
+      const person1 = person1Name.replace(/[^a-zA-Z0-9]/g, '_');
+      const person2 = person2Name.replace(/[^a-zA-Z0-9]/g, '_');
+      const fileName = `KarmAnk_Compatibility_${person1}_${person2}_${new Date().toISOString().split('T')[0]}.pdf`;
+
+      await exportToPDF('compatibility-report-content', fileName, {
+        userName: `${person1Name} & ${person2Name}`
+      });
+
+      console.log('✅ PDF exported successfully');
+    } catch (error) {
+      console.error('❌ PDF export failed:', error);
+      alert('Failed to export PDF. Please try again.');
+    }
+
+    setIsDownloading(false);
+  };
+
   const handleAnalyzeCompatibility = (e) => {
     e.preventDefault();
     if (!selectedPerson1Id || !selectedPerson2Id || !person1Name || !person1DOB || !person2Name || !person2DOB) {
@@ -196,6 +221,28 @@ const CompatibilityPage = () => {
 
             <div className="flex items-center gap-3">
               <span className="text-sm text-white/70 hidden md:block">{user?.email}</span>
+
+              {/* Download PDF Button - Only show when report is generated */}
+              {compatibilityReport && (
+                <button
+                  onClick={handleExportPDF}
+                  disabled={isDownloading}
+                  className="flex items-center gap-2 px-4 py-2 bg-yellow-500/20 hover:bg-yellow-500/30 border border-yellow-400/50 rounded-lg text-yellow-300 text-sm font-medium transition disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isDownloading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <span>Downloading...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Download className="h-4 w-4" />
+                      <span>Download PDF</span>
+                    </>
+                  )}
+                </button>
+              )}
+
               <button
                 onClick={handleSignOut}
                 className="bg-red-500/20 hover:bg-red-500/30 text-red-300 border border-red-500/50 px-4 py-2 rounded-md text-sm font-medium transition duration-200"
@@ -281,25 +328,28 @@ const CompatibilityPage = () => {
           {/* Compatibility Report */}
           {compatibilityReport && (
             <motion.div
+              id="compatibility-report-content"
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.5 }}
               className="space-y-8"
             >
-              {/* Overall Compatibility Score */}
-              <div className={`p-8 rounded-xl bg-gradient-to-r ${getStatusColor(compatibilityReport.overallStatus)} bg-opacity-20 border-2 border-white/20 text-center`}>
-                <p className="text-sm uppercase tracking-widest font-semibold text-white/80 mb-2">
-                  Overall Compatibility Status
-                </p>
-                <p className="text-6xl mb-3">{getStatusIcon(compatibilityReport.overallStatus)}</p>
-                <p className="text-3xl font-bold text-white mb-2">{getStatusLabel(compatibilityReport.overallStatus)}</p>
-                <p className="text-white/70">
-                  {compatibilityReport.person1.name} & {compatibilityReport.person2.name}
-                </p>
-              </div>
+              {/* PAGE 2: Overall Status + Individual Destiny Numbers */}
+              <div className="pdf-page-break-after space-y-8">
+                {/* Overall Compatibility Score */}
+                <div className={`p-8 rounded-xl bg-gradient-to-r ${getStatusColor(compatibilityReport.overallStatus)} bg-opacity-20 border-2 border-white/20 text-center`}>
+                  <p className="text-sm uppercase tracking-widest font-semibold text-white/80 mb-2">
+                    Overall Compatibility Status
+                  </p>
+                  <p className="text-6xl mb-3">{getStatusIcon(compatibilityReport.overallStatus)}</p>
+                  <p className="text-3xl font-bold text-white mb-2">{getStatusLabel(compatibilityReport.overallStatus)}</p>
+                  <p className="text-white/70">
+                    {compatibilityReport.person1.name} & {compatibilityReport.person2.name}
+                  </p>
+                </div>
 
-              {/* Individual Destiny Numbers */}
-              <div className="grid md:grid-cols-2 gap-6">
+                {/* Individual Destiny Numbers */}
+                <div className="grid md:grid-cols-2 gap-6">
                 {/* Person 1 */}
                 <div className="bg-gray-800/60 p-6 rounded-lg shadow-lg border border-yellow-400/20">
                   <h4 className="font-bold text-xl text-yellow-300 mb-4 text-center flex items-center justify-center gap-2">
@@ -360,9 +410,12 @@ const CompatibilityPage = () => {
                   </div>
                 </div>
               </div>
+              </div> {/* Close PAGE 2 wrapper */}
 
-              {/* Detailed Compatibility Matrix */}
-              <div className="bg-gray-800/60 p-6 rounded-lg shadow-lg border border-yellow-400/20">
+              {/* PAGE 3: Detailed Compatibility Matrix + Guidance */}
+              <div className="pdf-page-break-after space-y-8">
+                {/* Detailed Compatibility Matrix */}
+                <div className="bg-gray-800/60 p-6 rounded-lg shadow-lg border border-yellow-400/20">
                 <h3 className="text-2xl font-bold text-yellow-400 mb-6 font-serif tracking-wider text-center flex items-center justify-center gap-2">
                   <Info className="w-6 h-6" />
                   Compatibility Analysis
@@ -458,37 +511,38 @@ const CompatibilityPage = () => {
                 </div>
               </div>
 
-              {/* Guidance */}
-              <div className="bg-gray-800/60 p-6 rounded-lg shadow-lg border border-yellow-400/20">
-                <h3 className="text-xl font-bold text-yellow-400 mb-4 font-serif tracking-wider flex items-center gap-2">
-                  <Heart className="w-5 h-5" />
-                  Guidance for Your Relationship
-                </h3>
-                <div className="prose prose-invert text-gray-300 max-w-none">
-                  <p className="mb-4">
-                    Numerology compatibility reveals the natural energy dynamics between two people based on their Destiny Numbers.
-                    This ancient Vedic wisdom can guide you toward understanding, but remember:
-                  </p>
-                  <ul className="list-disc list-inside space-y-2">
-                    <li>
-                      <strong className="text-yellow-300">Good Matches</strong> show natural harmony and ease in the relationship
-                    </li>
-                    <li>
-                      <strong className="text-yellow-300">Neutral Connections</strong> can work with mutual respect and understanding
-                    </li>
-                    <li>
-                      <strong className="text-yellow-300">Challenging Matches</strong> require extra effort but can lead to growth
-                    </li>
-                    <li>
-                      <strong className="text-yellow-300">Difficult Matches</strong> need conscious work and compromise
-                    </li>
-                  </ul>
-                  <p className="mt-4 text-sm text-yellow-200/80">
-                    Every relationship is unique. These insights are meant to guide, not dictate. With awareness, communication,
-                    and genuine care, any two people can create a meaningful connection.
-                  </p>
+                {/* Guidance */}
+                <div className="bg-gray-800/60 p-6 rounded-lg shadow-lg border border-yellow-400/20">
+                  <h3 className="text-xl font-bold text-yellow-400 mb-4 font-serif tracking-wider flex items-center gap-2">
+                    <Heart className="w-5 h-5" />
+                    Guidance for Your Relationship
+                  </h3>
+                  <div className="prose prose-invert text-gray-300 max-w-none">
+                    <p className="mb-4">
+                      Numerology compatibility reveals the natural energy dynamics between two people based on their Destiny Numbers.
+                      This ancient Vedic wisdom can guide you toward understanding, but remember:
+                    </p>
+                    <ul className="list-disc list-inside space-y-2">
+                      <li>
+                        <strong className="text-yellow-300">Good Matches</strong> show natural harmony and ease in the relationship
+                      </li>
+                      <li>
+                        <strong className="text-yellow-300">Neutral Connections</strong> can work with mutual respect and understanding
+                      </li>
+                      <li>
+                        <strong className="text-yellow-300">Challenging Matches</strong> require extra effort but can lead to growth
+                      </li>
+                      <li>
+                        <strong className="text-yellow-300">Difficult Matches</strong> need conscious work and compromise
+                      </li>
+                    </ul>
+                    <p className="mt-4 text-sm text-yellow-200/80">
+                      Every relationship is unique. These insights are meant to guide, not dictate. With awareness, communication,
+                      and genuine care, any two people can create a meaningful connection.
+                    </p>
+                  </div>
                 </div>
-              </div>
+              </div> {/* Close PAGE 3 wrapper */}
 
               <button
                 onClick={() => {

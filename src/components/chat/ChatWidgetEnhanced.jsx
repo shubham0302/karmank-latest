@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Send, ThumbsUp, ThumbsDown, X, MessageCircle, Settings, Minimize2, Download, Sparkles, Zap } from 'lucide-react';
+import { Send, ThumbsUp, ThumbsDown, X, MessageCircle, Minimize2, Sparkles, Zap } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { supabase } from '../../lib/supabase';
 import { DATA } from '../../data/data';
@@ -7,7 +7,7 @@ import { DATA } from '../../data/data';
 const CHAT_API_URL = import.meta.env.VITE_CHAT_API_URL || 'http://localhost:8080';
 const STORAGE_KEY = 'ishira_chat_history';
 
-export default function ChatWidget({ userContext, report }) {
+export default function ChatWidget({ userContext, report, dashaReport, language = 'en' }) {
   const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
@@ -15,11 +15,10 @@ export default function ChatWidget({ userContext, report }) {
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [conversationId] = useState(() => crypto.randomUUID());
-  const [userConsent, setUserConsent] = useState(false);
-  const [showConsentDialog, setShowConsentDialog] = useState(false);
+  const userConsent = true; // Consent given at login
   const [justMounted, setJustMounted] = useState(true);
   const [suggestedQuestions, setSuggestedQuestions] = useState([]);
-  const [showExportMenu, setShowExportMenu] = useState(false);
+  const [hasGreeted, setHasGreeted] = useState(false);
   const messagesEndRef = useRef(null);
 
   // Entrance animation on mount
@@ -43,13 +42,6 @@ export default function ChatWidget({ userContext, report }) {
       saveConversationHistory();
     }
   }, [messages]);
-
-  // Load user consent preference
-  useEffect(() => {
-    if (user) {
-      loadUserConsent();
-    }
-  }, [user]);
 
   // Auto-scroll to bottom on new messages
   useEffect(() => {
@@ -92,15 +84,171 @@ export default function ChatWidget({ userContext, report }) {
     }
   };
 
+  const getGreetingMessage = () => {
+    const userName = userContext?.name || 'there';
+    const destinyNum = userContext?.destinyNumber;
+    const basicNum = userContext?.basicNumber;
+
+    if (language === 'hi') {
+      return `🙏 नमस्ते ${userName}!\n\nमैं इशिरा हूं, आपकी व्यक्तिगत अंकज्योतिष सहायक। मैं आपकी संख्याओं, दशाओं और जीवन पथ को समझने में आपकी मदद करने के लिए यहां हूं।\n\n${destinyNum ? `आपकी नियति संख्या **${destinyNum}** है और मूल संख्या **${basicNum}** है।` : ''}\n\nमैं आपकी कैसे सहायता कर सकती हूं? 💫`;
+    } else if (language === 'en-hi') {
+      return `🙏 Namaste ${userName}!\n\nMain Ishira hoon, aapki personal numerology assistant. Main aapko aapke numbers, dashas aur life path ko samajhne mein madad karne ke liye yahaan hoon.\n\n${destinyNum ? `Aapka Destiny Number **${destinyNum}** hai aur Basic Number **${basicNum}** hai।` : ''}\n\nMain aapki kaise madad kar sakti hoon? 💫`;
+    } else {
+      return `🙏 Namaste ${userName}!\n\nI'm Ishira, your personal numerology assistant. I'm here to help you understand your numbers, dashas, and life path.\n\n${destinyNum ? `Your Destiny Number is **${destinyNum}** and Basic Number is **${basicNum}**.` : ''}\n\nHow can I assist you today? 💫`;
+    }
+  };
+
+  // Send greeting when chat opens for the first time
+  useEffect(() => {
+    if (isOpen && !hasGreeted && messages.length === 0) {
+      const greetingMsg = {
+        role: 'assistant',
+        content: getGreetingMessage(),
+        timestamp: new Date().toISOString(),
+        id: crypto.randomUUID()
+      };
+      setMessages([greetingMsg]);
+      setHasGreeted(true);
+    }
+  }, [isOpen, hasGreeted, messages.length, language, userContext]);
+
+  // Helper function to translate common phrases and responses
+  const translateResponse = (englishText) => {
+    if (language === 'en') return englishText;
+
+    // Common translations
+    const translations = {
+      'hi': {
+        'Your Current Yearly Dasha': 'आपकी वर्तमान वार्षिक दशा',
+        'Your Current Maha Dasha': 'आपकी वर्तमान महा दशा',
+        'Number': 'संख्या',
+        'Period': 'अवधि',
+        'Core Energy': 'मूल ऊर्जा',
+        'What This Means': 'इसका अर्थ',
+        'Want to know more?': 'और जानना चाहते हैं?',
+        'This Year': 'इस वर्ष',
+        'Energy': 'ऊर्जा',
+        'Dasha Timeline Overview': 'दशा समयरेखा अवलोकन',
+        'Maha Dasha': 'महा दशा',
+        'Yearly Dasha': 'वार्षिक दशा',
+        'Monthly Dasha': 'मासिक दशा',
+        'Daily Dasha': 'दैनिक दशा',
+        'Visit the': 'देखें',
+        'Advanced Dasha': 'उन्नत दशा',
+        'Life Cycle': 'जीवन चक्र',
+        'tabs to explore': 'टैब्स में',
+        'Yearly dashas influence the themes': 'वार्षिक दशाएं प्रत्येक वर्ष की थीम और अवसरों को प्रभावित करती हैं',
+        'year brings': 'वर्ष लाता है',
+        'energy into focus': 'ऊर्जा को फोकस में',
+        'You are running': 'आप चला रहे हैं',
+        'yearly dasha': 'वार्षिक दशा',
+        'You are in': 'आप में हैं',
+        'major cycle': 'प्रमुख चक्र',
+        'influence': 'प्रभाव',
+        '9-year planetary cycles': '9-वर्षीय ग्रह चक्र',
+        'Annual influences within each cycle': 'प्रत्येक चक्र के भीतर वार्षिक प्रभाव',
+        'Pratyantara periods': 'प्रत्यंतरा अवधि',
+        'days': 'दिन',
+        'Daily planetary energies': 'दैनिक ग्रह ऊर्जा',
+        'to see how this yearly energy blends': 'यह देखने के लिए कि यह वार्षिक ऊर्जा कैसे मिश्रित होती है'
+      },
+      'en-hi': {
+        'Your Current Yearly Dasha': 'Aapki Current Yearly Dasha',
+        'Your Current Maha Dasha': 'Aapki Current Maha Dasha',
+        'Number': 'Number',
+        'Period': 'Period',
+        'Core Energy': 'Core Energy',
+        'What This Means': 'Iska Matlab',
+        'Want to know more?': 'Aur jaanna chahte hain?',
+        'This Year': 'Is Saal',
+        'Energy': 'Energy',
+        'Dasha Timeline Overview': 'Dasha Timeline Overview',
+        'Maha Dasha': 'Maha Dasha',
+        'Yearly Dasha': 'Yearly Dasha',
+        'Monthly Dasha': 'Monthly Dasha',
+        'Daily Dasha': 'Daily Dasha',
+        'Visit the': 'Dekhiye',
+        'Advanced Dasha': 'Advanced Dasha',
+        'Life Cycle': 'Life Cycle',
+        'tabs to explore': 'tabs mein',
+        'Yearly dashas influence the themes': 'Yearly dashas har saal ki themes aur opportunities ko influence karte hain',
+        'year brings': 'year laata hai',
+        'energy into focus': 'energy ko focus mein',
+        'You are running': 'Aap chal rahe hain',
+        'yearly dasha': 'yearly dasha',
+        'You are in': 'Aap hain',
+        'major cycle': 'major cycle',
+        'influence': 'influence',
+        '9-year planetary cycles': '9-year planetary cycles',
+        'Annual influences within each cycle': 'Har cycle ke andar annual influences',
+        'Pratyantara periods': 'Pratyantara periods',
+        'days': 'din',
+        'Daily planetary energies': 'Daily planetary energies',
+        'to see how this yearly energy blends': 'yeh dekhne ke liye ki yearly energy kaise blend hoti hai'
+      }
+    };
+
+    const dict = translations[language];
+    if (!dict) return englishText;
+
+    let translated = englishText;
+    Object.keys(dict).forEach(key => {
+      const regex = new RegExp(key, 'gi');
+      translated = translated.replace(regex, dict[key]);
+    });
+
+    return translated;
+  };
+
+  // Common generic questions available to all users
+  const getGenericQuestions = () => {
+    const allGenericQuestions = [
+      // Numbers & Meanings
+      { text: 'What do my numbers mean?', icon: '🔢', category: 'numbers' },
+      { text: 'How do numbers affect my life?', icon: '✨', category: 'numbers' },
+      { text: 'What is my lucky number?', icon: '🍀', category: 'numbers' },
+
+      // Dasha & Timing
+      { text: 'What is my current dasha?', icon: '🌙', category: 'dasha' },
+      { text: 'When is the best time for important decisions?', icon: '⏰', category: 'dasha' },
+      { text: 'What does this year hold for me?', icon: '📅', category: 'dasha' },
+
+      // Remedies & Guidance
+      { text: 'What remedies should I follow?', icon: '🕉️', category: 'remedies' },
+      { text: 'How can I improve my life?', icon: '🌟', category: 'remedies' },
+      { text: 'Which gemstones suit me?', icon: '💎', category: 'remedies' },
+
+      // Traits & Personality
+      { text: 'What are my strengths?', icon: '💪', category: 'traits' },
+      { text: 'What are my weaknesses?', icon: '🎯', category: 'traits' },
+      { text: 'What is my personality like?', icon: '🌈', category: 'traits' },
+
+      // Career & Life Path
+      { text: 'What career suits me best?', icon: '💼', category: 'career' },
+      { text: 'Tell me about my life path', icon: '🛤️', category: 'forecast' },
+      { text: 'When will I achieve success?', icon: '🏆', category: 'forecast' },
+
+      // Relationships
+      { text: 'What about my relationships?', icon: '❤️', category: 'relationships' },
+      { text: 'Am I compatible with my partner?', icon: '💑', category: 'relationships' },
+      { text: 'When will I get married?', icon: '💍', category: 'relationships' },
+    ];
+
+    // Randomly select 6 questions to show variety
+    const shuffled = [...allGenericQuestions].sort(() => 0.5 - Math.random());
+    return shuffled.slice(0, 6);
+  };
+
   const generateSuggestedQuestions = () => {
     const suggestions = [];
 
-    // Context-aware suggestions based on user's numbers
+    // Personalized quick questions based on user's data
     if (userContext?.destinyNumber) {
       suggestions.push({
-        text: `What does destiny number ${userContext.destinyNumber} mean?`,
+        text: `What does my destiny number ${userContext.destinyNumber} mean?`,
         icon: '🔮',
-        category: 'destiny'
+        category: 'personalized',
+        isPersonalized: true
       });
     }
 
@@ -108,7 +256,8 @@ export default function ChatWidget({ userContext, report }) {
       suggestions.push({
         text: `Tell me about my basic number ${userContext.basicNumber}`,
         icon: '⭐',
-        category: 'basic'
+        category: 'personalized',
+        isPersonalized: true
       });
     }
 
@@ -116,18 +265,12 @@ export default function ChatWidget({ userContext, report }) {
       suggestions.push({
         text: 'What is my current dasha period?',
         icon: '🌙',
-        category: 'dasha'
+        category: 'personalized',
+        isPersonalized: true
       });
     }
 
-    // Generic helpful questions
-    suggestions.push(
-      { text: 'What are my strengths?', icon: '💪', category: 'traits' },
-      { text: 'What remedies should I follow?', icon: '🕉️', category: 'remedies' },
-      { text: 'Tell me about my life path', icon: '🛤️', category: 'forecast' }
-    );
-
-    setSuggestedQuestions(suggestions.slice(0, 6));
+    setSuggestedQuestions(suggestions);
   };
 
   const generateFollowUpQuestions = (lastBotMessage) => {
@@ -163,49 +306,6 @@ export default function ChatWidget({ userContext, report }) {
     }
 
     return followUps.slice(0, 3);
-  };
-
-  const loadUserConsent = async () => {
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) return;
-
-      const response = await fetch(`${CHAT_API_URL}/chat/consent`, {
-        headers: {
-          'Authorization': `Bearer ${session.access_token}`,
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setUserConsent(data.consent || false);
-      }
-    } catch (err) {
-      console.error('Failed to load consent:', err);
-    }
-  };
-
-  const updateUserConsent = async (consent) => {
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) return;
-
-      const response = await fetch(`${CHAT_API_URL}/chat/consent`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify({ consent }),
-      });
-
-      if (response.ok) {
-        setUserConsent(consent);
-        setShowConsentDialog(false);
-      }
-    } catch (err) {
-      console.error('Failed to update consent:', err);
-    }
   };
 
   const scrollToBottom = () => {
@@ -326,7 +426,31 @@ export default function ChatWidget({ userContext, report }) {
       let fallbackMessage = '';
       const lowerMsg = messageText.toLowerCase();
 
-      if (lowerMsg.includes('destiny') && lowerMsg.includes('mean')) {
+      // Detect language for fallback response
+      const isHinglish = /\b(mera|kya|hai|kaise|kaisa|rahega|hoga|batao|saal|year)\b/i.test(lowerMsg);
+      const isHindi = /[\u0900-\u097F]/.test(messageText);
+
+      // Handle Hinglish year/forecast queries specifically
+      if ((lowerMsg.includes('saal') || lowerMsg.includes('year')) && (lowerMsg.includes('kaisa') || lowerMsg.includes('kaise') || lowerMsg.includes('rahega') || lowerMsg.includes('hoga'))) {
+        const destinyNum = userContext?.destinyNumber || report?.destinyNumber;
+        const basicNum = userContext?.basicNumber || report?.basicNumber;
+        const currentDasha = userContext?.currentDasha || report?.basicNumber;
+        const dashaDetails = DATA.numberDetails?.[currentDasha];
+
+        if (currentDasha && dashaDetails) {
+          const dashaName = dashaDetails.name?.en || '';
+
+          if (isHinglish) {
+            fallbackMessage = `**Aapka Yeh Saal (This Year) 🌟**\n\nAap abhi **${dashaName}** dasha period mein hai. Yeh saal aapke liye special hai!\n\n**Is Saal Ka Energy:**\n• Aapka Destiny Number ${destinyNum} aapko apne goals ki taraf guide kar raha hai\n• ${dashaName} period aapko naye opportunities de raha hai\n• Apne strengths ko use karein aur challenges ko opportunities samjhein\n\n**Kya Karein:**\n✨ **"LifeCycle"** tab dekhein - har month ki detailed prediction\n✨ **"Forecast"** tab mein apne important life events ka timing dekhein\n✨ **"Advanced Dasha"** tab mein pura yearly breakdown milega\n\n**Pro Tip:** Life tab ko explore karke aap apne poore saal ka roadmap dekh sakte hain—kaunsa time best hai career, relationship, aur personal growth ke liye!\n\n*Chatbot server abhi unavailable hai, isliye main aapko tabs se information lene ka suggest kar rahi hoon.* 🙏`;
+          } else {
+            fallbackMessage = `**Your Year Ahead 🌟**\n\nYou're currently in the **${dashaName}** dasha period. This year holds special significance for you!\n\n**This Year's Energy:**\n• Your Destiny Number ${destinyNum} is guiding you toward your goals\n• ${dashaName} period brings specific opportunities\n• Use your strengths and view challenges as growth opportunities\n\n**What To Do:**\n✨ Check **"LifeCycle"** tab - detailed monthly predictions\n✨ Visit **"Forecast"** tab for important life event timings\n✨ Explore **"Advanced Dasha"** tab for complete yearly breakdown\n\n**Pro Tip:** The LifeCycle tab shows you a complete roadmap of your year—which times are best for career moves, relationships, and personal growth!\n\n*The chatbot server is currently unavailable, so I'm directing you to the tabs for detailed information.* 🙏`;
+          }
+        } else {
+          fallbackMessage = isHinglish
+            ? `**Apna Saal Jaaniye! 🌟**\n\nAapke is saal ke baare mein jaanne ke liye:\n\n✨ **"LifeCycle"** tab - Har month ki detailed predictions\n✨ **"Forecast"** tab - Important timings aur life events\n✨ **"Advanced Dasha"** tab - Pura yearly planetary influence\n\nYeh tabs aapko batayenge ki kaunsa time aapke liye best hai aur kaunse areas pe focus karna chahiye!\n\n*Chatbot server offline hai, toh tabs use karke apni full yearly insights dekhein!* 🙏`
+            : `**Discover Your Year! 🌟**\n\nTo learn about your year ahead:\n\n✨ **"LifeCycle"** tab - Detailed monthly predictions\n✨ **"Forecast"** tab - Important timings and life events\n✨ **"Advanced Dasha"** tab - Complete yearly planetary influences\n\nThese tabs will show you which times are best for you and which areas to focus on!\n\n*The chatbot server is offline, so please use the tabs for your complete yearly insights!* 🙏`;
+        }
+      } else if (lowerMsg.includes('destiny') && lowerMsg.includes('mean')) {
         // Detailed destiny number explanation
         const destinyNum = userContext?.destinyNumber || report?.destinyNumber;
         const destinyDetails = DATA.destinyNumberDetails?.[destinyNum];
@@ -379,14 +503,52 @@ export default function ChatWidget({ userContext, report }) {
         detailedInfo += `These numbers work together to shape your personality, life purpose, and destiny. Explore the tabs above for complete insights!`;
         fallbackMessage = detailedInfo;
       } else if (lowerMsg.includes('dasha')) {
-        // Enhanced dasha information
-        const currentDasha = userContext?.currentDasha;
-        const dashaNum = currentDasha || report?.basicNumber;
-        const dashaDetails = DATA.numberDetails?.[dashaNum];
+        // Enhanced dasha information with yearly dasha support
+        const now = new Date();
 
-        if (dashaNum && dashaDetails) {
-          const name = dashaDetails.name?.en || '';
-          fallbackMessage = `**Your Current Dasha Period** is influenced by **Number ${dashaNum}** (${name}).\n\nDasha periods are planetary cycles that govern different phases of your life. Each period brings unique energies, opportunities, and challenges.\n\nVisit the **"Advanced Dasha"** tab to see:\n• Maha Dasha (9-year cycles)\n• Yearly Dasha periods\n• Monthly influences\n• Daily planetary effects\n\nUnderstanding your dasha timeline helps you make better life decisions!`;
+        // Find current Maha Dasha
+        const currentMaha = dashaReport?.mahaDashaTimeline?.find(m => {
+          const start = new Date(m.startDate);
+          const end = new Date(m.endDate);
+          return now >= start && now <= end;
+        });
+
+        // Find current Yearly Dasha
+        const currentYearly = dashaReport?.yearlyDashaTimeline?.find(y => {
+          const start = new Date(y.startDate);
+          const end = new Date(y.endDate);
+          return now >= start && now <= end;
+        });
+
+        // Check if query is specifically about yearly dasha
+        const isYearlyQuery = lowerMsg.includes('yearly') || lowerMsg.includes('annual') || lowerMsg.includes('this year');
+
+        if (isYearlyQuery && currentYearly) {
+          const yearlyNum = currentYearly.dashaNumber;
+          const yearlyDetails = DATA.numberDetails?.[yearlyNum];
+          const yearlyName = yearlyDetails?.name?.en || `Number ${yearlyNum}`;
+          const yearlyCore = yearlyDetails?.coreVibration?.en || 'transformational';
+          const startDate = new Date(currentYearly.startDate).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+          const endDate = new Date(currentYearly.endDate).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+
+          fallbackMessage = translateResponse(`**Your Current Yearly Dasha 📅**\n\nYou are running **${yearlyName}** (Number **${yearlyNum}**) yearly dasha.\n\n🗓️ **Period:** ${startDate} to ${endDate}\n✨ **Core Energy:** ${yearlyCore}\n\n**What This Means:**\nYearly dashas influence the themes and opportunities of each year within your 9-year Maha Dasha cycle. This ${yearlyName} year brings ${yearlyCore} energy into focus.\n\n💡 **Want to know more?** Visit the **"Advanced Dasha"** or **"Life Cycle"** tabs to see how this yearly energy blends with your major cycle and get AI-powered predictions!`);
+        } else if (currentMaha) {
+          const mahaNum = currentMaha.dashaNumber;
+          const mahaDetails = DATA.numberDetails?.[mahaNum];
+          const mahaName = mahaDetails?.name?.en || `Number ${mahaNum}`;
+          const mahaCore = mahaDetails?.coreVibration?.en || 'transformational';
+
+          let dashaInfo = `**Your Current Maha Dasha 🌟**\n\nYou are in **${mahaName}** (Number **${mahaNum}**) major cycle.\n✨ **Energy:** ${mahaCore}\n\n`;
+
+          if (currentYearly) {
+            const yearlyNum = currentYearly.dashaNumber;
+            const yearlyDetails = DATA.numberDetails?.[yearlyNum];
+            const yearlyName = yearlyDetails?.name?.en || `Number ${yearlyNum}`;
+            dashaInfo += `📅 **This Year:** ${yearlyName} (Number ${yearlyNum}) influence\n\n`;
+          }
+
+          dashaInfo += `**Dasha Timeline Overview:**\n• **Maha Dasha:** 9-year planetary cycles\n• **Yearly Dasha:** Annual influences within each cycle\n• **Monthly Dasha:** Pratyantara periods (8-74 days)\n• **Daily Dasha:** Daily planetary energies\n\nVisit the **"Advanced Dasha"** or **"Life Cycle"** tabs to explore your complete timeline and get personalized predictions!`;
+          fallbackMessage = translateResponse(dashaInfo);
         } else {
           fallbackMessage = `Your dasha periods reveal the planetary influences shaping different phases of your life. Visit the **"Advanced Dasha"** tab above to see your complete timeline—from daily influences to 9-year cycles!`;
         }
@@ -722,9 +884,9 @@ export default function ChatWidget({ userContext, report }) {
         } else if (lowerMsg.includes('update') || lowerMsg.includes('change') || lowerMsg.includes('edit') || lowerMsg.includes('correct')) {
           fallbackMessage = `**Updating Your Details ⚙️**\n\nTo update your name, date of birth, or gender:\n\n**Step 1:** Return to the homepage\n**Step 2:** Re-enter your information in the form\n**Step 3:** Click "Generate Report"\n\n**Important Notes:**\n• Changing details creates a NEW analysis (old reports remain unchanged)\n• Your previous reports are not automatically updated\n• If you made a typo, simply regenerate with correct info\n• Name spelling matters for name vibration analysis\n\n**Cannot Find Homepage?**\nClick the "KarmAnk" logo at the top left of the screen, or navigate to the main URL.\n\n**Need to Update Saved Data?**\nIf you need to permanently update stored information, email: support@karmank.com\n\nWe will assist you securely!`;
         } else if (lowerMsg.includes('download') || lowerMsg.includes('export') || lowerMsg.includes('save') || lowerMsg.includes('pdf')) {
-          fallbackMessage = `**Exporting Your Report 📥**\n\nYou can export or download your analysis:\n\n**Option 1: Download Chat Conversation**\n• Look for the download icon (📥) in the chat header above\n• Choose "Export as Text" or "Export as JSON"\n• Saves this conversation to your device\n\n**Option 2: Print/Save Report**\n• Use your browser's Print function (Ctrl+P / Cmd+P)\n• Choose "Save as PDF" as the printer destination\n• Captures all tabs and content\n\n**Option 3: Screenshot**\n• Use built-in screenshot tools\n• Windows: Win+Shift+S\n• Mac: Cmd+Shift+4\n\n**Coming Soon:**\nDedicated "Download Full Report" button is in development!\n\n**Need Help?**\nEmail support@karmank.com if you need a formatted PDF version manually sent to you.`;
+          fallbackMessage = `**Saving Your Report 📄**\n\nYou can save your numerology analysis:\n\n**Print/Save as PDF:**\n• Use your browser's Print function (Ctrl+P / Cmd+P)\n• Choose "Save as PDF" as the printer destination\n• Captures all tabs and content\n\n**Screenshot:**\n• Use built-in screenshot tools\n• Windows: Win+Shift+S\n• Mac: Cmd+Shift+4\n\n**Coming Soon:**\nDedicated "Download Full Report" button is in development!\n\n**Need Help?**\nEmail support@karmank.com if you need a formatted PDF version manually sent to you.`;
         } else {
-          fallbackMessage = `**App Help & Support 💡**\n\nI am here to help you navigate KarmAnk!\n\n**Common Questions:**\n\n📍 **Find Reports:** Check the 6 tabs at the top of your analysis\n   • Welcome, Foundational Analysis, Advanced Dasha, Forecast, Remedies, Traits\n\n⚙️ **Update Details:** Return to homepage and regenerate report\n\n📥 **Download:** Use download icon (📥) in chat header or browser Print → Save as PDF\n\n🔄 **Refresh Data:** Re-enter info on homepage to create new analysis\n\n❓ **Blank Sections:** Ensure birth details are complete; try refreshing page\n\n🔗 **Compatibility Analysis:** Visit homepage → select "Cosmic Compatibility" card\n\n**Still Stuck?**\nEmail: support@karmank.com with:\n• Clear description of your issue\n• Screenshots if possible\n• Browser and device type\n\n**Response Time:** Within 24 hours\n\nWhat specific feature do you need help with?`;
+          fallbackMessage = `**App Help & Support 💡**\n\nI am here to help you navigate KarmAnk!\n\n**Common Questions:**\n\n📍 **Find Reports:** Check the 6 tabs at the top of your analysis\n   • Welcome, Foundational Analysis, Advanced Dasha, Forecast, Remedies, Traits\n\n⚙️ **Update Details:** Return to homepage and regenerate report\n\n📄 **Save Report:** Use browser Print (Ctrl+P / Cmd+P) → Save as PDF\n\n🔄 **Refresh Data:** Re-enter info on homepage to create new analysis\n\n❓ **Blank Sections:** Ensure birth details are complete; try refreshing page\n\n🔗 **Compatibility Analysis:** Visit homepage → select "Cosmic Compatibility" card\n\n**Still Stuck?**\nEmail: support@karmank.com with:\n• Clear description of your issue\n• Screenshots if possible\n• Browser and device type\n\n**Response Time:** Within 24 hours\n\nWhat specific feature do you need help with?`;
         }
       } else {
         fallbackMessage = `I'm Ishira, and I'm here to help! While I'm having trouble connecting to my knowledge base right now, you can find answers in the tabs above:\n\n• **Welcome** - Overview of your numbers\n• **Foundational Analysis** - Deep dive into patterns\n• **Advanced Dasha** - Planetary periods\n• **Forecast** - Life predictions\n• **Remedies & Guidance** - Personalized suggestions\n• **Numerology Traits** - Your characteristics\n\nWhat specific aspect would you like to explore?`;
@@ -770,46 +932,6 @@ export default function ChatWidget({ userContext, report }) {
       );
     } catch (err) {
       console.error('Failed to send feedback:', err);
-    }
-  };
-
-  const exportConversation = (format) => {
-    const timestamp = new Date().toISOString().split('T')[0];
-    const filename = `Ishira_Conversation_${timestamp}`;
-
-    if (format === 'text') {
-      const text = messages.map(m =>
-        `[${m.role === 'user' ? 'You' : 'Ishira'}] ${m.content}`
-      ).join('\n\n');
-
-      const blob = new Blob([text], { type: 'text/plain' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${filename}.txt`;
-      a.click();
-      URL.revokeObjectURL(url);
-    } else if (format === 'json') {
-      const json = JSON.stringify(messages, null, 2);
-      const blob = new Blob([json], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${filename}.json`;
-      a.click();
-      URL.revokeObjectURL(url);
-    }
-
-    setShowExportMenu(false);
-  };
-
-  const clearHistory = () => {
-    if (confirm('Are you sure you want to clear your conversation history?')) {
-      setMessages([]);
-      if (user) {
-        localStorage.removeItem(`${STORAGE_KEY}_${user.id}`);
-      }
-      generateSuggestedQuestions();
     }
   };
 
@@ -860,49 +982,10 @@ export default function ChatWidget({ userContext, report }) {
             <Sparkles className="w-3 h-3 text-yellow-300 absolute -top-1 -right-1 animate-pulse" />
           </div>
           <div>
-            <h3 className="font-semibold text-white">Ishira - Your KarmAnk™ Guide</h3>
-            <p className="text-xs text-purple-300">Ask me about your numerology</p>
+            <h3 className="font-semibold text-white">Ishira</h3>
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <div className="relative">
-            <button
-              onClick={() => setShowExportMenu(!showExportMenu)}
-              className="p-2 hover:bg-white/10 rounded-lg transition-colors"
-              aria-label="Export conversation"
-            >
-              <Download className="w-4 h-4 text-purple-300" />
-            </button>
-            {showExportMenu && (
-              <div className="absolute right-0 top-full mt-2 bg-slate-800 border border-purple-500/30 rounded-lg shadow-xl p-2 min-w-[150px] z-10">
-                <button
-                  onClick={() => exportConversation('text')}
-                  className="w-full text-left px-3 py-2 text-sm text-white hover:bg-purple-600 rounded transition-colors"
-                >
-                  Export as Text
-                </button>
-                <button
-                  onClick={() => exportConversation('json')}
-                  className="w-full text-left px-3 py-2 text-sm text-white hover:bg-purple-600 rounded transition-colors"
-                >
-                  Export as JSON
-                </button>
-                <button
-                  onClick={clearHistory}
-                  className="w-full text-left px-3 py-2 text-sm text-red-400 hover:bg-red-900/30 rounded transition-colors"
-                >
-                  Clear History
-                </button>
-              </div>
-            )}
-          </div>
-          <button
-            onClick={() => setShowConsentDialog(true)}
-            className="p-2 hover:bg-white/10 rounded-lg transition-colors"
-            aria-label="Settings"
-          >
-            <Settings className="w-4 h-4 text-purple-300" />
-          </button>
           <button
             onClick={() => setIsMinimized(!isMinimized)}
             className="p-2 hover:bg-white/10 rounded-lg transition-colors"
@@ -986,22 +1069,46 @@ export default function ChatWidget({ userContext, report }) {
                   </div>
                 </div>
 
-                {/* Show suggested questions after bot's response */}
+                {/* Show follow-up and generic questions after bot's response */}
                 {message.role === 'assistant' &&
                  index === messages.length - 1 &&
-                 !isLoading &&
-                 suggestedQuestions.length > 0 && (
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {suggestedQuestions.map((q, idx) => (
-                      <button
-                        key={idx}
-                        onClick={() => handleSuggestedQuestion(q)}
-                        className="text-xs bg-purple-900/30 hover:bg-purple-600 border border-purple-500/30 text-purple-200 px-3 py-2 rounded-full transition-colors flex items-center gap-1"
-                      >
-                        <span>{q.icon}</span>
-                        <span>{q.text}</span>
-                      </button>
-                    ))}
+                 !isLoading && (
+                  <div className="mt-3 space-y-2">
+                    {/* Follow-up questions based on context */}
+                    {(() => {
+                      const followUps = generateFollowUpQuestions(message);
+                      return followUps.length > 0 && (
+                        <div className="flex flex-wrap gap-2">
+                          {followUps.map((q, idx) => (
+                            <button
+                              key={idx}
+                              onClick={() => handleSuggestedQuestion(q)}
+                              className="text-xs bg-purple-900/30 hover:bg-purple-600 border border-purple-500/30 text-purple-200 px-3 py-2 rounded-full transition-colors flex items-center gap-1"
+                            >
+                              <span>{q.icon}</span>
+                              <span>{q.text}</span>
+                            </button>
+                          ))}
+                        </div>
+                      );
+                    })()}
+
+                    {/* "What else?" section with generic questions */}
+                    <div>
+                      <p className="text-xs text-cyan-300/70 mb-1.5">What else would you like to know?</p>
+                      <div className="flex flex-wrap gap-2">
+                        {getGenericQuestions().slice(0, 4).map((q, idx) => (
+                          <button
+                            key={idx}
+                            onClick={() => handleSuggestedQuestion(q)}
+                            className="text-xs bg-cyan-900/20 hover:bg-cyan-600/50 border border-cyan-500/20 text-cyan-200 px-3 py-1.5 rounded-full transition-colors flex items-center gap-1"
+                          >
+                            <span>{q.icon}</span>
+                            <span className="max-w-[120px] truncate">{q.text}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>
@@ -1023,19 +1130,44 @@ export default function ChatWidget({ userContext, report }) {
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Quick Replies (when no conversation) */}
-          {messages.length === 0 && suggestedQuestions.length > 0 && (
-            <div className="px-4 pb-2 flex flex-wrap gap-2">
-              {suggestedQuestions.slice(0, 4).map((q, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => handleSuggestedQuestion(q)}
-                  className="text-xs bg-purple-900/30 hover:bg-purple-600 border border-purple-500/30 text-purple-200 px-3 py-2 rounded-full transition-colors flex items-center gap-1"
-                >
-                  <span>{q.icon}</span>
-                  <span className="max-w-[150px] truncate">{q.text}</span>
-                </button>
-              ))}
+          {/* Suggested Questions Section */}
+          {messages.length === 0 && (
+            <div className="px-4 pb-2 space-y-3">
+              {/* Personalized Quick Questions */}
+              {suggestedQuestions.length > 0 && (
+                <div>
+                  <p className="text-xs text-purple-300 mb-2 font-medium">Quick Questions for You</p>
+                  <div className="flex flex-wrap gap-2">
+                    {suggestedQuestions.map((q, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => handleSuggestedQuestion(q)}
+                        className="text-xs bg-gradient-to-r from-purple-600/40 to-pink-600/40 hover:from-purple-600 hover:to-pink-600 border border-purple-400/50 text-white px-3 py-2 rounded-full transition-all duration-200 flex items-center gap-1.5 shadow-md hover:shadow-lg"
+                      >
+                        <span>{q.icon}</span>
+                        <span>{q.text}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Generic Common Questions */}
+              <div>
+                <p className="text-xs text-cyan-300 mb-2 font-medium">What else can I help with?</p>
+                <div className="flex flex-wrap gap-2">
+                  {getGenericQuestions().slice(0, 6).map((q, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => handleSuggestedQuestion(q)}
+                      className="text-xs bg-cyan-900/30 hover:bg-cyan-600 border border-cyan-500/30 text-cyan-200 px-3 py-2 rounded-full transition-colors flex items-center gap-1"
+                    >
+                      <span>{q.icon}</span>
+                      <span className="max-w-[150px] truncate">{q.text}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
           )}
 
@@ -1064,65 +1196,6 @@ export default function ChatWidget({ userContext, report }) {
         </>
       )}
 
-      {/* Consent Dialog */}
-      {showConsentDialog && (
-        <div className="absolute inset-0 bg-slate-900/95 backdrop-blur-sm rounded-2xl p-6 z-10">
-          <div className="h-full flex flex-col">
-            <div className="flex items-center justify-between mb-4">
-              <h4 className="font-semibold text-white">Chat Settings</h4>
-              <button
-                onClick={() => setShowConsentDialog(false)}
-                className="p-2 hover:bg-white/10 rounded-lg transition-colors"
-              >
-                <X className="w-4 h-4 text-purple-300" />
-              </button>
-            </div>
-
-            <div className="flex-1 space-y-4">
-              <div className="bg-purple-900/30 rounded-lg p-4 border border-purple-500/30">
-                <h5 className="font-medium text-white mb-2">Help Improve Your Experience</h5>
-                <p className="text-sm text-purple-200 mb-4">
-                  Allow KarmAnk™ to use your anonymized, redacted conversations to improve the chatbot's understanding of numerology questions.
-                </p>
-
-                <div className="space-y-2 text-xs text-purple-300 mb-4">
-                  <p>✓ Your personal information will be removed</p>
-                  <p>✓ Only with your explicit consent</p>
-                  <p>✓ Manually reviewed before use</p>
-                  <p>✓ Used only to improve responses</p>
-                  <p>✓ Never shared with third parties</p>
-                </div>
-
-                <label className="flex items-center gap-3 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={userConsent}
-                    onChange={(e) => updateUserConsent(e.target.checked)}
-                    className="w-5 h-5 rounded border-purple-500 bg-slate-800 text-purple-600 focus:ring-2 focus:ring-purple-500"
-                  />
-                  <span className="text-sm text-white">
-                    Use my conversations for improvement
-                  </span>
-                </label>
-              </div>
-
-              <div className="bg-slate-800/50 rounded-lg p-4 border border-purple-500/20">
-                <h5 className="font-medium text-white mb-2 text-sm">Privacy Notice</h5>
-                <p className="text-xs text-purple-300">
-                  Ishira never shares system internals, technical details, or classified information. She only discusses your personal numerology insights.
-                </p>
-              </div>
-            </div>
-
-            <button
-              onClick={() => setShowConsentDialog(false)}
-              className="w-full bg-gradient-to-br from-purple-600 to-violet-600 py-3 rounded-xl text-white font-medium hover:scale-105 transition-transform mt-4"
-            >
-              Done
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

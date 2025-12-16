@@ -32,7 +32,7 @@ const RudrakshaTab = ({ report, language = 'en' }) => {
         }
 
         return (
-            <Card>
+            <Card className="print:mb-4" style={{ pageBreakInside: 'avoid' }}>
                 <h2 className="text-2xl font-bold text-yellow-400 mb-4">
                     Rudraksha for Number {number} ({getText(rudrakshaData.planet, language)})
                 </h2>
@@ -72,7 +72,7 @@ const RudrakshaTab = ({ report, language = 'en' }) => {
 
     try {
         return (
-            <div className="space-y-6">
+            <div className="space-y-6 pdf-page-break-after" style={{ pageBreakAfter: 'always' }}>
                 {uniqueNumbers.map(num => <RudrakshaCard key={num} number={num} />)}
             </div>
         );

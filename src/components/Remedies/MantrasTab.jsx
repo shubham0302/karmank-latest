@@ -11,7 +11,7 @@ const MantrasTab = ({ report, language = 'en' }) => {
         if (!mantraData) return null;
 
         return (
-            <Card>
+            <Card className="print:mb-4" style={{ pageBreakInside: 'avoid' }}>
                 <h2 className="text-2xl font-bold text-yellow-400 mb-4">
                     Mantra for Number {number} ({getText(mantraData.planet, language)})
                 </h2>
@@ -34,7 +34,7 @@ const MantrasTab = ({ report, language = 'en' }) => {
     };
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 pdf-page-break-after" style={{ pageBreakAfter: 'always' }}>
             {uniqueNumbers.map(num => <MantraCard key={num} number={num} />)}
         </div>
     );

@@ -276,6 +276,89 @@ app.post('/api/data/enrichment', async (req: Request, res: Response) => {
   }
 });
 
+// ============================================================================
+// Name Analysis Endpoint - Secure Gemini API Access
+// ============================================================================
+
+/**
+ * Analyze name using Gemini API (secure backend call)
+ * This endpoint protects your Gemini API key from frontend exposure
+ */
+app.post('/nlg/analyze-name', async (req: Request, res: Response) => {
+  try {
+    const { name, language = 'en' } = req.body;
+
+    // Validate input
+    if (!name || typeof name !== 'string' || name.trim().length === 0) {
+      return res.status(400).json({
+        error: 'invalid_input',
+        message: 'Name is required'
+      });
+    }
+
+    if (!GEMINI_API_KEY) {
+      console.error('❌ GEMINI_API_KEY not configured');
+      return res.status(500).json({
+        error: 'server_configuration_error',
+        message: 'API key not configured on server'
+      });
+    }
+
+    console.log(`🔮 Analyzing name: ${name} (language: ${language})`);
+
+    // Create prompt for name analysis
+    const prompt = `Analyze the numerological significance of the name "${name}".
+Provide insights about:
+1. The vibrational energy of the name
+2. How the letters influence personality
+3. Compatibility with life path
+4. Strengths and challenges
+5. Career and relationship insights
+
+Respond in ${language === 'hi' ? 'Hindi' : 'English'} language.
+Keep the response clear, concise, and actionable (about 200-300 words).`;
+
+    // Call Gemini API (API key secure on backend)
+    const model = 'gemini-1.5-flash';
+    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`;
+
+    const response = await axios.post(apiUrl, {
+      contents: [{
+        parts: [{ text: prompt }]
+      }]
+    }, {
+      headers: { 'Content-Type': 'application/json' },
+      timeout: 30000
+    });
+
+    // Extract generated text
+    const generatedText = response.data?.candidates?.[0]?.content?.parts?.[0]?.text;
+
+    if (!generatedText) {
+      throw new Error('No content generated from Gemini API');
+    }
+
+    console.log(`✅ Name analysis complete for: ${name}`);
+
+    return res.json({
+      success: true,
+      data: {
+        name,
+        analysis: generatedText,
+        language
+      }
+    });
+
+  } catch (err: any) {
+    console.error('❌ Name analysis error:', err.message);
+
+    return res.status(500).json({
+      error: 'name_analysis_error',
+      message: err.response?.data?.error?.message || 'Failed to analyze name'
+    });
+  }
+});
+
 // Start server
 app.listen(PORT, () => {
   console.log(`

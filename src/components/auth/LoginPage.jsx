@@ -321,6 +321,7 @@ export default function LoginPage() {
                         <a href="/refund" target="_blank" rel="noopener noreferrer" className="text-auric-gold hover:text-auric-gold/80 underline font-semibold">
                           Refund Policy
                         </a>
+                        .
                       </label>
                     </div>
 

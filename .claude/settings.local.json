@@ -5,7 +5,14 @@
       "Bash(npm run dev:*)",
       "Bash(dir:*)",
       "Bash(nul)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(cat:*)",
+      "Bash(curl:*)",
+      "Bash(npm install:*)",
+      "Bash(npm run build:dev:*)",
+      "Bash(for file in src/components/Remedies/{AdvancedRemediesTab,MantrasTab,RudrakshaTab,ChakraTab,ShaktiBeejMantraTab}.jsx)",
+      "Bash(do grep -n \"return\" \"$file\")",
+      "Bash(done)"
     ],
     "deny": [],
     "ask": []

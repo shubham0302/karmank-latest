@@ -6,12 +6,19 @@ const NlgSummaryComponent = ({ prompt, title, shouldGenerate = false }) => {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
     const [userTriggered, setUserTriggered] = useState(false);
+    const [lastPrompt, setLastPrompt] = useState('');
 
     useEffect(() => {
         if (!prompt) return;
 
-        // Only generate if explicitly triggered by shouldGenerate prop or user button click
-        if (!shouldGenerate && !userTriggered) {
+        // Only generate if:
+        // 1. Explicitly triggered by shouldGenerate prop or user button click
+        // 2. OR prompt has changed (first load or language switch)
+        // BUT skip if we've already generated this exact prompt (lastPrompt tracks what we generated)
+        const promptChanged = prompt !== lastPrompt;
+        const shouldRegenerate = shouldGenerate || userTriggered || promptChanged;
+
+        if (!shouldRegenerate) {
             setIsLoading(false);
             return;
         }
@@ -23,9 +30,14 @@ const NlgSummaryComponent = ({ prompt, title, shouldGenerate = false }) => {
                 const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080';
 
                 console.log("🔒 Calling secure backend API for NLG generation...");
+                console.time("NLG Generation Time");
 
                 // Generate cache key based on prompt (first 50 chars)
                 const cacheKey = `nlg_summary_${prompt.substring(0, 50).replace(/\s+/g, '_')}`;
+
+                // Add timeout wrapper (30 seconds max)
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 30000);
 
                 const response = await fetch(`${backendUrl}/nlg/generate`, {
                     method: 'POST',
@@ -34,11 +46,15 @@ const NlgSummaryComponent = ({ prompt, title, shouldGenerate = false }) => {
                         prompt,
                         cacheKey,
                         nlgType: 'summary'
-                    })
+                    }),
+                    signal: controller.signal
                 });
+
+                clearTimeout(timeoutId);
 
                 console.log("Response status:", response.status);
                 const result = await response.json();
+                console.timeEnd("NLG Generation Time");
                 console.log("API Response:", result);
 
                 if (!response.ok) {
@@ -48,6 +64,8 @@ const NlgSummaryComponent = ({ prompt, title, shouldGenerate = false }) => {
 
                 if (result.success && result.text) {
                     setSummary(result.text);
+                    setLastPrompt(prompt); // Track this prompt
+                    setUserTriggered(false); // Reset user trigger
                     if (result.cached) {
                         console.log("✅ Summary loaded from cache (no API cost)");
                     } else {
@@ -55,18 +73,45 @@ const NlgSummaryComponent = ({ prompt, title, shouldGenerate = false }) => {
                     }
                 } else {
                     setSummary("Could not generate a detailed summary at this time. Please review the data below.");
+                    setLastPrompt(prompt);
+                    setUserTriggered(false);
                 }
             } catch (err) {
                 console.error("Error generating summary:", err);
-                setError('An error occurred while generating the summary.');
-                setSummary("Could not generate a summary. Please check your backend server is running.");
+
+                console.timeEnd("NLG Generation Time");
+
+                // More detailed error messages
+                let errorMessage = 'An error occurred while generating the summary.';
+                let summaryMessage = "Could not generate a summary. Please check your backend server is running.";
+
+                if (err.name === 'AbortError') {
+                    errorMessage = 'Request timeout: AI generation took too long (>30s).';
+                    summaryMessage = "The AI service is taking longer than expected. This might be due to Lambda cold start or Gemini API latency. Please try again.";
+                } else if (err.message.includes('Failed to fetch') || err.message.includes('NetworkError')) {
+                    errorMessage = 'Network error: Unable to connect to backend server.';
+                    summaryMessage = "Backend server is not reachable. Check if the server is running at: " + (import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080');
+                } else if (err.message.includes('API key')) {
+                    errorMessage = 'Backend API key not configured.';
+                    summaryMessage = "The backend server needs a valid Gemini API key. Please configure GEMINI_API_KEY environment variable.";
+                } else if (err.message.includes('Gemini')) {
+                    errorMessage = 'AI service error: ' + err.message;
+                    summaryMessage = "Google Gemini API returned an error. Check Lambda logs for details.";
+                } else {
+                    errorMessage = 'Error: ' + err.message;
+                }
+
+                setError(errorMessage);
+                setSummary(summaryMessage);
+                setLastPrompt(prompt); // Track even on error to prevent infinite retries
+                setUserTriggered(false);
             } finally {
                 setIsLoading(false);
             }
         };
 
         generateSummary();
-    }, [prompt, shouldGenerate, userTriggered]); // Re-run when prompt or trigger changes
+    }, [prompt, shouldGenerate, userTriggered, summary, lastPrompt]); // Re-run when prompt or trigger changes
 
     return (
         <Card className="bg-indigo-900/30 border-indigo-400">

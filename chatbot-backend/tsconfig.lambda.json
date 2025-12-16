@@ -1,0 +1,18 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./dist"
+  },
+  "include": [
+    "src/lambda.ts",
+    "src/nlg-server-lambda.ts",
+    "src/services/**/*",
+    "src/data/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "test",
+    "src/orchestrator_karmank.ts"
+  ]
+}

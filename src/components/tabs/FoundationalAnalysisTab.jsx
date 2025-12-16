@@ -12,7 +12,14 @@ const FoundationalAnalysisTab = ({ analysis, yogas, specialInsights, language = 
 
         return analysis.map(item => {
             const rule = DATA.recurringNumberInfluence[item.number];
-            if (!rule) return item;
+
+            // If no rule in frontend (data moved to backend), show generic message
+            if (!rule) {
+                return {
+                    ...item,
+                    influence: `This number appears ${item.occurrences} times in your chart, amplifying its influence on your life path.`
+                };
+            }
 
             let influence = [];
             const count = item.occurrences;
@@ -33,7 +40,19 @@ const FoundationalAnalysisTab = ({ analysis, yogas, specialInsights, language = 
 
     const nlgPrompt = useMemo(() => {
         if (!analysis && !yogas) return null;
-        let prompt = "You are a Vedic numerologist. Based on the following foundational chart analysis, write a 2-4 sentence summary of the person's key strengths and challenges. \n\n";
+
+        // Language-specific prompt instruction
+        let languageInstruction = "";
+        if (language === 'hi') {
+            languageInstruction = "You are a Vedic numerologist. Based on the following foundational chart analysis, write a 2-4 sentence summary of the person's key strengths and challenges in HINDI (हिंदी). Use Devanagari script. \n\n";
+        } else if (language === 'en-hi') {
+            languageInstruction = "You are a Vedic numerologist. Based on the following foundational chart analysis, write a 2-4 sentence summary of the person's key strengths and challenges in HINGLISH (Roman script with Hindi words). Use conversational Hindi-English mix. \n\n";
+        } else {
+            languageInstruction = "You are a Vedic numerologist. Based on the following foundational chart analysis, write a 2-4 sentence summary of the person's key strengths and challenges in ENGLISH. \n\n";
+        }
+
+        let prompt = languageInstruction;
+
         if (yogas.length > 0) {
             prompt += "Foundational Yogas Present:\n";
             yogas.forEach(yoga => {

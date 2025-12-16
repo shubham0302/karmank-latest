@@ -1,16 +1,68 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect } from 'react';
 import Card from '../Card';
 import SectionTitle from '../SectionTitle';
 import { DATA } from '../../data/data';
 
 const ProfessionForecastTab = ({ report, dashaReport, gender, targetDate }) => {
-    if (!report || !dashaReport) return null;
+    useEffect(() => {
+        console.log('[ProfessionForecast] Component MOUNTED');
+        return () => {
+            console.log('[ProfessionForecast] Component UNMOUNTING');
+        };
+    }, []);
+
+    useEffect(() => {
+        console.log('[ProfessionForecast] Props changed:', { targetDate, reportExists: !!report, dashaExists: !!dashaReport });
+    }, [targetDate, report, dashaReport]);
+
+    if (!report || !dashaReport) {
+        console.error('[ProfessionForecast] Missing required data:', { report: !!report, dashaReport: !!dashaReport });
+        return null;
+    }
 
     const professionAnalysis = useMemo(() => {
+        console.log('[ProfessionForecast] Calculating analysis for targetDate:', targetDate);
+        console.log('[ProfessionForecast] Report data:', {
+            destinyNumber: report.destinyNumber,
+            baseKundliGrid: report.baseKundliGrid,
+            dob: report.dob
+        });
+        console.log('[ProfessionForecast] DashaReport timelines:', {
+            yearlyCount: dashaReport.yearlyDashaTimeline?.length,
+            mahaCount: dashaReport.mahaDashaTimeline?.length
+        });
+
+        // Debug: Log first dasha entry to see data types
+        if (dashaReport.yearlyDashaTimeline.length > 0) {
+            const firstYearly = dashaReport.yearlyDashaTimeline[0];
+            console.log('[ProfessionForecast] First yearly dasha sample:', {
+                startDate: firstYearly.startDate,
+                startDateType: typeof firstYearly.startDate,
+                startDateIsDate: firstYearly.startDate instanceof Date,
+                endDate: firstYearly.endDate,
+                endDateType: typeof firstYearly.endDate,
+                endDateIsDate: firstYearly.endDate instanceof Date
+            });
+        }
+
+        console.log('[ProfessionForecast] Looking for dasha matching targetDate:', {
+            targetDate,
+            targetDateType: typeof targetDate,
+            targetDateIsDate: targetDate instanceof Date
+        });
+
         const yearlyDasha = dashaReport.yearlyDashaTimeline.find(d => targetDate >= d.startDate && targetDate <= d.endDate);
         const mahaDasha = dashaReport.mahaDashaTimeline.find(d => targetDate >= d.startDate && targetDate <= d.endDate);
 
-        if (!yearlyDasha || !mahaDasha) return { outlook: { title: 'N/A', text: 'Forecast not available for this date.', status: 'Yellow'}, opportunities: [], challenges: [], advice: [], partnership: [], milestones: [] };
+        console.log('[ProfessionForecast] Found dashas:', {
+            yearlyDasha: yearlyDasha ? { dashaNumber: yearlyDasha.dashaNumber, startDate: yearlyDasha.startDate, endDate: yearlyDasha.endDate } : null,
+            mahaDasha: mahaDasha ? { dashaNumber: mahaDasha.dashaNumber, startDate: mahaDasha.startDate, endDate: mahaDasha.endDate } : null
+        });
+
+        if (!yearlyDasha || !mahaDasha) {
+            console.warn('[ProfessionForecast] Dasha not found for targetDate:', targetDate);
+            return { outlook: { title: 'N/A', text: 'Forecast not available for this date.', status: 'Yellow'}, opportunities: [], challenges: [], advice: [], partnership: [], milestones: [] };
+        }
 
         const { destinyNumber, baseKundliGrid } = report;
         const annualDashaNumber = yearlyDasha.dashaNumber;
@@ -35,11 +87,15 @@ const ProfessionForecastTab = ({ report, dashaReport, gender, targetDate }) => {
             }
         }
 
+        console.log('[ProfessionForecast] isMahaDashaDominant:', isMahaDashaDominant);
+        console.log('[ProfessionForecast] annualDashaNumber:', annualDashaNumber);
+
         if (!isMahaDashaDominant) {
             switch (annualDashaNumber) {
                 case 1:
-                    outlook.title = "This period is influenced by Number 1 – The Leader’s Code";
+                    outlook.title = "This period is influenced by Number 1 – The Leader's Code";
                     const isPositive1InChart = (count(1) <= 1 || destinyNumber === 1);
+                    console.log('[ProfessionForecast] Case 1: count(1)=' + count(1) + ', destinyNumber=' + destinyNumber + ', isPositive=' + isPositive1InChart);
                     if (isPositive1InChart) {
                         outlook.status = 'Green';
                         outlook.text = "This Dasha brings confidence, leadership roles, promotions, and opportunities for business leadership. The native receives respect, high decision-making authority, and wealth through power. It enhances their command over others and uplifts their self-image.";
@@ -47,6 +103,7 @@ const ProfessionForecastTab = ({ report, dashaReport, gender, targetDate }) => {
                         outlook.status = 'Red';
                         outlook.text = "This period brings ego clashes, aggression, isolation, and financial disruption. The person may become impulsive, leading to poor decision-making and facing delays or rejections in high-stake opportunities.";
                     }
+                    console.log('[ProfessionForecast] After case 1: outlook =', outlook);
                     break;
                 case 2:
                     outlook.title = "This period is influenced by Number 2 – The Mirror of Emotion";
@@ -163,13 +220,66 @@ const ProfessionForecastTab = ({ report, dashaReport, gender, targetDate }) => {
         const currentYear = new Date().getFullYear();
         const milestoneYears = dashaReport.yearlyDashaTimeline
             .filter(d => d.year >= currentYear)
-            .filter(d => [1, 3, 5, 6].includes(d.dashaNumber))
+            .filter(d => {
+                const dashaNum = d.dashaNumber;
+
+                // Number 1: Only favorable if count(1) <= 1 OR destinyNumber === 1
+                if (dashaNum === 1) return (count(1) <= 1 || destinyNumber === 1);
+
+                // Number 3: Only favorable if count(3) <= 1 (Green status)
+                if (dashaNum === 3) return count(3) <= 1;
+
+                // Number 5: Only favorable if count(5) === 0 OR count(5) === 1 OR destinyNumber === 5
+                if (dashaNum === 5) return (count(5) === 0 || count(5) === 1 || destinyNumber === 5);
+
+                // Number 6: Only favorable if count(6) === 0 OR destinyNumber === 6
+                if (dashaNum === 6) return (count(6) === 0 || destinyNumber === 6);
+
+                // Number 7: Only favorable if NOT (count(7) >= 3 AND destinyNumber !== 7)
+                if (dashaNum === 7) return !(count(7) >= 3 && destinyNumber !== 7);
+
+                // Number 8: Only favorable if even count (including this dasha)
+                if (dashaNum === 8) {
+                    let effective8 = count(8);
+                    // Find maha dasha for this year
+                    const yearDate = new Date(d.year, report.dob.getMonth(), report.dob.getDate());
+                    const mahaFor8 = dashaReport.mahaDashaTimeline.find(md =>
+                        yearDate >= md.startDate && yearDate <= md.endDate
+                    );
+                    if (mahaFor8?.dashaNumber === 8) effective8++;
+                    effective8++; // Add the annual dasha itself
+                    return (effective8 > 0 && effective8 % 2 === 0);
+                }
+
+                // Number 9: Only favorable if destinyNumber === 9
+                if (dashaNum === 9) return destinyNumber === 9;
+
+                return false;
+            })
             .slice(0, 10)
             .map(d => d.year);
 
-        return { outlook, opportunities, challenges, advice, partnership, milestones: milestoneYears };
+        const result = { outlook, opportunities, challenges, advice, partnership, milestones: milestoneYears };
+        console.log('[ProfessionForecast] Calculated analysis:', {
+            outlookTitle: result.outlook.title,
+            outlookStatus: result.outlook.status,
+            opportunitiesCount: result.opportunities.length,
+            challengesCount: result.challenges.length,
+            adviceCount: result.advice.length,
+            partnershipCount: result.partnership.length,
+            milestonesCount: result.milestones.length,
+            milestones: result.milestones
+        });
+
+        return result;
 
     }, [targetDate, report, dashaReport]);
+
+    console.log('[ProfessionForecast] RENDERING with analysis:', {
+        hasOutlookTitle: !!professionAnalysis.outlook.title,
+        outlookTitle: professionAnalysis.outlook.title,
+        outlookText: professionAnalysis.outlook.text?.substring(0, 50) + '...'
+    });
 
     const StatusIcon = ({ status }) => {
         if (status === 'Green') return <span className="text-green-500 text-2xl mr-3" title="Favorable">🟢</span>;
@@ -183,8 +293,8 @@ const ProfessionForecastTab = ({ report, dashaReport, gender, targetDate }) => {
         const colorClass = status === 'Green' ? 'border-green-500/50' : status === 'Red' ? 'border-red-500/50' : 'border-yellow-500/50';
         return (
             <div>
-                <h4 className="font-semibold text-lg text-yellow-300 mb-2">{icon} {title}</h4>
-                <ul className={`list-disc list-inside space-y-2 pl-4 border-l-4 ${colorClass}`}>
+                <h4 className="font-semibold text-lg text-yellow-300 mb-2 print:text-sm print:mb-1">{icon} {title}</h4>
+                <ul className={`list-disc list-inside space-y-2 pl-4 border-l-4 ${colorClass} print:space-y-1 print:text-xs print:pl-2`}>
                     {items.map((item, index) => <li key={index}>{item}</li>)}
                 </ul>
             </div>
@@ -193,14 +303,14 @@ const ProfessionForecastTab = ({ report, dashaReport, gender, targetDate }) => {
 
     return (
         <div className="space-y-6">
-            <Card>
-                <SectionTitle>Professional Forecast</SectionTitle>
-                <div className="p-4 bg-gray-900/50 rounded-lg space-y-6">
+            <Card className="pdf-page-break-after print:space-y-2" style={{ pageBreakAfter: 'always', pageBreakInside: 'avoid' }}>
+                <SectionTitle className="print:text-base print:mb-2">Professional Forecast</SectionTitle>
+                <div className="p-4 bg-gray-900/50 rounded-lg space-y-6 print:space-y-2 print:p-2">
                     <div>
-                        <h3 className="font-bold text-xl text-yellow-400 mb-2">{professionAnalysis.outlook.title}</h3>
+                        <h3 className="font-bold text-xl text-yellow-400 mb-2 print:text-sm print:mb-1">{professionAnalysis.outlook.title}</h3>
                         <div className="flex items-start">
                             <StatusIcon status={professionAnalysis.outlook.status} />
-                            <p>{professionAnalysis.outlook.text}</p>
+                            <p className="print:text-xs">{professionAnalysis.outlook.text}</p>
                         </div>
                     </div>
 
@@ -208,34 +318,36 @@ const ProfessionForecastTab = ({ report, dashaReport, gender, targetDate }) => {
                     <InsightCard title="Potential Challenges" items={professionAnalysis.challenges} status="Red" icon="❌" />
                     <InsightCard title="Strategic Advice" items={professionAnalysis.advice} status="Yellow" icon="💡" />
                 </div>
-                <div className="flex justify-end mt-4">
+                <div className="flex justify-end mt-4 print:hidden">
                     <button className="bg-blue-600 text-white font-semibold py-2 px-4 rounded-md hover:bg-blue-700 transition duration-300 disabled:bg-gray-500" title="Full Vedic Kundli analysis required for confirmation.">
                         Verify with Vedic Kundli
                     </button>
                 </div>
-            </Card>
 
-            <Card>
-                <SectionTitle>Partnership & Risk Analysis</SectionTitle>
-                {professionAnalysis.partnership.length > 0 ?
-                    professionAnalysis.partnership.map((item, index) => (
-                        <div key={index} className="flex items-start p-3 mb-2 bg-gray-900/50 rounded-md" title="Partnership Insight">
-                            <StatusIcon status={item.status} />
-                            <p>{item.text}</p>
-                        </div>
-                    )) : <p>No specific partnership risks detected for this period.</p>}
-            </Card>
-
-            <Card>
-                <SectionTitle>Potential Career Milestone Years ("Growth in Profession/ Business")</SectionTitle>
-                <p className="text-sm text-white/70 mb-4">The following years show a high probability for significant job opportunities or career changes based on favorable Annual Dasha periods of 3, 5, or 6. Verification with Vedic Kundli is recommended for precise timing.</p>
-                <div className="flex flex-wrap gap-4">
-                    {professionAnalysis.milestones.length > 0 ?
-                        professionAnalysis.milestones.map(year => (
-                            <div key={year} className="bg-green-500/20 text-green-300 font-bold py-2 px-4 rounded-full">
-                                {year}
+                {/* Partnership & Risk Analysis - Same Page with Border */}
+                <div className="mt-6 pt-4 border-t-2 border-gray-700 print:mt-3 print:pt-2">
+                    <h3 className="text-xl font-bold text-yellow-300 mb-3 print:text-sm print:mb-1">Partnership & Risk Analysis</h3>
+                    {professionAnalysis.partnership.length > 0 ?
+                        professionAnalysis.partnership.map((item, index) => (
+                            <div key={index} className="flex items-start p-3 mb-2 bg-gray-900/50 rounded-md print:p-2 print:mb-1 print:text-xs" title="Partnership Insight">
+                                <StatusIcon status={item.status} />
+                                <p>{item.text}</p>
                             </div>
-                        )) : <p>No immediate high-probability milestone years detected in the upcoming Dasha cycle.</p>}
+                        )) : <p className="print:text-xs">No specific partnership risks detected for this period.</p>}
+                </div>
+
+                {/* Career Milestone Years - Same Page with Border */}
+                <div className="mt-6 pt-4 border-t-2 border-gray-700 print:mt-3 print:pt-2">
+                    <h3 className="text-xl font-bold text-yellow-300 mb-3 print:text-sm print:mb-1">Career Milestone Years</h3>
+                    <p className="text-sm text-white/70 mb-4 print:text-xs print:mb-2">High probability years for job opportunities based on favorable Dasha periods (chart-specific calculations).</p>
+                    <div className="flex flex-wrap gap-4 print:gap-2">
+                        {professionAnalysis.milestones.length > 0 ?
+                            professionAnalysis.milestones.map(year => (
+                                <div key={year} className="bg-green-500/20 text-green-300 font-bold py-2 px-4 rounded-full print:py-1 print:px-2 print:text-xs">
+                                    {year}
+                                </div>
+                            )) : <p className="print:text-xs">No immediate milestone years detected.</p>}
+                    </div>
                 </div>
             </Card>
         </div>

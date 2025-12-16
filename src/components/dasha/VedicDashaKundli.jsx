@@ -27,14 +27,14 @@ const VedicDashaKundli = ({ baseGrid, activeNumbers, basicNumber, destinyNumber 
     };
 
     return (
-        <div className="grid grid-cols-3 gap-2 max-w-xs mx-auto bg-gray-900/50 p-2 rounded-md aspect-square">
+        <div className="grid grid-cols-3 gap-2.5 w-80 mx-auto bg-gradient-to-br from-gray-900/80 to-gray-800/60 p-4 rounded-xl shadow-2xl border border-gray-700/50 aspect-square">
             {layout.map((num, i) => (
-                <div 
-                    key={i} 
+                <div
+                    key={i}
                     style={{ background: getCellBackground(num) }}
-                    className="flex items-center justify-center text-2xl font-bold rounded-md aspect-square text-white transition-all duration-300 ease-in-out"
+                    className="flex items-center justify-center text-3xl font-bold rounded-lg aspect-square text-white transition-all duration-300 ease-in-out shadow-lg hover:scale-105 hover:shadow-2xl"
                 >
-                    {displayGrid[num] > 0 
+                    {displayGrid[num] > 0
                         ? String(num).repeat(displayGrid[num]) : ''}
                 </div>
             ))}

@@ -16,8 +16,8 @@ const ChildBirthForecastTab = ({ report, dashaReport, gender, targetDate }) => {
     const [selectedDeliveryDate, setSelectedDeliveryDate] = useState(new Date().toISOString().split('T')[0]);
 
     const possibilityAnalysis = useMemo(() => {
-        const yearlyDashaRec = dashaReport.yearlyDashaTimeline.find(d => targetDate >= new Date(d.startDate) && targetDate <= new Date(d.endDate));
-        const mahaDashaRec = dashaReport.mahaDashaTimeline.find(d => targetDate >= new Date(d.startDate) && targetDate <= new Date(d.endDate));
+        const yearlyDashaRec = dashaReport.yearlyDashaTimeline.find(d => targetDate >= d.startDate && targetDate <= d.endDate);
+        const mahaDashaRec = dashaReport.mahaDashaTimeline.find(d => targetDate >= d.startDate && targetDate <= d.endDate);
 
         if (!yearlyDashaRec || !mahaDashaRec) {
             return { status: 'Neutral', dasha3: { active: false }, even8: { active: false } };
@@ -65,7 +65,7 @@ const ChildBirthForecastTab = ({ report, dashaReport, gender, targetDate }) => {
             return { text: "This analysis is applicable only for the female chart.", status: 'Neutral' };
         }
 
-        const yearlyDasha = dashaReport.yearlyDashaTimeline.find(d => targetDate >= new Date(d.startDate) && targetDate <= new Date(d.endDate))?.dashaNumber;
+        const yearlyDasha = dashaReport.yearlyDashaTimeline.find(d => targetDate >= d.startDate && targetDate <= d.endDate)?.dashaNumber;
         if (yearlyDasha === undefined) return { text: "Dasha data not available for this period.", status: 'Neutral' };
 
         const resultantChart = [...report.baseKundliGrid];
@@ -129,25 +129,28 @@ const ChildBirthForecastTab = ({ report, dashaReport, gender, targetDate }) => {
 
     return (
         <div className="space-y-8 font-sans text-white">
-            <Card>
+            {/* Page 1: Childbirth Possibility + Pregnancy Planning Window */}
+            <Card className="pdf-page-break-after" style={{ pageBreakAfter: 'always', pageBreakInside: 'avoid' }}>
                 <SectionTitle>Childbirth Possibility Prediction</SectionTitle>
-                <p className="text-sm text-yellow-200/70 mb-4">Analyzes the current forecast year to identify periods with a high probability of childbirth based on your Annual Dasha.</p>
+                <p className="text-sm text-yellow-200/70 mb-4 print:text-xs print:mb-2">Analyzes the current forecast year to identify periods with a high probability of childbirth based on your Annual Dasha.</p>
                 <StatusBlock status={possibilityAnalysis.status}>
                     <NlgChildBirthForecast analysis={possibilityAnalysis} />
                 </StatusBlock>
+
+                {/* Pregnancy Planning Window on Same Page */}
+                <div className="mt-6 pt-6 border-t border-gray-700 print:mt-4 print:pt-4">
+                    <h3 className="text-xl font-bold text-yellow-300 mb-3 print:text-lg print:mb-2">Pregnancy Planning Window</h3>
+                    <p className="text-sm text-white/70 mb-4 print:text-xs print:mb-2">This analysis, most relevant for the female chart, determines if the current period is favorable for planning a pregnancy based on active numerological energies.</p>
+                    <StatusBlock status={avoidanceAnalysis.status}>
+                        <p className="font-bold text-xl text-center print:text-lg">{avoidanceAnalysis.text}</p>
+                    </StatusBlock>
+                </div>
             </Card>
 
-            <Card>
-                <SectionTitle>Pregnancy Planning Window</SectionTitle>
-                <p className="text-sm text-white/70 mb-4">This analysis, most relevant for the female chart, determines if the current period is favorable for planning a pregnancy based on active numerological energies.</p>
-                <StatusBlock status={avoidanceAnalysis.status}>
-                    <p className="font-bold text-xl text-center">{avoidanceAnalysis.text}</p>
-                </StatusBlock>
-            </Card>
-
-            <Card>
+            {/* Page 2: Planned Delivery Date Validator - Hidden in PDF */}
+            <Card className="pdf-page-break-after print:hidden" style={{ pageBreakAfter: 'always', pageBreakInside: 'avoid' }}>
                 <SectionTitle>Planned Delivery Date Validator</SectionTitle>
-                <p className="text-sm text-white/70 mb-4">Select a potential date for a planned delivery to receive numerological feedback.</p>
+                <p className="text-sm text-white/70 mb-4 print:text-xs print:mb-2">Select a potential date for a planned delivery to receive numerological feedback.</p>
                 <div className="mb-4">
                     <label htmlFor="deliveryDate" className="block text-sm font-medium text-yellow-500 mb-1">Select a Date</label>
                     <input
@@ -159,23 +162,23 @@ const ChildBirthForecastTab = ({ report, dashaReport, gender, targetDate }) => {
                     />
                 </div>
                 {selectedDeliveryDate && (
-                    <div className="space-y-4 p-4 bg-gray-900/50 rounded-lg">
-                        <div className="flex justify-between items-center">
+                    <div className="space-y-4 p-4 bg-gray-900/50 rounded-lg print:space-y-2 print:p-2">
+                        <div className="flex justify-between items-center print:text-sm">
                             <span className="font-medium">Calculated Basic Number:</span>
-                            <span className="font-bold text-2xl text-indigo-400">{deliveryDateAnalysis.basicNumber}</span>
+                            <span className="font-bold text-2xl text-indigo-400 print:text-lg">{deliveryDateAnalysis.basicNumber}</span>
                         </div>
-                        <div className="flex justify-between items-center">
+                        <div className="flex justify-between items-center print:text-sm">
                             <span className="font-medium">Calculated Destiny Number:</span>
-                            <span className="font-bold text-2xl text-indigo-400">{deliveryDateAnalysis.destinyNumber}</span>
+                            <span className="font-bold text-2xl text-indigo-400 print:text-lg">{deliveryDateAnalysis.destinyNumber}</span>
                         </div>
-                        <div className={`p-4 rounded-md text-center ${getFeedbackColor(deliveryDateAnalysis.feedback)}`}>
-                            <p className="font-bold text-xl">{deliveryDateAnalysis.feedback}</p>
+                        <div className={`p-4 rounded-md text-center print:p-2 ${getFeedbackColor(deliveryDateAnalysis.feedback)}`}>
+                            <p className="font-bold text-xl print:text-base">{deliveryDateAnalysis.feedback}</p>
                         </div>
                     </div>
                 )}
-                <div className="mt-6 p-4 rounded-md bg-yellow-900/50 text-yellow-300 border-l-4 border-yellow-500">
+                <div className="mt-6 p-4 rounded-md bg-yellow-900/50 text-yellow-300 border-l-4 border-yellow-500 print:mt-3 print:p-2 print:text-xs">
                     <p className="font-bold">Disclaimer:</p>
-                    <p className="text-sm">This tool provides preliminary guidance. A complete and careful analysis of the date by a professional is recommended for a final decision.</p>
+                    <p className="text-sm print:text-xs">This tool provides preliminary guidance. A complete and careful analysis of the date by a professional is recommended for a final decision.</p>
                 </div>
             </Card>
         </div>

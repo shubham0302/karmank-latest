@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import Card from '../Card';
 import SectionTitle from '../SectionTitle';
+import NlgSummaryComponent from '../NlgSummaryComponent';
 import { combinationInsights, DATA } from '../../data/data'; // Import from data.js
 import { getText } from '../../utils/helpers'; // Import getText
 
@@ -47,6 +48,80 @@ const WelcomeTab = ({ report, userData, language = 'en' }) => {
     const insightKey = `${report.basicNumber}-${report.destinyNumber}`;
     const snapshotDescription = getText(combinationInsights[insightKey], language) || "No specific insight available for this combination.";
 
+    // Process recurring numbers analysis
+    const translatedAnalysis = useMemo(() => {
+        if (!report.recurringAnalysis || report.recurringAnalysis.length === 0) return [];
+
+        return report.recurringAnalysis.map(item => {
+            const rule = DATA.recurringNumberInfluence[item.number];
+
+            if (!rule) {
+                return {
+                    ...item,
+                    influence: `This number appears ${item.occurrences} times in your chart, amplifying its influence on your life path.`
+                };
+            }
+
+            let influence = [];
+            const count = item.occurrences;
+            const isDestinyMatch = item.isDestinyMatch || false;
+
+            if (rule.base) influence.push(getText(rule.base, language));
+            if (count >= 3 && rule.threeOrMore) influence.push(getText(rule.threeOrMore, language));
+            if (isDestinyMatch && rule.withDestiny) influence.push(getText(rule.withDestiny, language));
+            if (rule.evenCount && count % 2 === 0) influence.push(getText(rule.evenCount, language));
+            if (rule.oddCount && count % 2 !== 0) influence.push(getText(rule.oddCount, language));
+
+            return {
+                ...item,
+                influence: influence.join(' ')
+            };
+        });
+    }, [report.recurringAnalysis, language]);
+
+    // Generate NLG prompt for foundational analysis
+    const nlgPrompt = useMemo(() => {
+        if (!report.recurringAnalysis && !report.yogas) return null;
+
+        let languageInstruction = "";
+        if (language === 'hi') {
+            languageInstruction = "You are a Vedic numerologist. Based on the following foundational chart analysis, write a 2-4 sentence summary of the person's key strengths and challenges in HINDI (हिंदी). Use Devanagari script. \n\n";
+        } else if (language === 'en-hi') {
+            languageInstruction = "You are a Vedic numerologist. Based on the following foundational chart analysis, write a 2-4 sentence summary of the person's key strengths and challenges in HINGLISH (Roman script with Hindi words). Use conversational Hindi-English mix. \n\n";
+        } else {
+            languageInstruction = "You are a Vedic numerologist. Based on the following foundational chart analysis, write a 2-4 sentence summary of the person's key strengths and challenges in ENGLISH. \n\n";
+        }
+
+        let prompt = languageInstruction;
+
+        if (report.yogas && report.yogas.length > 0) {
+            prompt += "Foundational Yogas Present:\n";
+            report.yogas.forEach(yoga => {
+                prompt += `- ${getText(yoga.name, language)}: ${getText(yoga.description, language)}\n`;
+            });
+        } else {
+            prompt += "No significant foundational yogas are present.\n";
+        }
+
+        if (report.recurringAnalysis && report.recurringAnalysis.length > 0) {
+            prompt += "\nInfluence of Recurring Numbers:\n";
+            report.recurringAnalysis.forEach(item => {
+                const influence = translatedAnalysis.find(a => a.number === item.number)?.influence || '';
+                prompt += `- Number ${item.number} (appears ${item.occurrences} times): ${influence}\n`;
+            });
+        }
+
+        if (report.specialInsights && report.specialInsights.length > 0) {
+            prompt += "\nSpecial Foundational Insights:\n";
+            report.specialInsights.forEach(insight => {
+                prompt += `- ${getText(insight.title, language)}: ${getText(insight.text, language)}\n`;
+            });
+        }
+
+        prompt += "\nSummarize the most important takeaways for the user in a gentle and empowering tone.";
+        return prompt;
+    }, [report, translatedAnalysis, language]);
+
     // Function to get cell background color based on number significance
     const getCellBackground = (num) => {
         const colors = [];
@@ -63,16 +138,14 @@ const WelcomeTab = ({ report, userData, language = 'en' }) => {
 
     return (
         <div className="space-y-6">
-            <Card className="bg-indigo-900/30 border-indigo-400">
-                <h3 className="text-xl font-bold text-indigo-300 mb-3">Your Numerology Snapshot</h3>
-                <p className="text-indigo-200 whitespace-pre-wrap">{snapshotDescription}</p>
-            </Card>
-
-            <Card>
-                <div className="grid lg:grid-cols-5 gap-6">
-                    {/* Left Section - Base Kundli (3/5 width on large screens) */}
-                    <div className="lg:col-span-3">
-                        <h3 className="text-lg font-bold text-center text-yellow-300 mb-3">Base Kundli</h3>
+            {/* PAGE 1: Kundli, Snapshot, and Foundational Blueprint */}
+            <div className="pdf-page-break-after space-y-6">
+                {/* 1. Base Kundli and Numbers */}
+                <Card>
+                    <div className="grid lg:grid-cols-5 gap-6">
+                        {/* Left Section - Base Kundli (3/5 width on large screens) */}
+                        <div className="lg:col-span-3">
+                            <h3 className="text-lg font-bold text-center text-yellow-300 mb-3">Base Kundli</h3>
                         <div className="flex justify-center items-center">
                             <div className="w-full max-w-xs">
                                 <div className="grid grid-cols-3 gap-1.5 bg-gray-900/50 p-2 rounded-md aspect-square">
@@ -121,7 +194,19 @@ const WelcomeTab = ({ report, userData, language = 'en' }) => {
                 </div>
             </Card>
 
-            <Card>
+                {/* 2. Your Numerology Snapshot */}
+                <Card className="bg-indigo-900/30 border-indigo-400">
+                    <h3 className="text-xl font-bold text-indigo-300 mb-3">Your Numerology Snapshot</h3>
+                    <p className="text-indigo-200 whitespace-pre-wrap">{snapshotDescription}</p>
+                </Card>
+
+                {/* 3. Your Foundational Blueprint (AI Summary) */}
+                {nlgPrompt && <NlgSummaryComponent title="Your Foundational Blueprint" prompt={nlgPrompt} />}
+            </div>
+
+            {/* PAGE 2: Core Vibrations Based on Vedic Kundli Grid */}
+            <div className="pdf-page-break-after">
+                <Card>
                 <SectionTitle>Core Vibrations Based on Vedic Kundli Grid</SectionTitle>
                 <div className="space-y-4">
                     {kundliNumbers.map(num => {
@@ -130,7 +215,7 @@ const WelcomeTab = ({ report, userData, language = 'en' }) => {
                             ? getText(DATA.destinyNumberDetails[num].description, language)
                             : getText(DATA.numberDetails[num].description, language);
                         const name = getText(DATA.numberDetails[num].name, language);
-                        
+
                         return (
                             <div key={num} className="p-3 bg-gray-900/50 rounded-md">
                                 <h4 className="font-bold text-yellow-400 flex items-center">
@@ -142,7 +227,7 @@ const WelcomeTab = ({ report, userData, language = 'en' }) => {
                                 </h4>
                                 <p className="text-sm text-white/90 mt-1">{description}</p>
                                 {report.baseKundliGrid[num] > 1 && (
-                                    <p className="text-xs text-cyan-300 italic mt-1">This number appears multiple times in the grid, amplifying its influence (see Foundational Analysis tab).</p>
+                                    <p className="text-xs text-cyan-300 italic mt-1">This number appears multiple times in the grid, amplifying its influence.</p>
                                 )}
                             </div>
                         );
@@ -153,7 +238,33 @@ const WelcomeTab = ({ report, userData, language = 'en' }) => {
                         <p className="text-center text-indigo-200 italic">{coreVibrationSummary}</p>
                     </div>
                 )}
-            </Card>
+                </Card>
+            </div>
+
+            {/* PAGE 3: Foundational Yogas */}
+            {report.yogas && report.yogas.length > 0 && (
+                <div className="pdf-page-break-after">
+                    <Card>
+                        <SectionTitle>Foundational Yogas</SectionTitle>
+                        <div className="text-center bg-blue-900/30 text-blue-300 p-2 rounded-md mb-4 text-sm">
+                            <p>This Yoga is based on the individual's Base Chart.</p>
+                        </div>
+                        <div className="space-y-4 max-h-60 overflow-y-auto pr-2">
+                            {report.yogas.map((yoga, idx) => (
+                                <div key={idx} className="bg-gray-900/30 p-3 rounded-md">
+                                    <strong className="text-yellow-500">{getText(yoga.name, language)}</strong>
+                                    <p className="text-sm text-white/90">{getText(yoga.description, language)}</p>
+                                    {yoga.traits && (
+                                        <ul className="list-disc list-inside text-xs mt-1 text-white/70">
+                                            {yoga.traits.map((trait, tIdx) => <li key={tIdx}>{getText(trait, language)}</li>)}
+                                        </ul>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    </Card>
+                </div>
+            )}
         </div>
     );
 };

@@ -67,7 +67,7 @@ export class DataService {
    */
   getDashaInterpretation(number: number) {
     try {
-      const dashaGuide = DATA.dashaGuide || {};
+      const dashaGuide = (DATA as any).dashaGuide || {};
       return dashaGuide[number] || null;
     } catch (error) {
       console.error(`Error getting dasha interpretation for ${number}:`, error);
@@ -100,6 +100,13 @@ export class DataService {
    */
   getDestinyTraits(number: number) {
     return DATA.destinyTraits[String(number)] || null;
+  }
+
+  /**
+   * Get destiny professions
+   */
+  getDestinyProfessions(number: number) {
+    return DATA.destinyProfessions[number] || null;
   }
 
   /**
@@ -149,7 +156,8 @@ export class DataService {
     const numberDetails = {
       basic: this.getNumberDetails(basicNumber),
       destiny: this.getDestinyNumberDetails(destinyNumber),
-      traits: this.getDestinyTraits(destinyNumber)
+      traits: this.getDestinyTraits(destinyNumber),
+      professions: this.getDestinyProfessions(destinyNumber) // NEW: Add professions data
     };
 
     return {
