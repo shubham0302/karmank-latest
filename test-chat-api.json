@@ -1,0 +1,16 @@
+{
+  "message": "How is this year for me?",
+  "prompt": {
+    "systemPrompt": "You are Ishira, an expert Vedic numerology AI assistant. You provide personalized guidance based on numerology data.",
+    "context": "USER PROFILE:\nName: Test User\nDestiny Number: 5\nBasic Number: 7\n\nCURRENT DASHA:\nMaha Dasha: Planet 5 (until 2027)",
+    "conversationHistory": "This is the first message.",
+    "userMessage": "How is this year for me?",
+    "instructions": "Respond in simple, layman language. Be warm and encouraging. Use the user's numerology data to provide personalized insights."
+  },
+  "userContext": {
+    "name": "Test User",
+    "destinyNumber": 5,
+    "basicNumber": 7
+  },
+  "language": "en"
+}

@@ -76,14 +76,41 @@ if (fs.existsSync(zipFile)) {
 }
 
 try {
-  // Use native zip command or PowerShell on Windows
-  if (process.platform === 'win32') {
-    execSync(`powershell Compress-Archive -Path "${packageDir}\\*" -DestinationPath "${zipFile}"`, {
-      stdio: 'inherit'
-    });
-  } else {
-    execSync(`cd "${packageDir}" && zip -r "${zipFile}" .`, {
-      stdio: 'inherit'
+  // Use cross-platform compatible archiving
+  // PowerShell Compress-Archive creates Windows-style paths (\) which Lambda doesn't support
+  // We need to use a Node.js-based solution for cross-platform compatibility
+
+  // Check if archiver package is available
+  let archiver;
+  try {
+    archiver = await import('archiver');
+  } catch (e) {
+    // Fallback to zip command on Unix-like systems
+    if (process.platform === 'win32') {
+      console.warn('⚠️  Warning: Using PowerShell zip (may cause path issues on Lambda)');
+      console.warn('💡 For best results, install archiver: npm install --save-dev archiver');
+      execSync(`powershell Compress-Archive -Force -Path "${packageDir}\\*" -DestinationPath "${zipFile}"`, {
+        stdio: 'inherit'
+      });
+    } else {
+      execSync(`cd "${packageDir}" && zip -r "${zipFile}" .`, {
+        stdio: 'inherit'
+      });
+    }
+  }
+
+  if (archiver) {
+    // Use archiver for cross-platform compatible ZIP creation
+    const output = fs.createWriteStream(zipFile);
+    const archive = archiver.default('zip', { zlib: { level: 9 } });
+
+    await new Promise((resolve, reject) => {
+      output.on('close', resolve);
+      archive.on('error', reject);
+
+      archive.pipe(output);
+      archive.directory(packageDir, false);
+      archive.finalize();
     });
   }
 

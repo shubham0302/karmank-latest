@@ -2,7 +2,25 @@
 // This file fetches protected numerology data from the secure backend
 // All proprietary interpretations, yogas, and insights are now hidden on the backend
 
+import { supabase } from '../lib/supabase';
+import { EnrichmentRequestSchema, formatValidationError } from '../lib/validators';
+
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080';
+
+/**
+ * Get authentication token for backend requests
+ * @returns {Promise<string>} JWT access token
+ * @throws {Error} If not authenticated
+ */
+async function getAuthToken() {
+  const { data: { session }, error } = await supabase.auth.getSession();
+
+  if (error || !session?.access_token) {
+    throw new Error('Not authenticated. Please log in again.');
+  }
+
+  return session.access_token;
+}
 
 /**
  * Fetch enrichment data from backend
@@ -17,24 +35,44 @@ const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080';
  */
 export async function fetchEnrichmentData(basicNumber, destinyNumber, yogaIds, kundliGrid = [], recurringNumbers = []) {
   try {
-    console.log('🔐 Fetching protected enrichment data from backend...');
-
-    const response = await fetch(`${BACKEND_URL}/api/data/enrichment`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
+    // ✅ SECURITY: Validate input
+    let validated;
+    try {
+      validated = EnrichmentRequestSchema.parse({
         basicNumber,
         destinyNumber,
         yogaIds,
         kundliGrid,
         recurringNumbers
-      }),
+      });
+    } catch (validationError) {
+      throw new Error(formatValidationError(validationError));
+    }
+
+    console.log('🔐 Fetching protected enrichment data from backend...');
+
+    // ✅ SECURITY: Get authentication token
+    const token = await getAuthToken();
+
+    const response = await fetch(`${BACKEND_URL}/api/data/enrichment`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`, // ✅ Send auth token
+      },
+      body: JSON.stringify(validated),
     });
 
+    // ✅ SECURITY: Handle authentication failures
+    if (response.status === 401) {
+      if (typeof window !== 'undefined') {
+        window.location.href = '/login';
+      }
+      throw new Error('Session expired. Please log in again.');
+    }
+
     if (!response.ok) {
-      const error = await response.json();
+      const error = await response.json().catch(() => ({}));
       throw new Error(error.message || 'Failed to fetch enrichment data');
     }
 

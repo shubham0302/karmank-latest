@@ -259,6 +259,118 @@ Keep the response clear, concise, and actionable (about 200-300 words).`;
       };
     }
 
+    // Chat Endpoint - Advanced LLM-powered chatbot
+    if (path === '/api/chat' && method === 'POST') {
+      const { message, prompt, userContext, conversationId, language } = requestBody;
+
+      console.log('💬 Chat request received:', {
+        message: message?.substring(0, 50),
+        hasPrompt: !!prompt,
+        userName: userContext?.name,
+        language
+      });
+
+      if (!prompt || !prompt.systemPrompt || !prompt.userMessage) {
+        return {
+          statusCode: 400,
+          headers,
+          body: JSON.stringify({
+            success: false,
+            error: 'Invalid request - prompt object with systemPrompt and userMessage required'
+          })
+        };
+      }
+
+      if (!GEMINI_API_KEY) {
+        return {
+          statusCode: 500,
+          headers,
+          body: JSON.stringify({
+            success: false,
+            error: 'API key not configured'
+          })
+        };
+      }
+
+      // Build comprehensive prompt for Gemini
+      const fullPrompt = `${prompt.systemPrompt}
+
+CONTEXT:
+${prompt.context || ''}
+
+CONVERSATION HISTORY:
+${prompt.conversationHistory || 'This is the first message.'}
+
+RESPONSE INSTRUCTIONS:
+${prompt.instructions || ''}
+
+USER QUESTION: ${prompt.userMessage}
+
+ISHIRA'S RESPONSE (in simple, layman language):`;
+
+      console.log('🤖 Sending to Gemini... (prompt length:', fullPrompt.length, 'chars)');
+
+      try {
+        // Use Gemini 2.5 Flash for fast responses
+        const model = 'gemini-2.5-flash';
+        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`;
+
+        const response = await fetch(geminiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: fullPrompt }] }],
+            generationConfig: {
+              temperature: 0.7,
+              topP: 0.8,
+              topK: 40,
+              maxOutputTokens: 800
+            }
+          })
+        });
+
+        const data: any = await response.json();
+
+        // Extract generated text
+        const aiResponse = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+
+        if (!aiResponse) {
+          console.error('❌ Gemini API Error:', JSON.stringify(data));
+
+          // Check for specific errors
+          if (data.error) {
+            throw new Error(`Gemini API Error: ${data.error.message || JSON.stringify(data.error)}`);
+          }
+
+          throw new Error('No response generated from Gemini');
+        }
+
+        console.log('✅ Gemini response received:', aiResponse.substring(0, 100), '...');
+
+        return {
+          statusCode: 200,
+          headers,
+          body: JSON.stringify({
+            success: true,
+            response: aiResponse,
+            conversationId: conversationId || 'default'
+          })
+        };
+
+      } catch (chatError) {
+        console.error('❌ Chat endpoint error:', chatError);
+        return {
+          statusCode: 500,
+          headers,
+          body: JSON.stringify({
+            success: false,
+            error: 'Failed to generate response',
+            message: chatError.message || 'Internal server error'
+          })
+        };
+      }
+    }
+
     // 404 - Endpoint not found
     return {
       statusCode: 404,
@@ -266,7 +378,7 @@ Keep the response clear, concise, and actionable (about 200-300 words).`;
       body: JSON.stringify({
         error: 'not_found',
         message: `Endpoint ${path} not found`,
-        availableEndpoints: ['/health', '/nlg/generate', '/calculate/numerology', '/api/data/enrichment', '/nlg/analyze-name']
+        availableEndpoints: ['/health', '/nlg/generate', '/calculate/numerology', '/api/data/enrichment', '/nlg/analyze-name', '/api/chat']
       })
     };
 

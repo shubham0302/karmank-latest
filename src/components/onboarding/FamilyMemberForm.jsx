@@ -140,7 +140,7 @@ export default function FamilyMemberForm({
           Gender <span className="text-red-400">*</span>
         </Label>
         <div className="flex gap-4">
-          {['male', 'female', 'other'].map((option) => (
+          {['Male', 'Female', 'Other'].map((option) => (
             <label
               key={option}
               className="flex items-center gap-2 cursor-pointer"
@@ -154,7 +154,7 @@ export default function FamilyMemberForm({
                 disabled={loading}
                 className="w-4 h-4 accent-cyan-400"
               />
-              <span className="text-white capitalize">{option}</span>
+              <span className="text-white">{option}</span>
             </label>
           ))}
         </div>

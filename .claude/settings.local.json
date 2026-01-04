@@ -12,7 +12,15 @@
       "Bash(npm run build:dev:*)",
       "Bash(for file in src/components/Remedies/{AdvancedRemediesTab,MantrasTab,RudrakshaTab,ChakraTab,ShaktiBeejMantraTab}.jsx)",
       "Bash(do grep -n \"return\" \"$file\")",
-      "Bash(done)"
+      "Bash(done)",
+      "Bash(npm run package:*)",
+      "Bash(npm run build:lambda:*)",
+      "Bash(aws lambda update-function-code:*)",
+      "Bash(findstr:*)",
+      "Bash(node scripts/package-lambda.js:*)",
+      "Bash(unzip:*)",
+      "Bash(Select-String \"services\")",
+      "Bash(node verify-package.js:*)"
     ],
     "deny": [],
     "ask": []

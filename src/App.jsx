@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
+import ErrorBoundary from './components/ErrorBoundary';
 import LoginPage from './components/auth/LoginPage';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import HomePage from './pages/HomePage';
@@ -21,9 +22,10 @@ import FeedbackPage from './pages/FeedbackPage';
 import ProfilePage from './pages/ProfilePage';
 
 const App = () => (
-    <AuthProvider>
-        <BrowserRouter>
-            <Routes>
+    <ErrorBoundary>
+        <AuthProvider>
+            <BrowserRouter>
+                <Routes>
                 {/* Public Routes */}
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/about" element={<AboutPage />} />
@@ -118,6 +120,7 @@ const App = () => (
             </Routes>
         </BrowserRouter>
     </AuthProvider>
+    </ErrorBoundary>
 );
 
 export default App;

@@ -5,8 +5,25 @@
 import { checkAdvancedYoga, getText } from '../utils/helpers';
 import { fetchEnrichmentData, identifyPresentYogas, identifyRecurringNumbers } from './data-api';
 import { DATA } from '../data/data'; // Still needed for yoga identification logic only
+import { supabase } from '../lib/supabase';
+import { NumerologyRequestSchema, formatValidationError } from '../lib/validators';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080';
+
+/**
+ * Get authentication token for backend requests
+ * @returns {Promise<string>} JWT access token
+ * @throws {Error} If not authenticated
+ */
+async function getAuthToken() {
+  const { data: { session }, error } = await supabase.auth.getSession();
+
+  if (error || !session?.access_token) {
+    throw new Error('Not authenticated. Please log in again.');
+  }
+
+  return session.access_token;
+}
 
 /**
  * Calculate complete numerology report from backend
@@ -15,18 +32,39 @@ const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080';
  */
 export async function calculateNumerologyFromBackend(dob) {
   try {
+    // ✅ SECURITY: Validate input before sending to backend
+    let validated;
+    try {
+      validated = NumerologyRequestSchema.parse({ dob });
+    } catch (validationError) {
+      throw new Error(formatValidationError(validationError));
+    }
+
     console.log('🔒 Calling secure backend for numerology calculation...');
+
+    // ✅ SECURITY: Get authentication token
+    const token = await getAuthToken();
 
     const response = await fetch(`${BACKEND_URL}/calculate/numerology`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`, // ✅ Send auth token
       },
-      body: JSON.stringify({ dob }),
+      body: JSON.stringify(validated),
     });
 
+    // ✅ SECURITY: Handle authentication failures
+    if (response.status === 401) {
+      // Session expired, redirect to login
+      if (typeof window !== 'undefined') {
+        window.location.href = '/login';
+      }
+      throw new Error('Session expired. Please log in again.');
+    }
+
     if (!response.ok) {
-      const error = await response.json();
+      const error = await response.json().catch(() => ({}));
       throw new Error(error.message || 'Failed to calculate numerology');
     }
 

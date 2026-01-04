@@ -28,6 +28,8 @@ const LifeCycleTab = lazy(() => import('./components/tabs/LifeCycleTab'));
 
 // --- Chat Widget ---
 import ChatWidget from './components/chat/ChatWidgetEnhanced';
+import WorldClassChatWidget from './components/chat/WorldClassChatWidget';
+import { TABS, TAB_LIST } from './constants/tabs';
 
 // Loading fallback component for lazy-loaded tabs
 const TabLoadingFallback = () => (
@@ -170,6 +172,46 @@ export default function KarmAnkApp() {
     const handleTabClick = (tabName) => {
         setActiveTab(tabName);
         setVisitedTabs(prev => new Set([...prev, tabName]));
+    };
+
+    // ✅ SECURE BOT NAVIGATION HANDLER
+    const handleBotNavigation = (targetTab) => {
+        // ✅ Security: Validate input type
+        if (typeof targetTab !== 'string') {
+            console.error('❌ Invalid navigation target type:', typeof targetTab);
+            return;
+        }
+
+        // ✅ Security: Check against whitelist
+        if (!TAB_LIST.includes(targetTab)) {
+            console.warn(`⚠️ Invalid tab navigation attempt: "${targetTab}"`);
+            return;
+        }
+
+        // ✅ Safety: Check if report exists
+        if (!report) {
+            console.warn('⚠️ Cannot navigate - report not generated yet');
+            return;
+        }
+
+        console.log(`🤖 Ishira AI is navigating to: ${targetTab}`);
+
+        // ✅ Update active tab
+        setActiveTab(targetTab);
+
+        // ✅ Trigger lazy load if needed
+        setVisitedTabs(prev => new Set([...prev, targetTab]));
+
+        // ✅ Scroll to tab content (with delay for lazy load)
+        setTimeout(() => {
+            const element = document.getElementById('report-content');
+            if (element) {
+                element.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        }, 150); // Small delay for lazy load
     };
 
     // Download handlers
@@ -464,7 +506,7 @@ export default function KarmAnkApp() {
 
                     {/* Chat Widget - Shows only after report is generated */}
                     {report && (
-                        <ChatWidget
+                        <WorldClassChatWidget
                             userContext={{
                                 destinyNumber: report.destinyNumber,
                                 basicNumber: report.basicNumber,
@@ -475,6 +517,8 @@ export default function KarmAnkApp() {
                             report={report}
                             dashaReport={dashaReport}
                             language={language}
+                            currentTab={activeTab}
+                            onNavigate={handleBotNavigation} // ✅ SECURE NAVIGATION
                         />
                     )}
                 </div>
