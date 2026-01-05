@@ -52,7 +52,7 @@ export function buildComprehensiveContext({
     remedies: extractRemedies(report, language),
 
     // Forecasts
-    forecasts: extractForecasts(report, userContext, language),
+    forecasts: extractForecasts(report, userContext, language, dashaReport),
 
     // Current context
     currentState: {
@@ -145,6 +145,9 @@ function analyzeKundliGrid(kundliGrid) {
 function extractYogaDetails(yogas, language) {
   if (!yogas || yogas.length === 0) return [];
 
+  // ✅ FIX: Ensure yogas is an array
+  if (!Array.isArray(yogas)) return [];
+
   return yogas.map(yoga => ({
     name: getText(yoga.name, language),
     category: yoga.category,
@@ -184,6 +187,19 @@ function extractDashaDetails(dashaReport, language) {
     d.date.toISOString().split('T')[0] === today
   );
 
+  // ✅ Get next few years for forecasting
+  const upcomingYears = dashaReport.yearlyDashaTimeline
+    ?.filter(d => new Date(d.startDate) >= now)
+    ?.slice(0, 5) // Next 5 years
+    ?.map(d => ({
+      year: new Date(d.startDate).getFullYear(),
+      planet: d.planet,
+      startDate: d.startDate,
+      endDate: d.endDate,
+      theme: getYearlyTheme(d.planet),
+      meaning: getNumberMeaning(d.planet)
+    })) || [];
+
   return {
     current: {
       maha: currentMaha ? {
@@ -195,6 +211,7 @@ function extractDashaDetails(dashaReport, language) {
       } : null,
       yearly: currentYearly ? {
         planet: currentYearly.planet,
+        year: new Date(currentYearly.startDate).getFullYear(),
         startDate: currentYearly.startDate,
         endDate: currentYearly.endDate,
         meaning: getNumberMeaning(currentYearly.planet),
@@ -213,7 +230,8 @@ function extractDashaDetails(dashaReport, language) {
     },
     upcoming: {
       nextMaha: getNextDasha(dashaReport.mahaDashaTimeline, now),
-      nextYearly: getNextDasha(dashaReport.yearlyDashaTimeline, now)
+      nextYearly: getNextDasha(dashaReport.yearlyDashaTimeline, now),
+      upcomingYears // ✅ Include next 5 years for specific year queries
     }
   };
 }
@@ -245,6 +263,9 @@ function extractPersonalityTraits(report, userContext, language) {
 function extractRecurringPatterns(report, language) {
   if (!report?.recurringNumbersAnalysis) return [];
 
+  // ✅ FIX: Ensure recurringNumbersAnalysis is an array
+  if (!Array.isArray(report.recurringNumbersAnalysis)) return [];
+
   return report.recurringNumbersAnalysis.map(pattern => ({
     number: pattern.number,
     occurrences: pattern.occurrences,
@@ -263,32 +284,283 @@ function extractRemedies(report, language) {
   const destinyNum = report.destinyNumber;
   const basicNum = report.basicNumber;
 
+  // ✅ FIX: Ensure specialRemedies is an array before mapping
+  const specialRemedies = Array.isArray(report.specialRemedies)
+    ? report.specialRemedies.map(r => ({
+        title: getText(r.title, language),
+        guidance: getText(r.text, language)
+      }))
+    : [];
+
   return {
     rudraksha: extractRudrakshaRemedies(destinyNum, basicNum, language),
     mantras: extractMantras(destinyNum, language),
     gemstones: extractGemstones(destinyNum, language),
     colors: getAuspiciousColors(destinyNum),
     days: getAuspiciousDays(destinyNum),
-    specialRemedies: report.specialRemedies?.map(r => ({
-      title: getText(r.title, language),
-      guidance: getText(r.text, language)
-    })) || []
+    specialRemedies
   };
 }
 
 /**
- * Extract forecasts
+ * Calculate career milestone years from dasha timeline
+ * Based on ProfessionForecastTab logic
  */
-function extractForecasts(report, userContext, language) {
+function calculateCareerMilestones(dashaReport, report) {
+  if (!dashaReport?.yearlyDashaTimeline || !report) return [];
+
+  const { destinyNumber, baseKundliGrid } = report;
+  const currentYear = new Date().getFullYear();
+  const count = (num) => baseKundliGrid[num] || 0;
+
+  return dashaReport.yearlyDashaTimeline
+    .filter(d => d.year >= currentYear)
+    .filter(d => {
+      const dashaNum = d.dashaNumber;
+
+      // Number 1: Only favorable if count(1) <= 1 OR destinyNumber === 1
+      if (dashaNum === 1) return (count(1) <= 1 || destinyNumber === 1);
+
+      // Number 3: Only favorable if count(3) <= 1
+      if (dashaNum === 3) return count(3) <= 1;
+
+      // Number 5: Favorable if count(5) <= 1 OR destinyNumber === 5
+      if (dashaNum === 5) return (count(5) <= 1 || destinyNumber === 5);
+
+      // Number 6: Always favorable
+      if (dashaNum === 6) return true;
+
+      // Number 8: Favorable if count(8) === 0 OR destinyNumber === 8
+      if (dashaNum === 8) return (count(8) === 0 || destinyNumber === 8);
+
+      // Number 9: Only favorable if count(9) <= 1
+      if (dashaNum === 9) return count(9) <= 1;
+
+      // Numbers 2, 4, 7 are generally not favorable for career
+      return false;
+    })
+    .slice(0, 10) // Limit to next 10 years
+    .map(d => d.year);
+}
+
+/**
+ * Calculate marriage probability years from dasha timeline
+ * Based on MarriageForecastTab logic
+ */
+function calculateMarriageYears(dashaReport, report) {
+  if (!dashaReport?.yearlyDashaTimeline || !report) return { highProbability: [], moderate: [], lowProbability: [] };
+
+  const { destinyNumber, baseKundliGrid, dob } = report;
+  const birthYear = dob.getFullYear();
+  const count = (num) => baseKundliGrid[num] || 0;
+
+  const highProbability = [];
+  const moderate = [];
+  const lowProbability = [];
+
+  // Check ages 20-40 (20 years)
+  for (let age = 20; age <= 40; age++) {
+    const targetYear = birthYear + age;
+    const yearlyDasha = dashaReport.yearlyDashaTimeline.find(d => d.year === targetYear);
+
+    if (yearlyDasha) {
+      const dashaNum = yearlyDasha.dashaNumber;
+
+      // High probability conditions
+      if (dashaNum === 3) {
+        highProbability.push(targetYear);
+      } else if (dashaNum === 6 && (destinyNumber === 6 || count(6) === 0)) {
+        highProbability.push(targetYear);
+      } else if (dashaNum === 7 && (count(7) <= 1 || destinyNumber === 7)) {
+        highProbability.push(targetYear);
+      } else if (dashaNum === 8 && ((count(8) + 1) % 2 === 0)) {
+        highProbability.push(targetYear);
+      } else if (dashaNum === 2) {
+        // Moderate probability
+        moderate.push(targetYear);
+      } else {
+        // Lower probability for all other years
+        lowProbability.push(targetYear);
+      }
+    }
+  }
+
+  return { highProbability, moderate, lowProbability };
+}
+
+/**
+ * Calculate child birth probability years from dasha timeline
+ * Based on ChildBirthForecastTab logic
+ */
+function calculateChildBirthYears(dashaReport, report, userContext) {
+  if (!dashaReport?.yearlyDashaTimeline || !report) return { highProbability: [], moderate: [] };
+
+  const { destinyNumber, baseKundliGrid, dob } = report;
+  const birthYear = dob.getFullYear();
+  const gender = userContext?.gender;
+  const count = (num) => baseKundliGrid[num] || 0;
+
+  const highProbability = [];
+  const moderate = [];
+
+  // Check ages 22-42 (20 years) for child birth
+  for (let age = 22; age <= 42; age++) {
+    const targetYear = birthYear + age;
+    const yearlyDasha = dashaReport.yearlyDashaTimeline.find(d => d.year === targetYear);
+
+    if (yearlyDasha) {
+      const dashaNum = yearlyDasha.dashaNumber;
+
+      // High probability conditions
+      if (dashaNum === 2) {
+        highProbability.push(targetYear);
+      } else if (dashaNum === 5 && (count(5) <= 1 || destinyNumber === 5)) {
+        highProbability.push(targetYear);
+      } else if (dashaNum === 6) {
+        highProbability.push(targetYear);
+      } else if (dashaNum === 9 && count(9) <= 1) {
+        highProbability.push(targetYear);
+      } else if (dashaNum === 3 || dashaNum === 7) {
+        // Moderate probability
+        moderate.push(targetYear);
+      }
+    }
+  }
+
+  return { highProbability, moderate };
+}
+
+/**
+ * Calculate favorable travel years from dasha timeline
+ * Based on TravelForecastTab logic - simplified for chatbot
+ */
+function calculateTravelYears(dashaReport, report) {
+  if (!dashaReport?.yearlyDashaTimeline || !report) return { favorable: [], unfavorable: [] };
+
+  const { baseKundliGrid, basicNumber, destinyNumber } = report;
+  const has7InChart = baseKundliGrid[7] > 0 || basicNumber === 7 || destinyNumber === 7;
+  const has4InChart = baseKundliGrid[4] > 0 || basicNumber === 4 || destinyNumber === 4;
+  const currentYear = new Date().getFullYear();
+
+  const favorable = [];
+  const unfavorable = [];
+
+  dashaReport.yearlyDashaTimeline
+    .filter(d => d.year >= currentYear && d.year <= currentYear + 10)
+    .forEach(yearlyDasha => {
+      const dashaNum = yearlyDasha.dashaNumber;
+
+      // Favorable travel years: 3, 5, 6, 7 (especially if 7 is in chart)
+      if ([3, 5, 6, 7].includes(dashaNum)) {
+        if (has7InChart || (has4InChart && has7InChart)) {
+          favorable.push(yearlyDasha.year);
+        } else if (!has4InChart) {
+          // Moderate favorable even without 7
+          favorable.push(yearlyDasha.year);
+        }
+      }
+
+      // Unfavorable travel years: 2, 4 (delays, documentation issues)
+      if ([2, 4].includes(dashaNum)) {
+        unfavorable.push(yearlyDasha.year);
+      }
+    });
+
+  return {
+    favorable,
+    unfavorable,
+    hasTravelYoga: has7InChart,
+    travelProfile: has7InChart ? 'High potential (Developed countries)' :
+                   has4InChart ? 'Moderate potential (Developing countries)' :
+                   'Dasha-dependent'
+  };
+}
+
+/**
+ * Calculate favorable property purchase years from dasha timeline
+ * Based on PropertyForecastTab logic - simplified for chatbot
+ */
+function calculatePropertyYears(dashaReport, report) {
+  if (!dashaReport?.yearlyDashaTimeline || !report) return { favorable: [], unfavorable: [] };
+
+  const { baseKundliGrid, destinyNumber } = report;
+  const count1 = baseKundliGrid[1] || 0;
+  const count8 = baseKundliGrid[8] || 0;
+  const currentYear = new Date().getFullYear();
+
+  const favorable = [];
+  const unfavorable = [];
+
+  dashaReport.yearlyDashaTimeline
+    .filter(d => d.year >= currentYear && d.year <= currentYear + 10)
+    .forEach(yearlyDasha => {
+      const dashaNum = yearlyDasha.dashaNumber;
+
+      // Favorable conditions for property
+      // Number 1 Dasha: Favorable if count1 === 1 OR (count1 > 1 AND destinyNumber === 1)
+      if (dashaNum === 1) {
+        if (count1 === 1 || (count1 > 1 && destinyNumber === 1) || count1 === 0) {
+          favorable.push(yearlyDasha.year);
+        } else if (count1 > 1 && destinyNumber !== 1) {
+          unfavorable.push(yearlyDasha.year);
+        }
+      }
+
+      // Number 8 Dasha: Check if even pattern (favorable)
+      if (dashaNum === 8) {
+        const effective8Count = count8 + 1; // Add 1 for the dasha itself
+        if (effective8Count % 2 === 0) {
+          favorable.push(yearlyDasha.year);
+        } else {
+          unfavorable.push(yearlyDasha.year);
+        }
+      }
+
+      // Number 6 Dasha: Favorable for luxury purchases (cars, upgrades)
+      if (dashaNum === 6) {
+        if (baseKundliGrid[6] === 0 || destinyNumber === 6) {
+          favorable.push(yearlyDasha.year);
+        }
+      }
+
+      // Number 4 Dasha: Generally risky for property
+      if (dashaNum === 4) {
+        unfavorable.push(yearlyDasha.year);
+      }
+    });
+
+  return { favorable, unfavorable };
+}
+
+/**
+ * Extract forecasts including specific life event predictions
+ */
+function extractForecasts(report, userContext, language, dashaReport) {
   const destinyNum = report?.destinyNumber;
   const gender = userContext?.gender;
+
+  // ✅ Calculate all specific life event forecasts from dasha timeline
+  const careerMilestones = calculateCareerMilestones(dashaReport, report);
+  const marriageYears = calculateMarriageYears(dashaReport, report);
+  const childBirthYears = calculateChildBirthYears(dashaReport, report, userContext);
+  const travelYears = calculateTravelYears(dashaReport, report);
+  const propertyYears = calculatePropertyYears(dashaReport, report);
 
   return {
     career: getCareerForecast(destinyNum, language),
     relationships: getRelationshipForecast(destinyNum, gender, language),
     health: getHealthGuidance(destinyNum, language),
     finance: getFinancialTrends(destinyNum, language),
-    spiritual: getSpiritualPath(destinyNum, language)
+    spiritual: getSpiritualPath(destinyNum, language),
+
+    // ✅ Add specific life event forecasts
+    specificForecasts: {
+      careerMilestones: careerMilestones,
+      marriageYears: marriageYears,
+      childBirthYears: childBirthYears,
+      travelYears: travelYears,
+      propertyYears: propertyYears
+    }
   };
 }
 

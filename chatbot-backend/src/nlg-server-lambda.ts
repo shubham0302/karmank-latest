@@ -7,6 +7,7 @@ import dotenv from 'dotenv';
 import axios from 'axios';
 import { calculateCompleteNumerology } from './services/numerology-calculator.js';
 import { dataService } from './services/data-service.js';
+import { DATA } from './data/proprietary-data.js';
 
 dotenv.config();
 
@@ -96,8 +97,8 @@ app.post('/calculate/numerology', async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'invalid_input', message: 'Date of birth is required' });
     }
 
-    const result = await calculateCompleteNumerology(dob);
-    return res.json(result);
+    const result = await calculateCompleteNumerology(dob, DATA);
+    return res.json({ success: true, data: result });
   } catch (err: any) {
     console.error('Calculation error:', err.message);
     return res.status(500).json({
@@ -110,7 +111,7 @@ app.post('/calculate/numerology', async (req: Request, res: Response) => {
 // Data Enrichment Endpoint
 app.post('/api/data/enrichment', async (req: Request, res: Response) => {
   try {
-    const { basicNumber, destinyNumber, yogaIds, kundliGrid, recurringNumbers } = req.body;
+    const { basicNumber, destinyNumber, yogaIds, kundliGrid, recurringNumbers, currentMahaDasha, currentYearlyDasha } = req.body;
 
     if (!basicNumber || !destinyNumber) {
       return res.status(400).json({ error: 'invalid_input', message: 'Basic and destiny numbers required' });
@@ -121,10 +122,12 @@ app.post('/api/data/enrichment', async (req: Request, res: Response) => {
       destinyNumber,
       yogaIds: yogaIds || [],
       kundliGrid: kundliGrid || [],
-      recurringNumbers: recurringNumbers || []
+      recurringNumbers: recurringNumbers || [],
+      currentMahaDasha: currentMahaDasha || null,
+      currentYearlyDasha: currentYearlyDasha || null
     });
 
-    return res.json(enrichmentData);
+    return res.json({ success: true, data: enrichmentData });
   } catch (err: any) {
     console.error('Enrichment error:', err.message);
     return res.status(500).json({

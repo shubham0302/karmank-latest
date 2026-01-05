@@ -217,9 +217,84 @@ export class DashaCalculator {
 }
 
 /**
+ * Check for special remedies based on chart conditions
+ */
+export function checkForSpecialRemedies(
+  digitCounts: number[],
+  destinyNumber: number,
+  mahaDasha: number | null = null,
+  annualDasha: number | null = null,
+  DATA: any
+): any[] {
+  const remedies: any[] = [];
+  const uniqueRemedies = new Set<string>();
+
+  const addRemedy = (remedy: any) => {
+    if (!remedy || !remedy.title) return;
+    const key = remedy.title.en || JSON.stringify(remedy.title);
+
+    if (!uniqueRemedies.has(key)) {
+      remedies.push(remedy);
+      uniqueRemedies.add(key);
+    }
+  };
+
+  // Rule: Presence of 4 in chart OR dasha of 4
+  if (digitCounts[4] > 0 || mahaDasha === 4 || annualDasha === 4) {
+    addRemedy(DATA.specialRudrakshaRemedies[4]);
+  }
+
+  // Rule: Presence of 8 in chart OR dasha of 8
+  if (digitCounts[8] > 0 || mahaDasha === 8 || annualDasha === 8) {
+    addRemedy(DATA.specialRudrakshaRemedies[8]);
+  }
+
+  // Rule: Destiny 4
+  if (destinyNumber === 4 && DATA.destinyBasedRemedies[4]) {
+    addRemedy(DATA.destinyBasedRemedies[4]);
+  }
+
+  // Rule: Combination of 9 and 4 Without 5
+  // Triggers if:
+  // - (9 in chart OR dasha 9) AND (4 in chart OR dasha 4) AND (no 5 in chart)
+  const has9 = digitCounts[9] > 0 || mahaDasha === 9 || annualDasha === 9;
+  const has4 = digitCounts[4] > 0 || mahaDasha === 4 || annualDasha === 4;
+  const has5 = digitCounts[5] > 0;
+
+  if (has9 && has4 && !has5) {
+    addRemedy({
+      type: 'simple',
+      title: { en: "Protection Remedy for 9-4 Combination" },
+      text: { en: "Your chart contains the numbers 9 and 4 (or you are in their dasha periods) without the balancing energy of 5. It is mandatory to wear a 3 Mukhi Rudraksha for protection." }
+    });
+  }
+
+  // Rule: Odd Number 4
+  if (digitCounts[4] > 0 && digitCounts[4] % 2 !== 0) {
+    addRemedy({
+      type: 'simple',
+      title: { en: "Balancing Remedy for Number 4" },
+      text: { en: "You have an odd number of 4s in your chart. It is advised to wear a Ganesh Rudraksha to harmonize its energy." }
+    });
+  }
+
+  // Rule: Multiple 1s without Destiny 1
+  const isPositive1 = digitCounts[1] <= 1 || destinyNumber === 1;
+  if (!isPositive1) {
+    addRemedy({
+      type: 'simple',
+      title: { en: "Remedy for Amplified Number 1" },
+      text: { en: "Your chart has multiple 1s, but your Destiny Number is not 1. To balance this, you must wear a 1 Mukhi Rudraksha and offer Surya Arghya (water to the Sun) early in the morning while chanting the mantra: ॐ ह्रां ह्रीं ह्रौं सः सूर्याय नमः (at least 11 times)." }
+    });
+  }
+
+  return remedies;
+}
+
+/**
  * Complete numerology calculation from DOB
  */
-export function calculateCompleteNumerology(dob: string) {
+export function calculateCompleteNumerology(dob: string, DATA: any) {
   const date = new Date(dob + 'T00:00:00');
   const day = date.getDate();
   const month = date.getMonth() + 1;
@@ -236,11 +311,31 @@ export function calculateCompleteNumerology(dob: string) {
   const monthlyDashaTimeline = DashaCalculator.calculateMonthlyDasha(yearlyDashaTimeline);
   const dailyDashaTimeline = DashaCalculator.calculateDailyDasha(monthlyDashaTimeline);
 
+  // Find current dasha periods for special remedies
+  const now = new Date();
+  const currentMahaDasha = mahaDashaTimeline.find(d =>
+    now >= d.startDate && now <= d.endDate
+  )?.dashaNumber || null;
+
+  const currentYearlyDasha = yearlyDashaTimeline.find(d =>
+    now >= d.startDate && now <= d.endDate
+  )?.dashaNumber || null;
+
+  // Calculate special remedies with current dasha context
+  const specialRemedies = checkForSpecialRemedies(
+    kundliGrid,
+    destinyNumber,
+    currentMahaDasha,
+    currentYearlyDasha,
+    DATA
+  );
+
   return {
     dob: date.toISOString(),
     basicNumber,
     destinyNumber,
     kundliGrid,
+    specialRemedies,  // ✅ Added special remedies
     dashaTimelines: {
       maha: mahaDashaTimeline,
       yearly: yearlyDashaTimeline,

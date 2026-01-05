@@ -2,6 +2,7 @@
 // This service controls what data is exposed to the frontend
 
 import { DATA, combinationInsights } from '../data/proprietary-data.js';
+import { checkForSpecialRemedies } from './numerology-calculator.js';
 
 /**
  * Data Service class - handles all protected data access
@@ -119,13 +120,17 @@ export class DataService {
     yogaIds: string[];
     kundliGrid: number[];
     recurringNumbers?: number[];
+    currentMahaDasha?: number | null;
+    currentYearlyDasha?: number | null;
   }) {
     const {
       basicNumber,
       destinyNumber,
       yogaIds,
       kundliGrid,
-      recurringNumbers = []
+      recurringNumbers = [],
+      currentMahaDasha = null,
+      currentYearlyDasha = null
     } = params;
 
     // Get combination insight
@@ -146,6 +151,9 @@ export class DataService {
     // Get remedies
     const remedies = this.getRemedies(basicNumber);
 
+    // Get special remedies based on chart conditions and current dasha
+    const specialRemedies = checkForSpecialRemedies(kundliGrid, destinyNumber, currentMahaDasha, currentYearlyDasha, DATA);
+
     // Get dasha interpretations
     const dashaInterpretations = {
       basic: this.getDashaInterpretation(basicNumber),
@@ -165,6 +173,7 @@ export class DataService {
       yogas,
       recurringInfluences,
       remedies,
+      specialRemedies,  // ✅ Added special remedies
       dashaInterpretations,
       numberDetails
     };

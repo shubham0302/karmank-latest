@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Check Year Forecast Data</title>
+    <style>
+        body { font-family: monospace; padding: 20px; background: #1a1a1a; color: #0f0; }
+        .section { margin: 20px 0; padding: 15px; background: #2a2a2a; border: 1px solid #0f0; }
+        .title { color: #0ff; font-weight: bold; font-size: 18px; margin-bottom: 10px; }
+        .data { color: #fff; }
+        .error { color: #f00; }
+        .success { color: #0f0; }
+        button { background: #0f0; color: #000; padding: 10px 20px; border: none; cursor: pointer; font-weight: bold; }
+        button:hover { background: #0ff; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Year Forecast Data Checker</h1>
+    <p>This page checks if yearly forecast data is available in your app.</p>
+
+    <button onclick="checkData()">Run Check</button>
+    <button onclick="testChatbot()">Test Chatbot API</button>
+
+    <div id="results"></div>
+
+    <script>
+        function checkData() {
+            const results = document.getElementById('results');
+            results.innerHTML = '';
+
+            // Check 1: dashaReport exists
+            addSection('Check 1: DashaReport Exists', () => {
+                if (window.dashaReport) {
+                    return `✅ SUCCESS: dashaReport found`;
+                } else {
+                    return `❌ FAIL: dashaReport not found. Have you generated a numerology report?`;
+                }
+            });
+
+            // Check 2: Yearly timeline exists
+            addSection('Check 2: Yearly Dasha Timeline', () => {
+                const timeline = window.dashaReport?.yearlyDashaTimeline;
+                if (!timeline) {
+                    return `❌ FAIL: yearlyDashaTimeline not found`;
+                }
+                if (!Array.isArray(timeline)) {
+                    return `❌ FAIL: yearlyDashaTimeline is not an array`;
+                }
+                return `✅ SUCCESS: Found ${timeline.length} yearly dasha entries`;
+            });
+
+            // Check 3: Available years
+            addSection('Check 3: Available Years', () => {
+                const timeline = window.dashaReport?.yearlyDashaTimeline;
+                if (!timeline) return '❌ No timeline data';
+
+                const years = [...new Set(timeline.map(d => new Date(d.startDate).getFullYear()))];
+                years.sort();
+
+                const currentYear = new Date().getFullYear();
+                const futureYears = years.filter(y => y >= currentYear);
+
+                return `✅ Total years: ${years.length}
+✅ Years available: ${years.join(', ')}
+✅ Future years: ${futureYears.join(', ')}
+${futureYears.includes(2026) ? '✅' : '❌'} 2026 available
+${futureYears.includes(2027) ? '✅' : '❌'} 2027 available
+${futureYears.includes(2028) ? '✅' : '❌'} 2028 available`;
+            });
+
+            // Check 4: Sample 2026 data
+            addSection('Check 4: 2026 Forecast Data', () => {
+                const timeline = window.dashaReport?.yearlyDashaTimeline;
+                if (!timeline) return '❌ No timeline data';
+
+                const year2026 = timeline.find(d => new Date(d.startDate).getFullYear() === 2026);
+                if (!year2026) return '❌ 2026 data not found';
+
+                return `✅ 2026 Data:
+- Planet: ${year2026.planet}
+- Start: ${year2026.startDate}
+- End: ${year2026.endDate}
+- Full object: ${JSON.stringify(year2026, null, 2)}`;
+            });
+
+            // Check 5: Report data
+            addSection('Check 5: Report Data', () => {
+                if (!window.report) return '❌ report not found';
+                return `✅ Report exists:
+- Destiny Number: ${window.report.destinyNumber}
+- Basic Number: ${window.report.basicNumber}
+- Special Remedies is array: ${Array.isArray(window.report.specialRemedies)}`;
+            });
+        }
+
+        function addSection(title, checkFn) {
+            const results = document.getElementById('results');
+            const section = document.createElement('div');
+            section.className = 'section';
+
+            const titleEl = document.createElement('div');
+            titleEl.className = 'title';
+            titleEl.textContent = title;
+            section.appendChild(titleEl);
+
+            const dataEl = document.createElement('pre');
+            dataEl.className = 'data';
+            try {
+                const result = checkFn();
+                dataEl.textContent = result;
+                if (result.includes('❌')) {
+                    dataEl.className = 'error';
+                } else {
+                    dataEl.className = 'success';
+                }
+            } catch (error) {
+                dataEl.textContent = `❌ ERROR: ${error.message}`;
+                dataEl.className = 'error';
+            }
+            section.appendChild(dataEl);
+
+            results.appendChild(section);
+        }
+
+        async function testChatbot() {
+            const results = document.getElementById('results');
+            const section = document.createElement('div');
+            section.className = 'section';
+
+            const titleEl = document.createElement('div');
+            titleEl.className = 'title';
+            titleEl.textContent = 'Testing Chatbot API Call';
+            section.appendChild(titleEl);
+
+            const dataEl = document.createElement('pre');
+            dataEl.className = 'data';
+            dataEl.textContent = 'Sending test request...';
+            section.appendChild(dataEl);
+            results.appendChild(section);
+
+            try {
+                const BACKEND_URL = 'https://zhssmkkxcnw52j5774t2dg4hlm0llzyg.lambda-url.ap-southeast-2.on.aws';
+
+                const response = await fetch(`${BACKEND_URL}/api/chat`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        message: 'How is 2026 for me?',
+                        prompt: {
+                            systemPrompt: 'You are a numerology assistant.',
+                            context: 'Test context',
+                            userMessage: 'How is 2026?',
+                            instructions: 'Respond briefly'
+                        },
+                        language: 'en'
+                    })
+                });
+
+                const data = await response.json();
+                dataEl.textContent = `✅ Response received:
+Status: ${response.status}
+Success: ${data.success}
+Response: ${data.response || data.message}`;
+                dataEl.className = 'success';
+            } catch (error) {
+                dataEl.textContent = `❌ Error: ${error.message}`;
+                dataEl.className = 'error';
+            }
+        }
+    </script>
+</body>
+</html>

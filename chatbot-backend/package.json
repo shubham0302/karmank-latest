@@ -10,6 +10,7 @@
     "build": "tsc",
     "build:lambda": "tsc && npm run package:lambda",
     "package:lambda": "node scripts/package-lambda.js",
+    "deploy:lambda": "node scripts/deploy-to-lambda.js",
     "start": "node dist/orchestrator_karmank.js",
     "db:migrate": "node scripts/run-migrations.js",
     "test": "node test/test_security.js",

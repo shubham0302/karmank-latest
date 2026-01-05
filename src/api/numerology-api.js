@@ -173,6 +173,20 @@ export async function calculateNumerology(dob) {
     // Step 3: Identify recurring numbers
     const recurringNumbers = identifyRecurringNumbers(kundliGrid);
 
+    // Step 3.5: Find current maha dasha and yearly dasha for special remedies
+    const now = new Date();
+    const currentMahaDasha = backendData.dashaTimelines.maha.find(d => {
+      const start = new Date(d.startDate);
+      const end = new Date(d.endDate);
+      return now >= start && now <= end;
+    })?.dashaNumber || null;
+
+    const currentYearlyDasha = backendData.dashaTimelines.yearly.find(d => {
+      const start = new Date(d.startDate);
+      const end = new Date(d.endDate);
+      return now >= start && now <= end;
+    })?.dashaNumber || null;
+
     // Step 4: Fetch protected enrichment data from backend
     // This includes combination insights, yoga details, remedies, etc.
     const enrichmentData = await fetchEnrichmentData(
@@ -180,7 +194,9 @@ export async function calculateNumerology(dob) {
       destinyNumber,
       yogaIds,
       kundliGrid,
-      recurringNumbers
+      recurringNumbers,
+      currentMahaDasha,
+      currentYearlyDasha
     );
 
     // Step 5: Transform yoga data from backend to match expected format
@@ -205,8 +221,8 @@ export async function calculateNumerology(dob) {
       });
     }
 
-    // Step 8: Get remedies from enrichment data
-    const specialRemedies = enrichmentData.remedies || [];
+    // Step 8: Get special remedies from enrichment data
+    const specialRemedies = enrichmentData.specialRemedies || [];
 
     return {
       dob: date,

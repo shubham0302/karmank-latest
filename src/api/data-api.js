@@ -31,9 +31,11 @@ async function getAuthToken() {
  * @param {string[]} yogaIds - Array of yoga IDs present in the kundli
  * @param {number[]} kundliGrid - The kundli grid array
  * @param {number[]} recurringNumbers - Numbers that appear multiple times
+ * @param {number|null} currentMahaDasha - Current maha dasha number (for special remedies)
+ * @param {number|null} currentYearlyDasha - Current yearly dasha number (for special remedies)
  * @returns {Promise<object>} Enrichment data from backend
  */
-export async function fetchEnrichmentData(basicNumber, destinyNumber, yogaIds, kundliGrid = [], recurringNumbers = []) {
+export async function fetchEnrichmentData(basicNumber, destinyNumber, yogaIds, kundliGrid = [], recurringNumbers = [], currentMahaDasha = null, currentYearlyDasha = null) {
   try {
     // ✅ SECURITY: Validate input
     let validated;
@@ -60,7 +62,11 @@ export async function fetchEnrichmentData(basicNumber, destinyNumber, yogaIds, k
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`, // ✅ Send auth token
       },
-      body: JSON.stringify(validated),
+      body: JSON.stringify({
+        ...validated,
+        currentMahaDasha,
+        currentYearlyDasha
+      }),
     });
 
     // ✅ SECURITY: Handle authentication failures

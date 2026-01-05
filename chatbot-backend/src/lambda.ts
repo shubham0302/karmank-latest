@@ -10,6 +10,7 @@
 
 import { calculateCompleteNumerology } from './services/numerology-calculator.js';
 import { dataService } from './services/data-service.js';
+import { DATA } from './data/proprietary-data.js';
 
 // Get environment variables
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || process.env.SERVER_KEY_GEMINI || '';
@@ -104,8 +105,8 @@ export const handler = async (event) => {
             parts: [{ text: prompt }]
           }],
           generationConfig: {
-            temperature: 0.5,           // Lower = faster, more deterministic
-            maxOutputTokens: 300,       // Reduced from 1000 for faster response
+            temperature: 0.7,           // Balanced creativity
+            maxOutputTokens: 1500,      // ✅ Increased for detailed year forecasts
             topP: 0.95,
             topK: 40
           }
@@ -153,7 +154,7 @@ export const handler = async (event) => {
         };
       }
 
-      const result = await calculateCompleteNumerology(dob);
+      const result = await calculateCompleteNumerology(dob, DATA);
       return {
         statusCode: 200,
         headers,
@@ -163,7 +164,7 @@ export const handler = async (event) => {
 
     // Data Enrichment Endpoint
     if (path === '/api/data/enrichment' && method === 'POST') {
-      const { basicNumber, destinyNumber, yogaIds, kundliGrid, recurringNumbers } = requestBody;
+      const { basicNumber, destinyNumber, yogaIds, kundliGrid, recurringNumbers, currentMahaDasha, currentYearlyDasha } = requestBody;
 
       if (!basicNumber || !destinyNumber) {
         return {
@@ -178,7 +179,9 @@ export const handler = async (event) => {
         destinyNumber,
         yogaIds: yogaIds || [],
         kundliGrid: kundliGrid || [],
-        recurringNumbers: recurringNumbers || []
+        recurringNumbers: recurringNumbers || [],
+        currentMahaDasha: currentMahaDasha || null,
+        currentYearlyDasha: currentYearlyDasha || null
       });
 
       return {
@@ -324,7 +327,7 @@ ISHIRA'S RESPONSE (in simple, layman language):`;
               temperature: 0.7,
               topP: 0.8,
               topK: 40,
-              maxOutputTokens: 800
+              maxOutputTokens: 1500  // ✅ Increased for complete responses
             }
           })
         });

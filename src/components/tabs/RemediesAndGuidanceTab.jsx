@@ -6,6 +6,7 @@ import AdvancedRemediesTab from '../Remedies/AdvancedRemediesTab';
 import SpecialGuidanceTab from '../Remedies/SpecialGuidanceTab';
 import MantrasTab from '../Remedies/MantrasTab';
 import RudrakshaTab from '../Remedies/RudrakshaTab';
+import YantraTab from '../Remedies/YantraTab';
 import ChakraTab from '../Remedies/ChakraTab';
 import ShaktiBeejMantraTab from '../Remedies/ShaktiBeejMantraTab';
 
@@ -19,6 +20,7 @@ const RemediesAndGuidanceTab = ({ report, language = 'en' }) => {
         { key: 'Special', component: SpecialGuidanceTab },
         { key: 'Mantras', component: MantrasTab },
         { key: 'Rudraksha', component: RudrakshaTab },
+        { key: 'Yantra', component: YantraTab },
         { key: 'Chakra', component: ChakraTab },
         { key: 'Shakti', component: ShaktiBeejMantraTab }
     ];
@@ -41,6 +43,7 @@ const RemediesAndGuidanceTab = ({ report, language = 'en' }) => {
                     <button onClick={() => setActiveSubTab('Special')} className={`py-2 px-4 font-medium transition-colors duration-200 ${activeSubTab === 'Special' ? 'text-yellow-400 border-b-2 border-yellow-400' : 'text-yellow-200/70'}`}>Special Guidance</button>
                     <button onClick={() => setActiveSubTab('Mantras')} className={`py-2 px-4 font-medium transition-colors duration-200 ${activeSubTab === 'Mantras' ? 'text-yellow-400 border-b-2 border-yellow-400' : 'text-yellow-200/70'}`}>Mantras</button>
                     <button onClick={() => setActiveSubTab('Rudraksha')} className={`py-2 px-4 font-medium transition-colors duration-200 ${activeSubTab === 'Rudraksha' ? 'text-yellow-400 border-b-2 border-yellow-400' : 'text-yellow-200/70'}`}>Rudraksha</button>
+                    <button onClick={() => setActiveSubTab('Yantra')} className={`py-2 px-4 font-medium transition-colors duration-200 ${activeSubTab === 'Yantra' ? 'text-yellow-400 border-b-2 border-yellow-400' : 'text-yellow-200/70'}`}>Yantra / Talisman</button>
                     <button onClick={() => setActiveSubTab('Chakra')} className={`py-2 px-4 font-medium transition-colors duration-200 ${activeSubTab === 'Chakra' ? 'text-yellow-400 border-b-2 border-yellow-400' : 'text-yellow-200/70'}`}>Chakra Activation</button>
                     <button onClick={() => setActiveSubTab('Shakti')} className={`py-2 px-4 font-medium transition-colors duration-200 ${activeSubTab === 'Shakti' ? 'text-yellow-400 border-b-2 border-yellow-400' : 'text-yellow-200/70'}`}>Shakti Beej Mantra</button>
                 </div>
@@ -52,6 +55,7 @@ const RemediesAndGuidanceTab = ({ report, language = 'en' }) => {
                     {activeSubTab === 'Special' && <SpecialGuidanceTab report={report} language={language} />}
                     {activeSubTab === 'Mantras' && <MantrasTab report={report} language={language} />}
                     {activeSubTab === 'Rudraksha' && <RudrakshaTab report={report} language={language} />}
+                    {activeSubTab === 'Yantra' && <YantraTab report={report} language={language} />}
                     {activeSubTab === 'Chakra' && <ChakraTab report={report} language={language} />}
                     {activeSubTab === 'Shakti' && <ShaktiBeejMantraTab language={language} />}
                 </div>

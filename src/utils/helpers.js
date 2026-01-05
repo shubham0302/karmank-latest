@@ -112,33 +112,67 @@ export const checkForSpecialRemedies = (digitCounts, destinyNumber, mahaDasha = 
     const uniqueRemedies = new Set();
     const language = 'en'; // Default to 'en' for this logic
 
+    // 🔍 DEBUG: Log inputs
+    console.log('🔍 [checkForSpecialRemedies] Input:', {
+        digitCounts,
+        destinyNumber,
+        mahaDasha,
+        annualDasha,
+        has4: digitCounts[4] > 0,
+        has8: digitCounts[8] > 0,
+        has9: digitCounts[9] > 0,
+        has5: digitCounts[5] > 0
+    });
+
+    // 🔍 DEBUG: Check if DATA is available
+    console.log('🔍 [checkForSpecialRemedies] DATA.specialRudrakshaRemedies available:', !!DATA.specialRudrakshaRemedies);
+    console.log('🔍 [checkForSpecialRemedies] DATA.specialRudrakshaRemedies[4]:', DATA.specialRudrakshaRemedies?.[4]);
+    console.log('🔍 [checkForSpecialRemedies] DATA.specialRudrakshaRemedies[8]:', DATA.specialRudrakshaRemedies?.[8]);
+
     const addRemedy = (remedy) => {
-        if (!remedy || !remedy.title) return; // Safety check
+        console.log('🔍 [addRemedy] Attempting to add:', remedy);
+        if (!remedy || !remedy.title) {
+            console.log('❌ [addRemedy] Skipped - no remedy or title');
+            return;
+        }
         const key = getText(remedy.title, language); // Use getText on the title object
-        
+        console.log('🔍 [addRemedy] Key:', key);
+
         if (!uniqueRemedies.has(key)) {
             remedies.push(remedy);
             uniqueRemedies.add(key);
+            console.log('✅ [addRemedy] Added successfully');
+        } else {
+            console.log('⚠️ [addRemedy] Duplicate - skipped');
         }
     };
 
     // Rule: Presence of 4 in chart OR dasha of 4
+    console.log('🔍 [Rule 1] Checking for 4:', digitCounts[4] > 0);
     if (digitCounts[4] > 0 || mahaDasha === 4 || annualDasha === 4) {
+        console.log('✅ [Rule 1] Triggered - adding remedy for 4');
         addRemedy(DATA.specialRudrakshaRemedies[4]);
     }
 
     // Rule: Presence of 8 in chart OR dasha of 8
+    console.log('🔍 [Rule 2] Checking for 8:', digitCounts[8] > 0);
     if (digitCounts[8] > 0 || mahaDasha === 8 || annualDasha === 8) {
+        console.log('✅ [Rule 2] Triggered - adding remedy for 8');
         addRemedy(DATA.specialRudrakshaRemedies[8]);
     }
     
     // Rule: Destiny 4
+    console.log('🔍 [Rule 3] Checking Destiny 4:', destinyNumber === 4);
     if (destinyNumber === 4 && DATA.destinyBasedRemedies[4]) {
+        console.log('✅ [Rule 3] Triggered - adding destiny 4 remedy');
         addRemedy(DATA.destinyBasedRemedies[4]);
     }
 
     // Rule: Combination of 9 and 4 Without 5
-    if (digitCounts[9] > 0 && digitCounts[4] > 0 && digitCounts[5] === 0) {
+    const has9and4without5 = digitCounts[9] > 0 && digitCounts[4] > 0 && digitCounts[5] === 0;
+    console.log('🔍 [Rule 4] Checking 9+4 without 5:', has9and4without5);
+    if (has9and4without5) {
+        console.log('✅ [Rule 4] Triggered - adding 9-4 combination remedy');
         addRemedy({
             type: 'simple',
             title: {en: "Protection Remedy for 9-4 Combination"},
@@ -147,7 +181,10 @@ export const checkForSpecialRemedies = (digitCounts, destinyNumber, mahaDasha = 
     }
 
     // Rule: Odd Number 4
-    if (digitCounts[4] > 0 && digitCounts[4] % 2 !== 0) {
+    const hasOdd4 = digitCounts[4] > 0 && digitCounts[4] % 2 !== 0;
+    console.log('🔍 [Rule 5] Checking odd count of 4:', hasOdd4, '(count:', digitCounts[4], ')');
+    if (hasOdd4) {
+        console.log('✅ [Rule 5] Triggered - adding odd 4 remedy');
         addRemedy({
             type: 'simple',
             title: {en: "Balancing Remedy for Number 4"},
@@ -157,14 +194,18 @@ export const checkForSpecialRemedies = (digitCounts, destinyNumber, mahaDasha = 
 
    // A "positive 1" is defined as having 0 or 1 occurrences, or having 1 as the destiny number.
    const isPositive1 = (digitCounts[1] <= 1 || destinyNumber === 1);
+   console.log('🔍 [Rule 6] Checking multiple 1s without Destiny 1:', !isPositive1, '(count 1s:', digitCounts[1], ', destiny:', destinyNumber, ')');
    // Rule: Trigger remedy if the influence of number 1 is NOT positive.
    if (!isPositive1) {
+    console.log('✅ [Rule 6] Triggered - adding amplified 1 remedy');
     addRemedy({
         type: 'simple',
         title: {en: "Remedy for Amplified Number 1"},
         text: {en: "Your chart has multiple 1s, but your Destiny Number is not 1. To balance this, you must wear a 1 Mukhi Rudraksha and offer Surya Arghya (water to the Sun) early in the morning while chanting the mantra: ॐ ह्रां ह्रीं ह्रौं सः सूर्याय नमः (at least 11 times)."}
     });
    }
-    
+
+    console.log('🔍 [checkForSpecialRemedies] Final remedies count:', remedies.length);
+    console.log('🔍 [checkForSpecialRemedies] Remedies:', remedies);
     return remedies;
 };

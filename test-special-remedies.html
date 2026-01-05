@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Special Remedies - 22-04-1987</title>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #00ff00;
+        }
+        .section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #00ff00;
+            background: #0a0a0a;
+        }
+        .error { color: #ff0000; }
+        .success { color: #00ff00; }
+        .warning { color: #ffaa00; }
+        h2 { color: #00aaff; }
+        pre { background: #000; padding: 10px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Special Remedies Debug Test</h1>
+    <p>Testing DOB: <strong>22-04-1987</strong></p>
+
+    <div class="section">
+        <h2>Step 1: Extract Digits</h2>
+        <pre id="step1"></pre>
+    </div>
+
+    <div class="section">
+        <h2>Step 2: Count Occurrences (baseKundliGrid)</h2>
+        <pre id="step2"></pre>
+    </div>
+
+    <div class="section">
+        <h2>Step 3: Calculate Destiny & Basic Numbers</h2>
+        <pre id="step3"></pre>
+    </div>
+
+    <div class="section">
+        <h2>Step 4: Check Remedy Rules</h2>
+        <pre id="step4"></pre>
+    </div>
+
+    <div class="section">
+        <h2>Step 5: Expected Remedies</h2>
+        <pre id="step5"></pre>
+    </div>
+
+    <script>
+        // Test DOB: 22-04-1987
+        const dob = '1987-04-22';
+        const date = new Date(dob + 'T00:00:00');
+        const day = date.getDate();
+        const month = date.getMonth() + 1;
+        const year = date.getFullYear();
+
+        document.getElementById('step1').textContent =
+`DOB: ${dob}
+Parsed: day=${day}, month=${month}, year=${year}
+Date string: ${day}${month}${year} → 2241987`;
+
+        // Mimic the calculator logic
+        const dobString = `${day}${month}${year}`;
+
+        // Calculate destiny number
+        const sumDigits = (str) => str.split('').reduce((sum, d) => sum + parseInt(d, 10), 0);
+        const destinySum = sumDigits(dobString);
+        const destinyNumber = sumDigits(String(destinySum));
+
+        // Calculate basic number
+        const basicNumber = day > 9 ? sumDigits(String(day)) : day;
+
+        document.getElementById('step3').textContent =
+`DOB String: ${dobString}
+Sum of all digits: ${destinySum} (2+2+4+1+9+8+7)
+Destiny Number: ${destinyNumber} (${destinySum} → ${destinyNumber})
+Basic Number: ${basicNumber} (from day ${day})`;
+
+        // Create kundli string (how calculator does it)
+        const kundliDigitsStr = (String(day).padStart(2, '0') + String(month).padStart(2, '0') + String(year).substring(2)).replace(/0/g, '');
+
+        document.getElementById('step2').textContent =
+`Kundli preparation:
+- Day padded: ${String(day).padStart(2, '0')}
+- Month padded: ${String(month).padStart(2, '0')}
+- Year last 2: ${String(year).substring(2)}
+- Combined: ${String(day).padStart(2, '0')}${String(month).padStart(2, '0')}${String(year).substring(2)}
+- After removing zeros: ${kundliDigitsStr}
+
+Counting digits in "${kundliDigitsStr}":`;
+
+        // Count digits
+        const digitCounts = Array(10).fill(0);
+        for (const char of kundliDigitsStr) {
+            digitCounts[parseInt(char)]++;
+        }
+
+        let countText = '\nInitial counts:\n';
+        digitCounts.forEach((count, digit) => {
+            if (count > 0) countText += `  ${digit}: ${count}\n`;
+        });
+
+        // Add destiny number
+        digitCounts[destinyNumber]++;
+        countText += '\nAfter adding destiny number (' + destinyNumber + '):\n';
+        digitCounts.forEach((count, digit) => {
+            if (count > 0) countText += `  ${digit}: ${count}\n`;
+        });
+
+        // Add basic number for two-digit days
+        if (day > 9 && day % 10 !== 0) {
+            digitCounts[basicNumber]++;
+            countText += '\nAfter adding basic number (' + basicNumber + ') for two-digit day:\n';
+            digitCounts.forEach((count, digit) => {
+                if (count > 0) countText += `  ${digit}: ${count}\n`;
+            });
+        }
+
+        countText += '\n⭐ FINAL baseKundliGrid:\n';
+        countText += JSON.stringify(digitCounts, null, 2);
+
+        document.getElementById('step2').textContent += countText;
+
+        // Check rules
+        let rulesText = '';
+        const checkRule = (name, condition, description) => {
+            rulesText += `\n${condition ? '✅' : '❌'} ${name}: ${description}`;
+            return condition;
+        };
+
+        checkRule('Rule 1', digitCounts[4] > 0, `Has 4 in chart (count: ${digitCounts[4] || 0})`);
+        checkRule('Rule 2', digitCounts[8] > 0, `Has 8 in chart (count: ${digitCounts[8] || 0})`);
+        checkRule('Rule 3', destinyNumber === 4, `Destiny is 4 (actual: ${destinyNumber})`);
+        const has9and4without5 = digitCounts[9] > 0 && digitCounts[4] > 0 && digitCounts[5] === 0;
+        checkRule('Rule 4', has9and4without5, `Has 9+4 without 5 (9:${digitCounts[9]}, 4:${digitCounts[4]}, 5:${digitCounts[5]})`);
+        const hasOdd4 = digitCounts[4] > 0 && digitCounts[4] % 2 !== 0;
+        checkRule('Rule 5', hasOdd4, `Odd count of 4s (count: ${digitCounts[4]})`);
+        const hasMultiple1s = digitCounts[1] > 1 && destinyNumber !== 1;
+        checkRule('Rule 6', hasMultiple1s, `Multiple 1s without Destiny 1 (count 1s: ${digitCounts[1]}, destiny: ${destinyNumber})`);
+
+        document.getElementById('step4').textContent = rulesText;
+
+        // Expected remedies
+        let expectedText = 'Based on triggered rules:\n\n';
+        if (digitCounts[4] > 0) {
+            expectedText += '1. ✅ Ganesh Rudraksha (for number 4)\n';
+            expectedText += '   Type: Detailed Rudraksha\n';
+            expectedText += '   Triggered by: Rules 1 & 5\n\n';
+        }
+        if (digitCounts[8] > 0) {
+            expectedText += '2. ✅ 14 Mukhi Rudraksha (for number 8)\n';
+            expectedText += '   Type: Detailed Rudraksha\n';
+            expectedText += '   Triggered by: Rule 2\n\n';
+        }
+        if (has9and4without5) {
+            expectedText += '3. ✅ 3 Mukhi Rudraksha (9-4 combination)\n';
+            expectedText += '   Type: Simple remedy\n';
+            expectedText += '   Triggered by: Rule 4\n\n';
+        }
+
+        expectedText += '\n🎯 TOTAL EXPECTED REMEDIES: ' + [
+            digitCounts[4] > 0,
+            digitCounts[8] > 0,
+            has9and4without5
+        ].filter(Boolean).length;
+
+        document.getElementById('step5').textContent = expectedText;
+    </script>
+</body>
+</html>

@@ -8,6 +8,7 @@ import dotenv from 'dotenv';
 import axios from 'axios';
 import { calculateCompleteNumerology } from './services/numerology-calculator.js';
 import { dataService } from './services/data-service.js';
+import { DATA } from './data/proprietary-data.js';
 
 dotenv.config();
 
@@ -196,7 +197,7 @@ app.post('/calculate/numerology', async (req: Request, res: Response) => {
     console.log(`🔢 Calculating numerology for: ${dob}`);
 
     // Perform secure backend calculation
-    const result = calculateCompleteNumerology(dob);
+    const result = calculateCompleteNumerology(dob, DATA);
 
     console.log(`✅ Calculation complete for: ${dob}`);
 

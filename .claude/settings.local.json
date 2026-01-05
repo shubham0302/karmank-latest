@@ -20,7 +20,11 @@
       "Bash(node scripts/package-lambda.js:*)",
       "Bash(unzip:*)",
       "Bash(Select-String \"services\")",
-      "Bash(node verify-package.js:*)"
+      "Bash(node verify-package.js:*)",
+      "Bash(node -e:*)",
+      "Bash(aws:*)",
+      "Bash(npm run deploy:lambda:*)",
+      "Bash(npm run package:lambda:*)"
     ],
     "deny": [],
     "ask": []
