@@ -57,7 +57,7 @@ export default function HomePage() {
       route: "/career-path",
     },
     {
-      title: "KARMIC BLUEPRINT",
+      title: "KARMANK • KARMIC BLUEPRINT",
       blurb:
         "Where sacred palm leaf prophecies meet modern pattern recognition. Your unchangeable destiny (Nadi) and adaptable nature (Palm) revealed through advanced analysis.",
       cta: "Consult",
