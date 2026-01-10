@@ -12,6 +12,7 @@ import CosmicCompatibilityPage from './pages/CosmicCompatibilityPage';
 import GitaGyanPage from './pages/GitaGyanPage';
 import AssetVibrationPage from './pages/AssetVibrationPage';
 import CareerPathPage from './pages/CareerPathPage';
+import PalmistryPage from './pages/PalmistryPage';
 import FamilyMembersPage from './pages/FamilyMembersPage';
 import TermsPage from './pages/TermsPage';
 import PrivacyPage from './pages/PrivacyPage';
@@ -97,6 +98,14 @@ const App = () => (
                     element={
                         <ProtectedRoute>
                             <CareerPathPage />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/palmistry"
+                    element={
+                        <ProtectedRoute>
+                            <PalmistryPage />
                         </ProtectedRoute>
                     }
                 />
