@@ -160,7 +160,7 @@ export default function HomePage() {
           >
             <p className="flex items-center justify-center gap-2">
               <Sparkles className="h-3 w-3" />© {new Date().getFullYear()}{" "}
-              KarmAnk<sup className="text-[0.5rem] text-white/40">™</sup> - Sacred Technology
+              KarmAnk<sup className="text-[0.5rem] text-white/40">™</sup> - All Rights Reserved.
             </p>
           </motion.div>
         </div>

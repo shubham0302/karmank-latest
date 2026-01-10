@@ -35,7 +35,7 @@ app.get('/', (_req: Request, res: Response) => {
     status: 'ok',
     service: 'KarmAnk Backend API',
     version: '1.0.0',
-    endpoints: ['/health', '/nlg/generate', '/calculate/numerology', '/api/data/enrichment', '/nlg/analyze-name']
+    endpoints: ['/health', '/nlg/generate', '/calculate/numerology', '/api/data/enrichment', '/nlg/analyze-name', '/nlg/analyze-signature']
   });
 });
 
@@ -186,6 +186,69 @@ Keep the response clear, concise, and actionable (about 200-300 words).`;
     return res.status(500).json({
       error: 'name_analysis_error',
       message: err.response?.data?.error?.message || 'Failed to analyze name'
+    });
+  }
+});
+
+// Signature Analysis Endpoint (with image support)
+app.post('/nlg/analyze-signature', async (req: Request, res: Response) => {
+  try {
+    const { prompt, imageBase64 } = req.body;
+
+    if (!prompt) {
+      return res.status(400).json({ error: 'invalid_input', message: 'Prompt is required' });
+    }
+
+    if (!imageBase64) {
+      return res.status(400).json({ error: 'invalid_input', message: 'Signature image is required' });
+    }
+
+    if (!GEMINI_API_KEY) {
+      return res.status(500).json({ error: 'server_configuration_error', message: 'API key not configured' });
+    }
+
+    // Use Gemini 2.5 Flash for vision capabilities (same as numerology endpoint)
+    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+
+    const response = await axios.post(apiUrl, {
+      contents: [{
+        role: "user",
+        parts: [
+          { text: prompt },
+          {
+            inline_data: {
+              mime_type: 'image/png',
+              data: imageBase64
+            }
+          }
+        ]
+      }],
+      generationConfig: {
+        temperature: 0.7,
+        maxOutputTokens: 2048,
+        topP: 0.95,
+        topK: 40
+      }
+    }, {
+      headers: { 'Content-Type': 'application/json' },
+      timeout: 30000
+    });
+
+    const generatedText = response.data?.candidates?.[0]?.content?.parts?.[0]?.text;
+
+    if (!generatedText) {
+      throw new Error('No content generated from Gemini API');
+    }
+
+    return res.json({
+      success: true,
+      data: { text: generatedText }
+    });
+  } catch (err: any) {
+    console.error('Signature analysis error:', err.message);
+    return res.status(500).json({
+      error: 'signature_analysis_error',
+      message: err.response?.data?.error?.message || 'Failed to analyze signature'
     });
   }
 });

@@ -32,13 +32,20 @@ const GeneralRemediesTab = ({ report, language = 'en' }) => {
     );
 
     return (
-        <Card className="pdf-page-break-after" style={{ pageBreakAfter: 'always', pageBreakInside: 'avoid' }}>
-            <SectionTitle>General Remedies</SectionTitle>
-            <RemedySection title="Remedies for Basic Number" number={report.basicNumber} remedyData={basicRemedy} />
+        <div className="pdf-page-break-after" style={{ pageBreakAfter: 'always' }}>
+            {/* Remedies for Basic Number */}
+            <Card className="print:mb-4" style={{ pageBreakInside: 'avoid' }}>
+                <SectionTitle>General Remedies</SectionTitle>
+                <RemedySection title="Remedies for Basic Number" number={report.basicNumber} remedyData={basicRemedy} />
+            </Card>
+
+            {/* Remedies for Destiny Number - Same Page */}
             {report.basicNumber !== report.destinyNumber && (
-                 <RemedySection title="Remedies for Destiny Number" number={report.destinyNumber} remedyData={destinyRemedy} />
+                <Card className="print:mb-4" style={{ pageBreakInside: 'avoid' }}>
+                    <RemedySection title="Remedies for Destiny Number" number={report.destinyNumber} remedyData={destinyRemedy} />
+                </Card>
             )}
-        </Card>
+        </div>
     );
 };
 

@@ -23,12 +23,22 @@ const applyVintagePrintStyles = (element) => {
       background: white !important;
     }
 
-    /* Hide elements marked as print:hidden during PDF export */
+    /* Hide screen-only content during PDF export */
+    .pdf-exporting .screen-only-content {
+      display: none !important;
+    }
+
+    /* Show print-only content during PDF export */
+    .pdf-exporting .print-only-content {
+      display: block !important;
+    }
+
+    /* Legacy support - Hide elements marked as print:hidden during PDF export */
     .pdf-exporting .print\\:hidden {
       display: none !important;
     }
 
-    /* Show elements marked as hidden print:block during PDF export */
+    /* Legacy support - Show elements marked as hidden print:block during PDF export */
     .pdf-exporting .hidden.print\\:block {
       display: block !important;
     }
@@ -510,12 +520,11 @@ export const exportToPDF = async (elementId, fileName = 'KarmAnk_Report.pdf', op
     const styleElement = applyVintagePrintStyles(element);
 
     // Make print-only sections visible for PDF capture
-    const printOnlySections = element.querySelectorAll('.hidden.print\\:block');
-    const screenOnlySections = element.querySelectorAll('.print\\:hidden');
+    const printOnlySections = element.querySelectorAll('.print-only-content');
+    const screenOnlySections = element.querySelectorAll('.screen-only-content');
     console.log('🔍 Found print-only sections:', printOnlySections.length);
     console.log('🔍 Found screen-only sections:', screenOnlySections.length);
     printOnlySections.forEach(el => {
-      el.classList.remove('hidden');
       el.style.display = 'block'; // Explicitly set display
       el.setAttribute('data-was-hidden', 'true');
     });
@@ -1004,6 +1013,18 @@ export const exportFullReportToPDF = async (tabs, setActiveTab, userName = 'User
       // Apply vintage print styles for dark brown text
       const styleElement = applyVintagePrintStyles(element);
 
+      // Make print-only sections visible for PDF capture
+      const printOnlySections = element.querySelectorAll('.print-only-content');
+      const screenOnlySections = element.querySelectorAll('.screen-only-content');
+      printOnlySections.forEach(el => {
+        el.style.display = 'block';
+        el.setAttribute('data-was-hidden', 'true');
+      });
+      screenOnlySections.forEach(el => {
+        el.style.display = 'none';
+        el.setAttribute('data-was-screen-only', 'true');
+      });
+
       // Remove height restrictions to capture all content
       const originalStyles = removeHeightRestrictions(element);
 
@@ -1028,6 +1049,20 @@ export const exportFullReportToPDF = async (tabs, setActiveTab, userName = 'User
       // Restore original styles
       restoreHeightRestrictions(originalStyles);
       removeVintagePrintStyles(element, styleElement);
+
+      // Restore print-only and screen-only sections
+      printOnlySections.forEach(el => {
+        if (el.getAttribute('data-was-hidden')) {
+          el.style.display = '';
+          el.removeAttribute('data-was-hidden');
+        }
+      });
+      screenOnlySections.forEach(el => {
+        if (el.getAttribute('data-was-screen-only')) {
+          el.style.display = '';
+          el.removeAttribute('data-was-screen-only');
+        }
+      });
 
       allCanvases.push({ canvas, tabName: tab });
     }

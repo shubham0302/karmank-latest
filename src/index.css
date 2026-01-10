@@ -93,6 +93,15 @@
     -webkit-text-fill-color: transparent;
   }
 
+  /* Screen/Print View Controls */
+  .screen-only-content {
+    display: block;
+  }
+
+  .print-only-content {
+    display: none;
+  }
+
   /* PDF Export Page Break Styles */
   .pdf-page-break-after {
     page-break-after: always;
@@ -115,6 +124,15 @@
     body {
       background-color: white !important;
       color: black !important;
+    }
+
+    /* Force screen/print view controls */
+    .screen-only-content {
+      display: none !important;
+    }
+
+    .print-only-content {
+      display: block !important;
     }
 
     .pdf-page-break-after {
@@ -157,15 +175,20 @@
       display: none !important;
     }
 
+    /* Force hide screen view in print */
+    [style*="display: block"].print\:hidden {
+      display: none !important;
+    }
+
+    /* Force show print view in print */
+    [style*="display: none"].print\:block {
+      display: block !important;
+    }
+
     /* Remove scroll containers */
     .max-h-60, .max-h-96, .overflow-y-auto, .overflow-auto {
       max-height: none !important;
       overflow: visible !important;
-    }
-
-    /* Show print-only content */
-    .hidden.print\:block {
-      display: block !important;
     }
 
     /* Optimize icon and emoji sizes for print */

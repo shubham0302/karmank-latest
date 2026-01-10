@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Signature Endpoint</title>
+</head>
+<body>
+    <h1>Test Signature Analysis Endpoint</h1>
+    <button onclick="testEndpoint()">Test /nlg/analyze-signature</button>
+    <pre id="result"></pre>
+
+    <script>
+        async function testEndpoint() {
+            const BACKEND_URL = 'https://zhssmkkxcnw52j5774t2dg4hlm0llzyg.lambda-url.ap-southeast-2.on.aws';
+            const resultEl = document.getElementById('result');
+
+            resultEl.textContent = 'Testing endpoint...\n';
+
+            // Create a simple test image (1x1 transparent PNG in base64)
+            const testImage = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+
+            try {
+                const response = await fetch(`${BACKEND_URL}/nlg/analyze-signature`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        prompt: 'Analyze this signature from a numerological and graphological perspective.',
+                        imageBase64: testImage
+                    })
+                });
+
+                resultEl.textContent += `Status: ${response.status} ${response.statusText}\n\n`;
+
+                const data = await response.json();
+                resultEl.textContent += `Response:\n${JSON.stringify(data, null, 2)}\n\n`;
+
+                if (data.error || data.message) {
+                    resultEl.textContent += `Error Details:\n`;
+                    resultEl.textContent += `  Error: ${data.error}\n`;
+                    resultEl.textContent += `  Message: ${data.message}\n`;
+                }
+
+            } catch (err) {
+                resultEl.textContent += `Network Error: ${err.message}\n`;
+                resultEl.textContent += `Stack: ${err.stack}\n`;
+            }
+        }
+    </script>
+</body>
+</html>

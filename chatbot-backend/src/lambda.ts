@@ -6,6 +6,7 @@
  * - /calculate/numerology - Numerology calculations
  * - /api/data/enrichment - Data enrichment
  * - /nlg/analyze-name - Name analysis
+ * - /nlg/analyze-signature - Signature analysis with image
  */
 
 import { calculateCompleteNumerology } from './services/numerology-calculator.js';
@@ -57,7 +58,7 @@ export const handler = async (event) => {
           status: 'ok',
           service: 'KarmAnk Backend API (AWS Lambda)',
           version: '1.0.0',
-          endpoints: ['/health', '/nlg/generate', '/calculate/numerology', '/api/data/enrichment', '/nlg/analyze-name']
+          endpoints: ['/health', '/nlg/generate', '/calculate/numerology', '/api/data/enrichment', '/nlg/analyze-name', '/nlg/analyze-signature']
         })
       };
     }
@@ -262,6 +263,119 @@ Keep the response clear, concise, and actionable (about 200-300 words).`;
       };
     }
 
+    // Signature Analysis Endpoint (with image support)
+    if (path === '/nlg/analyze-signature' && method === 'POST') {
+      try {
+        const { prompt, imageBase64 } = requestBody;
+
+        if (!prompt) {
+          return {
+            statusCode: 400,
+            headers,
+            body: JSON.stringify({ error: 'invalid_input', message: 'Prompt is required' })
+          };
+        }
+
+        if (!imageBase64) {
+          return {
+            statusCode: 400,
+            headers,
+            body: JSON.stringify({ error: 'invalid_input', message: 'Signature image is required' })
+          };
+        }
+
+        if (!GEMINI_API_KEY) {
+          return {
+            statusCode: 500,
+            headers,
+            body: JSON.stringify({ error: 'server_configuration_error', message: 'API key not configured' })
+          };
+        }
+
+        // Use Gemini 2.5 Flash for vision capabilities (same as numerology endpoint)
+        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+
+        const response = await fetch(geminiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{
+            role: "user",
+            parts: [
+              { text: prompt },
+              {
+                inline_data: {
+                  mime_type: 'image/png',
+                  data: imageBase64
+                }
+              }
+            ]
+          }],
+          generationConfig: {
+            temperature: 0.7,
+            maxOutputTokens: 2048,
+            topP: 0.95,
+            topK: 40
+          }
+        })
+      });
+
+      const data: any = await response.json();
+      console.log('📊 Gemini vision response status:', response.status);
+      console.log('📊 Full Gemini response:', JSON.stringify(data));
+
+      const generatedText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+
+      if (!generatedText) {
+        console.error('❌ Gemini Vision API Error - No text generated');
+        console.error('❌ Full response:', JSON.stringify(data));
+
+        if (data.error) {
+          return {
+            statusCode: 500,
+            headers,
+            body: JSON.stringify({
+              error: 'gemini_api_error',
+              message: data.error.message || 'Gemini API error',
+              details: data.error
+            })
+          };
+        }
+
+        return {
+          statusCode: 500,
+          headers,
+          body: JSON.stringify({
+            error: 'no_content_generated',
+            message: 'No content generated from Gemini API',
+            candidates: data.candidates
+          })
+        };
+      }
+
+      console.log('✅ Generated text length:', generatedText.length);
+
+      return {
+        statusCode: 200,
+        headers,
+        body: JSON.stringify({
+          success: true,
+          data: { text: generatedText }
+        })
+      };
+      } catch (signatureError: any) {
+        console.error('❌ Signature analysis error:', signatureError);
+        return {
+          statusCode: 500,
+          headers,
+          body: JSON.stringify({
+            error: 'signature_analysis_error',
+            message: signatureError.message || 'Failed to analyze signature'
+          })
+        };
+      }
+    }
+
     // Chat Endpoint - Advanced LLM-powered chatbot
     if (path === '/api/chat' && method === 'POST') {
       const { message, prompt, userContext, conversationId, language } = requestBody;
@@ -381,7 +495,7 @@ ISHIRA'S RESPONSE (in simple, layman language):`;
       body: JSON.stringify({
         error: 'not_found',
         message: `Endpoint ${path} not found`,
-        availableEndpoints: ['/health', '/nlg/generate', '/calculate/numerology', '/api/data/enrichment', '/nlg/analyze-name', '/api/chat']
+        availableEndpoints: ['/health', '/nlg/generate', '/calculate/numerology', '/api/data/enrichment', '/nlg/analyze-name', '/nlg/analyze-signature', '/api/chat']
       })
     };
 

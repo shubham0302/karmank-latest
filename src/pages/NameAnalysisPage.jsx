@@ -530,11 +530,31 @@ function generatePDF(report) {
 async function fetchGeminiAnalysis(prompt, imageBase64 = null) {
   const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080';
 
-  // Note: Image analysis not supported yet via backend, only text analysis
+  // Use different endpoint for image analysis (signature)
   if (imageBase64) {
-    console.warn('⚠️ Image analysis via backend not yet implemented, skipping image');
+    const url = `${BACKEND_URL}/nlg/analyze-signature`;
+
+    const payload = {
+      prompt: prompt,
+      imageBase64: imageBase64
+    };
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Signature analysis failed');
+    }
+
+    const data = await response.json();
+    return data.data?.text || data.text || '';
   }
 
+  // Text-only analysis
   const url = `${BACKEND_URL}/nlg/generate`;
 
   const payload = {
@@ -1151,61 +1171,15 @@ const SynergyTab = ({ report }) => {
 };
 
 const SignatureTab = () => {
-  const canvasRef = useRef(null);
   const fileInputRef = useRef(null);
-  const [mode, setMode] = useState('draw');
-  const [isDrawing, setIsDrawing] = useState(false);
   const [hasSignature, setHasSignature] = useState(false);
   const [uploadedImage, setUploadedImage] = useState(null);
   const [analysis, setAnalysis] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    if (canvasRef.current && mode === 'draw') {
-      const canvas = canvasRef.current;
-      const ctx = canvas.getContext('2d');
-      ctx.fillStyle = '#000000';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-    }
-  }, [mode]);
-
-  const startDrawing = (e) => {
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d');
-    const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    ctx.strokeStyle = '#FACC15';
-    ctx.lineWidth = 2;
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-    ctx.beginPath();
-    ctx.moveTo(x, y);
-    setIsDrawing(true);
-  };
-
-  const draw = (e) => {
-    if (!isDrawing) return;
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d');
-    const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    ctx.lineTo(x, y);
-    ctx.stroke();
-    setHasSignature(true);
-  };
-
-  const stopDrawing = () => {
-    setIsDrawing(false);
-  };
-
   const clearSignature = () => {
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d');
-    ctx.fillStyle = '#000000';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    setUploadedImage(null);
     setHasSignature(false);
     setAnalysis(null);
     setError(null);
@@ -1229,20 +1203,17 @@ const SignatureTab = () => {
     setLoading(true);
     setError(null);
     try {
-      let imageBase64;
-      if (mode === 'draw') {
-        imageBase64 = canvasRef.current.toDataURL('image/png').split(',')[1];
-      } else {
-        imageBase64 = uploadedImage.split(',')[1];
-      }
+      // Extract base64 from uploaded image (remove data:image/png;base64, prefix)
+      const imageBase64 = uploadedImage.split(',')[1];
 
-      const prompt = `Analyze this signature from a numerological and graphological perspective. Provide insights about:
-1. Overall personality traits revealed
-2. Confidence and self-expression level
-3. Emotional stability
-4. Leadership qualities
-5. Creative tendencies
-Keep the response concise and insightful (3-4 sentences).`;
+      const prompt = `Analyze this signature from a graphological (handwriting analysis) perspective. Provide insights about:
+1. Overall personality traits revealed by the signature style
+2. Confidence and self-expression level (based on size, slant, pressure)
+3. Emotional stability (based on baseline, rhythm, flow)
+4. Leadership qualities (based on dominant strokes, emphasis)
+5. Creative tendencies (based on uniqueness, flair, artistic elements)
+
+Provide a detailed, insightful analysis in 4-6 sentences. Focus on what the handwriting reveals about the person's character.`;
 
       const result = await fetchGeminiAnalysis(prompt, imageBase64);
       setAnalysis(result);
@@ -1261,75 +1232,27 @@ Keep the response concise and insightful (3-4 sentences).`;
           The Signature Alchemist
         </h3>
 
-        <div className="flex gap-2 mb-4">
-          <button
-            onClick={() => {
-              setMode('draw');
-              setHasSignature(false);
-              setAnalysis(null);
-              setUploadedImage(null);
-            }}
-            className={`flex-1 py-2 rounded-lg font-medium transition-all ${
-              mode === 'draw'
-                ? 'bg-yellow-500/20 text-yellow-300 border border-yellow-500/50'
-                : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
-            }`}
-          >
-            <PenTool className="w-4 h-4 inline mr-2" />
-            DRAW
-          </button>
-          <button
-            onClick={() => {
-              setMode('upload');
-              setHasSignature(false);
-              setAnalysis(null);
-            }}
-            className={`flex-1 py-2 rounded-lg font-medium transition-all ${
-              mode === 'upload'
-                ? 'bg-yellow-500/20 text-yellow-300 border border-yellow-500/50'
-                : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
-            }`}
-          >
-            <Upload className="w-4 h-4 inline mr-2" />
-            UPLOAD
-          </button>
-        </div>
-
         <div className="border border-dashed border-gray-700 rounded-xl bg-gray-950 mb-4 overflow-hidden">
-          {mode === 'draw' ? (
-            <canvas
-              ref={canvasRef}
-              width={600}
-              height={200}
-              onMouseDown={startDrawing}
-              onMouseMove={draw}
-              onMouseUp={stopDrawing}
-              onMouseLeave={stopDrawing}
-              className="w-full cursor-crosshair"
-              style={{ touchAction: 'none' }}
+          <div className="p-8 text-center">
+            <input
+              type="file"
+              accept="image/*"
+              ref={fileInputRef}
+              onChange={handleFileUpload}
+              className="hidden"
             />
-          ) : (
-            <div className="p-8 text-center">
-              <input
-                type="file"
-                accept="image/*"
-                ref={fileInputRef}
-                onChange={handleFileUpload}
-                className="hidden"
-              />
-              {uploadedImage ? (
-                <img src={uploadedImage} alt="Uploaded signature" className="max-h-48 mx-auto" />
-              ) : (
-                <button
-                  onClick={() => fileInputRef.current?.click()}
-                  className="px-6 py-3 bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-300 border border-yellow-500/50 rounded-lg font-medium transition-all"
-                >
-                  <Upload className="w-5 h-5 inline mr-2" />
-                  Choose Image
-                </button>
-              )}
-            </div>
-          )}
+            {uploadedImage ? (
+              <img src={uploadedImage} alt="Uploaded signature" className="max-h-48 mx-auto" />
+            ) : (
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                className="px-6 py-3 bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-300 border border-yellow-500/50 rounded-lg font-medium transition-all"
+              >
+                <Upload className="w-5 h-5 inline mr-2" />
+                Choose Image
+              </button>
+            )}
+          </div>
         </div>
 
         <div className="flex gap-2">

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { ArrowLeft, Plus, Users, Mail, LogOut, CheckCircle } from 'lucide-react'
+import { ArrowLeft, Plus, Users, Mail, LogOut, CheckCircle, Trash2, AlertCircle } from 'lucide-react'
 import CosmicBackground from '../components/CosmicBackground'
 import { useFamilyMembers } from '@/hooks/useFamilyMembers'
 import { useAuth } from '@/contexts/AuthContext'
@@ -189,6 +189,45 @@ export default function ProfilePage() {
                     <span>Sign out to log out from this device</span>
                   </li>
                 </ul>
+              </GlassCard>
+
+              {/* Data Deletion Request Card */}
+              <GlassCard className="bg-gradient-to-br from-red-500/10 to-orange-500/5 border-red-500/20 p-5">
+                <div className="flex items-start gap-3 mb-4">
+                  <AlertCircle className="h-5 w-5 text-red-400 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <h3 className="text-white font-semibold mb-2 text-sm">Data Deletion Request</h3>
+                    <p className="text-white/70 text-xs leading-relaxed">
+                      You may request deletion of your personal data collected by the KarmAnk app at any time.
+                    </p>
+                  </div>
+                </div>
+                <div className="space-y-3 text-xs">
+                  <div className="bg-white/5 border border-white/10 rounded-lg p-3">
+                    <p className="text-white/70 mb-2">To request data deletion, please email us at:</p>
+                    <a
+                      href="mailto:support@karmank.app?subject=Data Deletion Request – KarmAnk"
+                      className="text-cyan-400 hover:text-cyan-300 underline font-semibold"
+                    >
+                      support@karmank.app
+                    </a>
+                    <p className="text-white/60 mt-3 text-xs">
+                      Subject line: <span className="text-white/80 font-semibold">"Data Deletion Request – KarmAnk"</span>
+                    </p>
+                  </div>
+                  <p className="text-white/60 text-xs">
+                    We will process all valid requests within a reasonable timeframe, in accordance with applicable laws.
+                  </p>
+                  <motion.a
+                    href="mailto:support@karmank.app?subject=Data Deletion Request – KarmAnk"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-red-500/20 to-orange-500/10 hover:from-red-500/30 hover:to-orange-500/20 text-red-300 border border-red-500/30 rounded-lg font-semibold transition duration-200"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    Request Data Deletion
+                  </motion.a>
+                </div>
               </GlassCard>
             </motion.div>
           )}

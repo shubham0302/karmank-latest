@@ -148,6 +148,12 @@ export default function PrivacyPage() {
                   Your Rights
                 </a>
                 <a
+                  href="#deletion"
+                  className="hover:text-cyan-300 transition-colors"
+                >
+                  Data Deletion Request
+                </a>
+                <a
                   href="#children"
                   className="hover:text-cyan-300 transition-colors"
                 >
@@ -428,6 +434,35 @@ export default function PrivacyPage() {
                   To exercise any rights, contact us at the address below. We
                   aim to respond to verifiable requests promptly and in
                   accordance with applicable law.
+                </p>
+              </section>
+
+              <section id="deletion">
+                <h2 className="text-xl font-semibold mb-3 text-cyan-300">
+                  Data Deletion Request
+                </h2>
+                <p>
+                  Users may request deletion of their personal data collected by
+                  the KarmAnk app at any time.
+                </p>
+                <p className="mt-3">
+                  To request data deletion, please email us at:{" "}
+                  <a
+                    href="mailto:support@karmank.app"
+                    className="text-cyan-300 hover:text-cyan-200 underline font-semibold"
+                  >
+                    support@karmank.app
+                  </a>
+                </p>
+                <p className="mt-3">
+                  Please include the subject line:{" "}
+                  <strong className="text-cyan-200">
+                    "Data Deletion Request – KarmAnk"
+                  </strong>
+                </p>
+                <p className="mt-3">
+                  We will process all valid requests within a reasonable
+                  timeframe, in accordance with applicable laws.
                 </p>
               </section>
 

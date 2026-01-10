@@ -31,7 +31,7 @@ const RemediesAndGuidanceTab = ({ report, language = 'en' }) => {
     return (
         <div className="space-y-0">
             {/* Interactive Controls - Hidden in Print */}
-            <div className="print:hidden">
+            <div className="screen-only-content">
                 {hasFourOrEight && (
                      <div className="mb-4 p-4 bg-red-900/50 text-red-300 rounded-lg border border-red-500/50">
                         <p className="font-bold text-center">Important: Your chart contains the number 4 or 8. Please pay special attention to the "Advanced Remedies" and "Rudraksha" sections for guidance on balancing these energies.</p>
@@ -61,8 +61,8 @@ const RemediesAndGuidanceTab = ({ report, language = 'en' }) => {
                 </div>
             </div>
 
-            {/* PDF Print View - All Remedy Tabs (excluding Shakti) */}
-            <div className="hidden print:block">
+            {/* PDF Print View - All Remedy Tabs (excluding Shakti) - HIDDEN ON SCREEN */}
+            <div className="print-only-content">
                 {pdfRemedyTabs.map(({ key, component: Component }) => (
                     <div key={key}>
                         <Component report={report} language={language} />
