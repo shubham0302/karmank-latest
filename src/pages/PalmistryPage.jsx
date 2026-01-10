@@ -13,6 +13,15 @@ import {
   calculateConfidence
 } from '../data/verificationQuestions';
 import { SOPHISTICATED_MESSAGING, getRandomTagline } from '../data/sophisticatedMessaging';
+import { preprocessThumbprint } from '../services/thumbprintPreprocessor';
+import {
+  saveThumbprintClassification,
+  createReadingSession,
+  updateReadingProgress,
+  saveVerificationQuestion,
+  completeReading,
+  generateBiometricHash
+} from '../services/nadiReadingService';
 
 const STATUS_MESSAGES = {
   en: [
@@ -50,6 +59,14 @@ export default function PalmistryPage() {
   const [error, setError] = useState(null);
   const [statusIdx, setStatusIdx] = useState(0);
 
+  // Quality assessment state
+  const [thumbMetadata, setThumbMetadata] = useState(null);
+  const [qualityWarning, setQualityWarning] = useState(null);
+
+  // Reading session tracking
+  const [readingSessionId, setReadingSessionId] = useState(null);
+  const [classificationId, setClassificationId] = useState(null);
+
   // Verification state
   const [verificationState, setVerificationState] = useState({
     questions: [],
@@ -73,31 +90,119 @@ export default function PalmistryPage() {
     setState('capturing_thumb');
   };
 
-  const handleThumbCapture = (image) => {
+  const handleThumbCapture = async (image) => {
     setImages(prev => ({ ...prev, thumb: image }));
 
-    // Generate deterministic bundle/leaf numbers and questions
-    const palmHash = images.palm;
-    const thumbHash = image;
+    // Preprocess thumbprint for quality assessment
+    try {
+      const metadata = await preprocessThumbprint(image);
+      setThumbMetadata(metadata);
 
-    const bundleInfo = generateBundleAndLeaf(palmHash, thumbHash);
-    const questions = generateVerificationQuestions(palmHash, thumbHash, userInfo);
+      // Check if quality is acceptable
+      if (!metadata.quality.isAcceptable) {
+        setQualityWarning({
+          score: metadata.quality.score,
+          recommendations: metadata.quality.recommendations
+        });
+        // Allow user to continue anyway after seeing warning
+        setTimeout(() => setQualityWarning(null), 5000);
+      }
 
-    setVerificationState({
-      questions,
-      currentQuestionIndex: 0,
-      answers: [],
-      confidence: 45,
-      bundleInfo
-    });
+      console.log('📊 Thumbprint Analysis:', {
+        quality: metadata.quality.score,
+        pattern: metadata.estimatedPattern,
+        features: metadata.features
+      });
 
-    setState('classification');
+      // Generate deterministic bundle/leaf numbers and questions
+      const palmHash = images.palm;
+      const thumbHash = image;
+
+      const bundleInfo = generateBundleAndLeaf(palmHash, thumbHash);
+      const questions = generateVerificationQuestions(palmHash, thumbHash, userInfo);
+
+      // Generate biometric hash and save to database
+      const biometricHash = await generateBiometricHash(thumbHash);
+      const savedClassification = await saveThumbprintClassification(
+        metadata,
+        bundleInfo.bundleNumber,
+        biometricHash
+      );
+
+      if (savedClassification) {
+        setClassificationId(savedClassification.id);
+        console.log('✅ Thumbprint classification saved to database');
+      }
+
+      // Create reading session in database
+      const session = await createReadingSession(
+        savedClassification?.id || null,
+        userInfo,
+        bundleInfo.bundleNumber,
+        lang
+      );
+
+      if (session) {
+        setReadingSessionId(session.id);
+        console.log('✅ Reading session created:', session.id);
+      }
+
+      setVerificationState({
+        questions,
+        currentQuestionIndex: 0,
+        answers: [],
+        confidence: 45,
+        bundleInfo
+      });
+
+      setState('classification');
+    } catch (err) {
+      console.error('Thumbprint preprocessing error:', err);
+      // Continue anyway - preprocessing is optional enhancement
+      const palmHash = images.palm;
+      const thumbHash = image;
+
+      const bundleInfo = generateBundleAndLeaf(palmHash, thumbHash);
+      const questions = generateVerificationQuestions(palmHash, thumbHash, userInfo);
+
+      setVerificationState({
+        questions,
+        currentQuestionIndex: 0,
+        answers: [],
+        confidence: 45,
+        bundleInfo
+      });
+
+      setState('classification');
+    }
   };
 
-  const handleVerificationAnswer = (answer) => {
+  const handleVerificationAnswer = async (answer) => {
+    const currentQuestion = verificationState.questions[verificationState.currentQuestionIndex];
     const newAnswers = [...verificationState.answers, answer];
     const newQuestionIndex = verificationState.currentQuestionIndex + 1;
+    const oldConfidence = verificationState.confidence;
     const newConfidence = calculateConfidence(newQuestionIndex, verificationState.questions.length);
+
+    // Save verification question to database
+    if (readingSessionId) {
+      await saveVerificationQuestion(
+        readingSessionId,
+        verificationState.currentQuestionIndex,
+        currentQuestion.question,
+        currentQuestion.type || 'general',
+        answer,
+        oldConfidence,
+        newConfidence
+      );
+
+      // Update reading progress
+      await updateReadingProgress(readingSessionId, {
+        questionsAnswered: newQuestionIndex,
+        confidenceScore: newConfidence,
+        currentStep: newQuestionIndex >= verificationState.questions.length ? 'analyzing' : 'verification'
+      });
+    }
 
     setVerificationState(prev => ({
       ...prev,
@@ -176,6 +281,19 @@ export default function PalmistryPage() {
             bundleInfo: verificationState.bundleInfo,
             verificationConfidence: verificationState.confidence
           };
+
+          // Save complete reading to database
+          if (readingSessionId && verificationState.bundleInfo) {
+            await completeReading(
+              readingSessionId,
+              data,
+              {
+                bundleNumber: verificationState.bundleInfo.bundleNumber,
+                leafNumber: verificationState.bundleInfo.leafNumber
+              }
+            );
+            console.log('✅ Reading completed and saved to database');
+          }
 
           setResult(enrichedData);
           setState('result');
@@ -318,6 +436,30 @@ export default function PalmistryPage() {
                     ? `Bundle ${verificationState.bundleInfo?.bundleNumber} located • ${verificationState.bundleInfo?.totalLeaves} potential leaves`
                     : `बंडल ${verificationState.bundleInfo?.bundleNumber} स्थित • ${verificationState.bundleInfo?.totalLeaves} संभावित पत्तियां`}
                 </p>
+                {thumbMetadata && (
+                  <div className="mt-6 p-4 bg-slate-950/50 rounded-2xl border border-slate-800/50 max-w-md mx-auto">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-slate-500 font-medium">Pattern:</span>
+                      <span className="text-amber-400 font-bold capitalize">{thumbMetadata.estimatedPattern}</span>
+                    </div>
+                    <div className="flex items-center justify-between text-sm mt-2">
+                      <span className="text-slate-500 font-medium">Quality Score:</span>
+                      <span className={`font-bold ${thumbMetadata.quality.score >= 70 ? 'text-green-400' : thumbMetadata.quality.score >= 50 ? 'text-yellow-400' : 'text-orange-400'}`}>
+                        {thumbMetadata.quality.score}%
+                      </span>
+                    </div>
+                  </div>
+                )}
+                {qualityWarning && (
+                  <div className="mt-4 p-4 bg-orange-950/30 border border-orange-500/30 rounded-xl max-w-md mx-auto">
+                    <p className="text-orange-400 text-xs font-bold mb-2">⚠️ Quality Notice</p>
+                    <ul className="text-orange-300 text-xs space-y-1">
+                      {qualityWarning.recommendations.map((rec, i) => (
+                        <li key={i}>• {rec}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
                 <p className="text-amber-500 text-[10px] font-black uppercase tracking-[0.3em] mt-8">
                   {lang === 'en' ? 'Preparing Verification Questions...' : 'सत्यापन प्रश्न तैयार हो रहे हैं...'}
                 </p>
