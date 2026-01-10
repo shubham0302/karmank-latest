@@ -7,6 +7,7 @@
  * - /api/data/enrichment - Data enrichment
  * - /nlg/analyze-name - Name analysis
  * - /nlg/analyze-signature - Signature analysis with image
+ * - /nlg/palmistry-analysis - Palmistry/Nadi Shastra analysis with palm and thumb images
  */
 
 import { calculateCompleteNumerology } from './services/numerology-calculator.js';
@@ -371,6 +372,115 @@ Keep the response clear, concise, and actionable (about 200-300 words).`;
           body: JSON.stringify({
             error: 'signature_analysis_error',
             message: signatureError.message || 'Failed to analyze signature'
+          })
+        };
+      }
+    }
+
+    // Palmistry Analysis Endpoint (with palm and thumb images)
+    if (path === '/nlg/palmistry-analysis' && method === 'POST') {
+      try {
+        const { systemInstruction, prompt, palmImage, thumbImage, userInfo } = requestBody;
+
+        if (!prompt || !palmImage || !thumbImage) {
+          return {
+            statusCode: 400,
+            headers,
+            body: JSON.stringify({
+              error: 'invalid_input',
+              message: 'System instruction, prompt, palm image, and thumb image are required'
+            })
+          };
+        }
+
+        // Use Gemini 2.5 Flash for vision capabilities
+        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+
+        const response = await fetch(geminiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            system_instruction: {
+              parts: [{ text: systemInstruction }]
+            },
+            contents: [{
+              role: "user",
+              parts: [
+                { text: prompt },
+                {
+                  inline_data: {
+                    mime_type: 'image/png',
+                    data: palmImage
+                  }
+                },
+                {
+                  inline_data: {
+                    mime_type: 'image/png',
+                    data: thumbImage
+                  }
+                }
+              ]
+            }],
+            generationConfig: {
+              temperature: 0.4, // Lower temperature for more consistent palmistry readings
+              maxOutputTokens: 8192, // Large output for comprehensive analysis
+              topP: 0.95,
+              topK: 40,
+              response_mime_type: "application/json" // Request JSON response
+            }
+          })
+        });
+
+        const data: any = await response.json();
+        console.log('📊 Gemini palmistry response status:', response.status);
+
+        const generatedText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+
+        if (!generatedText) {
+          console.error('❌ Gemini Palmistry API Error - No text generated');
+          console.error('❌ Full response:', JSON.stringify(data));
+
+          if (data.error) {
+            return {
+              statusCode: 500,
+              headers,
+              body: JSON.stringify({
+                error: 'gemini_api_error',
+                message: data.error.message || 'Gemini API error',
+                details: data.error
+              })
+            };
+          }
+
+          return {
+            statusCode: 500,
+            headers,
+            body: JSON.stringify({
+              error: 'no_content_generated',
+              message: 'No content generated from Gemini API',
+              candidates: data.candidates
+            })
+          };
+        }
+
+        console.log('✅ Generated palmistry analysis length:', generatedText.length);
+
+        return {
+          statusCode: 200,
+          headers,
+          body: JSON.stringify({
+            success: true,
+            data: { text: generatedText }
+          })
+        };
+      } catch (palmistryError) {
+        console.error('❌ Palmistry analysis error:', palmistryError);
+        return {
+          statusCode: 500,
+          headers,
+          body: JSON.stringify({
+            error: 'palmistry_analysis_error',
+            message: palmistryError.message || 'Failed to analyze palmistry'
           })
         };
       }
