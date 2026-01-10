@@ -56,6 +56,13 @@ export default function HomePage() {
       cta: "Begin",
       route: "/career-path",
     },
+    {
+      title: "KARMIC BLUEPRINT",
+      blurb:
+        "Where sacred palm leaf prophecies meet modern pattern recognition. Your unchangeable destiny (Nadi) and adaptable nature (Palm) revealed through advanced analysis.",
+      cta: "Consult",
+      route: "/palmistry",
+    },
   ];
 
   return (
