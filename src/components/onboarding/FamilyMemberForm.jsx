@@ -10,6 +10,7 @@ export default function FamilyMemberForm({
   loading = false,
   defaultValues = {},
   currentMemberCount = 0,
+  submitButtonText = "Save Member",
 }) {
   const [formData, setFormData] = useState({
     name: defaultValues.name || "",
@@ -143,21 +144,25 @@ export default function FamilyMemberForm({
           Gender <span className="text-red-400">*</span>
         </Label>
         <div className="flex gap-4">
-          {["Male", "Female", "Other"].map((option) => (
+          {[
+            { value: "male", label: "Male" },
+            { value: "female", label: "Female" },
+            { value: "other", label: "Other" },
+          ].map((option) => (
             <label
-              key={option}
+              key={option.value}
               className="flex items-center gap-1.5 sm:gap-2 cursor-pointer"
             >
               <input
                 type="radio"
                 name="gender"
-                value={option}
-                checked={formData.gender === option}
+                value={option.value}
+                checked={formData.gender === option.value}
                 onChange={handleChange}
                 disabled={loading}
                 className="w-4 h-4 accent-cyan-400"
               />
-              <span className="text-white">{option}</span>
+              <span className="text-white">{option.label}</span>
             </label>
           ))}
         </div>
@@ -267,8 +272,8 @@ export default function FamilyMemberForm({
         <p className="text-cyan-300 text-xs flex items-center gap-2">
           <AlertCircle className="h-4 w-4 flex-shrink-0" />
           <span>
-            Each member is saved individually. You can add 1, 2, or 3 members -
-            it's your choice!
+            Start by adding your details. You can add more family members later
+            from your Profile page.
           </span>
         </p>
       </div>
@@ -279,7 +284,7 @@ export default function FamilyMemberForm({
         disabled={loading}
         className="w-full mt-6 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white font-semibold py-3 rounded-lg transition duration-200 disabled:opacity-50 shadow-lg hover:shadow-cyan-500/50"
       >
-        {loading ? "Saving Member..." : "Save Member"}
+        {loading ? "Saving..." : submitButtonText}
       </Button>
     </motion.form>
   );

@@ -14,6 +14,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useFamilyMembers } from '../hooks/useFamilyMembers';
 import { ChevronDown } from 'lucide-react';
 import { exportToPDF } from '../utils/pdfExport';
+import { GradientText, gradientUtils } from '../components/GradientText';
 
 // --- PYTHAGOREAN CONSTANTS ---
 const PYTHAGOREAN_CONSTANTS = {
@@ -1757,60 +1758,13 @@ Provide a detailed, insightful analysis in 4-6 sentences. Focus on what the hand
                 Analyzing...
               </>
             ) : (
-              <div className="p-8 text-center">
-                <input
-                  type="file"
-                  accept="image/*"
-                  ref={fileInputRef}
-                  onChange={handleFileUpload}
-                  className="hidden"
-                />
-                {uploadedImage ? (
-                  <img
-                    src={uploadedImage}
-                    alt="Uploaded signature"
-                    className="max-h-48 mx-auto"
-                  />
-                ) : (
-                  <button
-                    onClick={() => fileInputRef.current?.click()}
-                    className="px-6 py-3 bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-300 border border-yellow-500/50 rounded-lg font-medium transition-all"
-                  >
-                    <Upload className="w-5 h-5 inline mr-2" />
-                    Choose Image
-                  </button>
-                )}
-              </div>
+              <>
+                <Wand2 className="w-4 h-4 inline mr-2" />
+                Analyze
+              </>
             )}
-          </div>
-
-          <div className="flex gap-2">
-            <button
-              onClick={clearSignature}
-              disabled={!hasSignature}
-              className="flex-1 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <Trash2 className="w-4 h-4 inline mr-2" />
-              Clear
-            </button>
-            <button
-              onClick={analyzeSignature}
-              disabled={!hasSignature || loading}
-              className="flex-1 py-2 bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-300 border border-yellow-500/50 rounded-lg font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="w-4 h-4 inline mr-2 animate-spin" />
-                  Analyzing...
-                </>
-              ) : (
-                <>
-                  <Wand2 className="w-4 h-4 inline mr-2" />
-                  Analyze
-                </>
-              )}
-            </button>
-          </div>
+          </button>
+        </div>
         </div>
         <ComingSoonOverlay />
       </div>
@@ -2065,6 +2019,7 @@ export default function NameAnalysisPage() {
   const [memberDropdownOpen, setMemberDropdownOpen] = useState(false);
   const [downloadDropdownOpen, setDownloadDropdownOpen] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [isLoadingMemberChange, setIsLoadingMemberChange] = useState(false);
 
   // Fetch family members and auto-select first one
   useEffect(() => {

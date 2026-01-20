@@ -14,11 +14,11 @@ export const FamilyMemberSchema = z.object({
     .string()
     .min(1, 'Name is required')
     .max(100, 'Name must be less than 100 characters')
-    .regex(/^[a-zA-Z\s'-]+$/, 'Name can only contain letters, spaces, hyphens, and apostrophes')
+    .regex(/^[a-zA-Z\s'.\-]+$/, 'Name can only contain letters, spaces, hyphens, apostrophes, and periods')
     .transform((val) => val.trim()),
 
-  gender: z.enum(['Male', 'Female', 'Other'], {
-    errorMap: () => ({ message: 'Gender must be Male, Female, or Other' })
+  gender: z.enum(['male', 'female', 'other'], {
+    message: 'Gender must be male, female, or other'
   }),
 
   date_of_birth: z
@@ -46,12 +46,15 @@ export const FamilyMemberSchema = z.object({
 
   birth_time: z
     .string()
-    .regex(/^([01]\d|2[0-3]):([0-5]\d)$/, 'Birth time must be in HH:MM format (24-hour)')
+    .transform((val) => val === '' ? null : val)
     .nullable()
+    .refine((val) => val === null || /^([01]\d|2[0-3]):([0-5]\d)$/.test(val), {
+      message: 'Birth time must be in HH:MM format (24-hour)'
+    })
     .optional(),
 
   relationship: z.enum(['self', 'spouse', 'child', 'parent', 'sibling', 'other'], {
-    errorMap: () => ({ message: 'Invalid relationship type' })
+    message: 'Invalid relationship type'
   }).default('other'),
 
   display_order: z.number().int().min(1).optional()
@@ -182,8 +185,11 @@ export function validateEmail(email: unknown): string {
  */
 export function formatValidationError(error: unknown): string {
   if (error instanceof z.ZodError) {
-    const firstError = error.errors[0]
-    return firstError.message
+    const issues = error.issues
+    if (issues && issues.length > 0) {
+      return issues[0].message
+    }
+    return 'Validation failed'
   }
 
   if (error instanceof Error) {

@@ -19,7 +19,8 @@ export default function MemberCard({ member, index }) {
             </h4>
             <div className="grid grid-cols-2 gap-2 mt-2 text-sm text-white/70">
               <div>
-                <span className="text-white/50">Gender:</span> {member.gender}
+                <span className="text-white/50">Gender:</span>{' '}
+                {member.gender?.charAt(0).toUpperCase() + member.gender?.slice(1)}
               </div>
               <div>
                 <span className="text-white/50">DOB:</span>{' '}
