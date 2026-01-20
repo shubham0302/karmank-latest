@@ -23,11 +23,18 @@ import {
   BookOpen,
   Hash,
   FileText,
+  Download,
+  Loader2,
+  Award,
+  Edit,
+  X,
+  Save,
 } from "lucide-react";
 import CosmicBackground from "../components/CosmicBackground";
 import { GradientText, gradientUtils } from "../components/GradientText";
 import FamilyMemberSelector from "../components/FamilyMemberSelector";
 import { useAuth } from "../contexts/AuthContext";
+import { exportToPDF } from "../utils/pdfExport";
 
 // ============================================================
 // COSMIC ONCE REPORT COMPONENT
@@ -60,10 +67,10 @@ function CosmicOnceReport({ report, onBack }) {
 
     Promise.all([
       loadScript(
-        "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"
+        "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js",
       ),
       loadScript(
-        "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"
+        "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js",
       ),
     ])
       .then(() => setLibsLoaded(true))
@@ -91,28 +98,28 @@ function CosmicOnceReport({ report, onBack }) {
     total >= 90
       ? 95
       : total >= 75
-      ? 88
-      : total >= 60
-      ? 75
-      : total >= 45
-      ? 60
-      : 45
+        ? 88
+        : total >= 60
+          ? 75
+          : total >= 45
+            ? 60
+            : 45,
   );
   const title =
     total >= 85
       ? "A Celestial Confluence"
       : total >= 65
-      ? "A Strong Constellation"
-      : total >= 40
-      ? "A Work-in-Progress Constellation"
-      : "A Transformative Challenge";
+        ? "A Strong Constellation"
+        : total >= 40
+          ? "A Work-in-Progress Constellation"
+          : "A Transformative Challenge";
 
   // PDF export
   const exportPDF = async () => {
     if (!rootRef.current) return;
     if (!libsLoaded) {
       alert(
-        "PDF libraries are initializing. Please try again in a few seconds."
+        "PDF libraries are initializing. Please try again in a few seconds.",
       );
       return;
     }
@@ -150,7 +157,7 @@ function CosmicOnceReport({ report, onBack }) {
         (pageWidth - imgScaledWidth) / 2,
         20,
         imgScaledWidth,
-        imgScaledHeight
+        imgScaledHeight,
       );
       pdf.setFontSize(10);
       pdf.setTextColor(150);
@@ -158,18 +165,18 @@ function CosmicOnceReport({ report, onBack }) {
       pdf.text(
         `Cosmic Score: ${total}% • Confidence: ${confidence}%`,
         pageWidth - 260,
-        pageHeight - 30
+        pageHeight - 30,
       );
 
       pdf.save(
         `Cosmic-Report-${report.p1?.name || "A"}-vs-${
           report.p2?.name || "B"
-        }.pdf`
+        }.pdf`,
       );
     } catch (err) {
       console.error("Export failed", err);
       alert(
-        "PDF export initiated. If this fails, please ensure html2canvas and jsPDF are loaded."
+        "PDF export initiated. If this fails, please ensure html2canvas and jsPDF are loaded.",
       );
     } finally {
       setExporting(false);
@@ -179,8 +186,10 @@ function CosmicOnceReport({ report, onBack }) {
   const ScorePill = ({ number }) => (
     <div className="w-28 h-28 rounded-full flex items-center justify-center bg-gradient-to-tr from-indigo-600 to-fuchsia-600 text-white shadow-2xl">
       <div className="text-center">
-        <div className="text-3xl font-extrabold leading-none">{number}%</div>
-        <div className="text-xs opacity-90 mt-1">COSMIC SCORE</div>
+        <div className="text-3xl font-extrabold leading-none mb-1.5">
+          {number}%
+        </div>
+        <div className="text-xs opacity-90">COSMIC SCORE</div>
       </div>
     </div>
   );
@@ -224,7 +233,7 @@ function CosmicOnceReport({ report, onBack }) {
 
     let narrative = `# THE COSMIC CHRONICLE: ${p1Name.toUpperCase()} & ${p2Name.toUpperCase()}\n\n`;
 
-    narrative += `## 🌟 CELESTIAL INTRODUCTION\n\n`;
+    narrative += `## CELESTIAL INTRODUCTION\n\n`;
     narrative += `When ${p1Name} (${p1Nak} Nakshatra, ${p1Rashi}) encounters ${p2Name} (${p2Nak} Nakshatra, ${p2Rashi}), the universe orchestrates a profound meeting. This union scores ${total}% on the cosmic compatibility scale, representing ${title.toLowerCase()}.\n\n`;
 
     narrative += `${
@@ -232,7 +241,7 @@ function CosmicOnceReport({ report, onBack }) {
       "The stars align in a unique pattern for this relationship."
     }\n\n`;
 
-    narrative += `## 🔮 VEDIC WISDOM: THE ANCIENT PERSPECTIVE (${vedicScore}/50)\n\n`;
+    narrative += `## VEDIC WISDOM: THE ANCIENT PERSPECTIVE\n\n`;
     if (vedicScore >= 36) {
       narrative += `The Vedic Ashta Koot analysis reveals an EXCEPTIONAL alignment with ${vedicScore} points. This is a rare and auspicious pairing that ancient sages would have blessed wholeheartedly. Your Nakshatras (lunar mansions) create a harmonious resonance that promises longevity, prosperity, and deep spiritual connection.\n\n`;
     } else if (vedicScore >= 24) {
@@ -269,41 +278,41 @@ function CosmicOnceReport({ report, onBack }) {
             percent === 100
               ? "Exceptional physical and sexual compatibility. Deep biological harmony.\n"
               : percent >= 50
-              ? "Decent intimacy potential. Focus on emotional connection.\n"
-              : "Physical chemistry needs conscious nurturing and patience.\n";
+                ? "Decent intimacy potential. Focus on emotional connection.\n"
+                : "Physical chemistry needs conscious nurturing and patience.\n";
         else if (guna.name === "Graha Maitri")
           narrative +=
             percent === 100
               ? "Planetary friendship is perfect. Mental and emotional wavelengths match beautifully.\n"
               : percent >= 60
-              ? "Good mental compatibility. You understand each other well.\n"
-              : "Mental friction exists. Practice active listening and empathy.\n";
+                ? "Good mental compatibility. You understand each other well.\n"
+                : "Mental friction exists. Practice active listening and empathy.\n";
         else if (guna.name === "Gana")
           narrative +=
             percent === 100
               ? "Identical temperaments create effortless understanding and peace.\n"
               : percent === 0
-              ? "GANA DOSHA detected: Temperamental differences are significant. Requires remedies and patience.\n"
-              : "Moderate temperamental harmony. Flexibility is key.\n";
+                ? "GANA DOSHA detected: Temperamental differences are significant. Requires remedies and patience.\n"
+                : "Moderate temperamental harmony. Flexibility is key.\n";
         else if (guna.name === "Bhakoot")
           narrative +=
             percent === 100
               ? "Perfect Rashi (zodiac) harmony. Material prosperity and family life are blessed.\n"
               : percent === 0
-              ? "BHAKOOT DOSHA present: Financial/family stress possible. Plan finances together carefully.\n"
-              : "Decent material compatibility. Joint goals will help.\n";
+                ? "BHAKOOT DOSHA present: Financial/family stress possible. Plan finances together carefully.\n"
+                : "Decent material compatibility. Joint goals will help.\n";
         else if (guna.name === "Nadi")
           narrative +=
             percent === 100
               ? "NADI compatibility is excellent. Health, progeny, and genetic harmony are assured.\n"
               : percent === 0
-              ? "NADI DOSHA: Critical issue for health and children. REMEDIES ESSENTIAL (consult Vedic astrologer).\n"
-              : "Acceptable Nadi match. Health awareness recommended.\n";
+                ? "NADI DOSHA: Critical issue for health and children. REMEDIES ESSENTIAL (consult Vedic astrologer).\n"
+                : "Acceptable Nadi match. Health awareness recommended.\n";
       });
       narrative += `\n`;
     }
 
-    narrative += `## 🔢 NUMEROLOGY: THE MATHEMATICS OF DESTINY (${numScore}/15)\n\n`;
+    narrative += `## NUMEROLOGY: THE MATHEMATICS OF DESTINY\n\n`;
     const dest1 =
       report.details?.numerology?.destiny1 || report.details?.num?.d1 || "?";
     const dest2 =
@@ -320,7 +329,7 @@ function CosmicOnceReport({ report, onBack }) {
       narrative += `The ${numScore}-point score indicates CHALLENGING destiny patterns. Your life missions may pull in different directions. Success requires compromise, clear communication, and mutual support of individual dreams.\n\n`;
     }
 
-    narrative += `## ✍️ NAME VIBRATIONS: THE POWER OF SOUND (${nameScore}/10)\n\n`;
+    narrative += `## NAME VIBRATIONS: THE POWER OF SOUND\n\n`;
     const name1Num = report.details?.name?.num1 || "?";
     const name2Num = report.details?.name?.num2 || "?";
     narrative += `The Pythagorean analysis of your names reveals expression numbers ${name1Num} and ${name2Num}. `;
@@ -333,7 +342,7 @@ function CosmicOnceReport({ report, onBack }) {
       narrative += `At ${nameScore} points, name vibrations show FRICTION in communication styles. You may misunderstand each other or have different expression needs. Practice patience and ask clarifying questions often.\n\n`;
     }
 
-    narrative += `## 🌊 COSMIC BIORHYTHMS: WESTERN SYNCHRONIZATION (${cosmicScore}/15)\n\n`;
+    narrative += `## COSMIC BIORHYTHMS: WESTERN SYNCHRONIZATION\n\n`;
     if (cosmicScore >= 12) {
       narrative += `Your biorhythm cycles sync remarkably well (${cosmicScore}/15). Physical, emotional, and intellectual rhythms align, meaning you're often "in the mood" for similar activities at similar times. This creates natural flow and reduces friction in daily life.\n\n`;
     } else if (cosmicScore >= 9) {
@@ -342,7 +351,7 @@ function CosmicOnceReport({ report, onBack }) {
       narrative += `Biorhythm analysis reveals ${cosmicScore} points—DIFFERENT internal clocks. When one is energized, the other may need rest. This isn't bad; it just requires awareness and flexibility in scheduling quality time together.\n\n`;
     }
 
-    narrative += `## 🔥 ELEMENTAL ALCHEMY: THE FIVE ELEMENTS (${elemScore}/10)\n\n`;
+    narrative += `## ELEMENTAL ALCHEMY: THE FIVE ELEMENTS\n\n`;
     const elem1 =
       report.details?.element?.e1 || report.details?.elem?.e1 || "?";
     const elem2 =
@@ -359,7 +368,7 @@ function CosmicOnceReport({ report, onBack }) {
       narrative += `At ${elemScore} points, your elements clash (${elem1} vs ${elem2}). This creates tension but also opportunity for growth. ${elem1} can learn from ${elem2}'s approach and vice versa. Embrace differences as teachers.\n\n`;
     }
 
-    narrative += `\n## 💫 THE FIVE DIMENSIONS: HOLISTIC COMPATIBILITY\n\n`;
+    narrative += `\n## THE FIVE DIMENSIONS: HOLISTIC COMPATIBILITY\n\n`;
 
     if (report.domains) {
       report.domains.forEach((domain) => {
@@ -377,7 +386,7 @@ function CosmicOnceReport({ report, onBack }) {
       });
     }
 
-    narrative += `## 🌈 REMEDIES & RECOMMENDATIONS\n\n`;
+    narrative += `## REMEDIES & RECOMMENDATIONS\n\n`;
     narrative += `Based on your comprehensive analysis, here are targeted remedies to enhance this cosmic union:\n\n`;
 
     if (vedicScore < 18) {
@@ -418,7 +427,7 @@ function CosmicOnceReport({ report, onBack }) {
     narrative += `- Annual renewal ritual: celebrate your anniversary with intention-setting\n`;
     narrative += `- Surprise acts of love: small gestures maintain cosmic connection\n\n`;
 
-    narrative += `## 🎯 FINAL VERDICT\n\n`;
+    narrative += `## FINAL VERDICT\n\n`;
     narrative += `With an overall cosmic compatibility score of **${total}%**, this relationship is classified as: **${
       report.verdict?.text || "Unique"
     }**.\n\n`;
@@ -443,6 +452,7 @@ function CosmicOnceReport({ report, onBack }) {
   return (
     <div className="p-0 bg-black min-h-screen">
       <div
+        id="cosmic-report-content"
         ref={rootRef}
         className="min-h-screen"
         style={{
@@ -471,53 +481,68 @@ function CosmicOnceReport({ report, onBack }) {
           />
         </div>
 
-        {/* Hero Section */}
-        <div className="relative py-6 sm:py-12 px-3 sm:px-4 md:px-8 lg:px-16">
+        {/* PAGE 2 - Complete First Page Layout */}
+        <div className="relative py-12 px-4 md:px-8 lg:px-16 pb-12 pdf-page-break-after">
           <div className="max-w-7xl mx-auto">
-            {/* Cosmic Header */}
-            <div className="text-center mb-6 sm:mb-12 relative">
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 sm:w-96 h-48 sm:h-96 bg-purple-600/10 rounded-full blur-3xl"></div>
+            {/* 1. COSMIC CHRONICLE Heading */}
+            <div className="text-center mb-4 relative">
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-purple-600/10 rounded-full blur-3xl"></div>
 
-              <button
-                onClick={onBack}
-                className="absolute top-0 left-0 bg-slate-800/50 hover:bg-slate-700/50 backdrop-blur-md transition-colors text-white px-4 py-2 rounded-lg flex items-center gap-2 font-medium border border-slate-600/30"
-              >
-                <ArrowLeft size={16} /> Back
-              </button>
-
-              <div className="flex justify-center items-center gap-2 sm:gap-4 mb-4">
-                <Sparkles size={24} className="text-cyan-400 animate-pulse sm:block hidden" />
-                <Sparkles size={16} className="text-cyan-400 animate-pulse sm:hidden" />
-                <h1 className="text-2xl sm:text-5xl md:text-7xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-purple-400 to-pink-400">
+              <div className="flex justify-center items-center gap-4 mb-3">
+                <Sparkles size={40} className="text-cyan-400 animate-pulse" />
+                <h1 className="text-4xl md:text-6xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-purple-400 to-pink-400">
                   COSMIC CHRONICLE
                 </h1>
-                <Sparkles size={24} className="text-pink-400 animate-pulse sm:block hidden" />
-                <Sparkles size={16} className="text-pink-400 animate-pulse sm:hidden" />
+                <Sparkles
+                  size={24}
+                  className="text-pink-400 animate-pulse sm:block hidden"
+                />
+                <Sparkles
+                  size={16}
+                  className="text-pink-400 animate-pulse sm:hidden"
+                />
               </div>
 
-              <div className="text-xs sm:text-sm md:text-base text-cyan-300/60 uppercase tracking-[0.3em] mb-4 sm:mb-6">
+              <div className="text-sm md:text-base text-cyan-300/60 uppercase tracking-[0.3em] mb-4">
                 A Once-in-a-Lifetime Compatibility Report
               </div>
+            </div>
 
-              <h2 className="text-xl sm:text-3xl md:text-4xl font-bold text-white mb-2">
-                {title}
+            {/* 2. Person Names and Nakshatras */}
+            <div className="text-center mb-6">
+              <h2 className="text-3xl md:text-4xl font-bold text-white mb-2">
+                {report.p1?.name || "Person 1"} &{" "}
+                {report.p2?.name || "Person 2"}
               </h2>
+              <div className="text-lg text-slate-300">
+                {report.p1?.nak || "Unknown"} Nakshatra &{" "}
+                {report.p2?.nak || "Unknown"} Nakshatra
+              </div>
+            </div>
 
-              <p className="text-sm sm:text-base md:text-lg text-slate-300 max-w-3xl mx-auto leading-relaxed px-2">
-                This comprehensive cosmic dossier synthesizes ancient Vedic
-                wisdom, numerological destiny patterns, name vibrations, Western
-                biorhythm science, and elemental temperaments to reveal the
-                hidden architecture of your cosmic connection.
+            {/* 3. Verdict Section (e.g., "A Work-in-Progress Constellation") */}
+            <div className="text-center mb-6 max-w-4xl mx-auto">
+              <div
+                className={`inline-block px-8 py-4 rounded-full font-bold ${
+                  report.verdict?.color || "text-white"
+                } bg-white/5 border border-white/10 mb-3`}
+                style={{ fontSize: "26px" }}
+              >
+                {report.verdict?.text || "Unique Union"}
+              </div>
+              <p className="text-base md:text-lg text-slate-300 leading-relaxed">
+                {report.verdict?.desc ||
+                  "The stars align in a unique pattern for this relationship."}
               </p>
             </div>
 
-            {/* Score Showcase */}
-            <div className="flex flex-col md:flex-row items-center justify-center gap-4 sm:gap-8 mb-12">
+            {/* 4. Cosmic Score Section */}
+            <div className="flex flex-col md:flex-row items-center justify-center gap-8 mb-8">
               <div className="relative">
-                <div className="w-32 sm:w-48 h-32 sm:h-48 rounded-full flex items-center justify-center bg-gradient-to-tr from-cyan-600 via-purple-600 to-pink-600 shadow-2xl shadow-purple-500/50 relative overflow-hidden">
+                <div className="w-40 h-40 md:w-48 md:h-48 rounded-full flex items-center justify-center bg-gradient-to-tr from-cyan-600 via-purple-600 to-pink-600 shadow-2xl shadow-purple-500/50 relative overflow-hidden">
                   <div className="absolute inset-1 rounded-full bg-black/90"></div>
                   <div className="text-center relative z-10">
-                    <div className="text-4xl sm:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-br from-cyan-300 to-pink-300">
+                    <div className="text-5xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-br from-cyan-300 to-pink-300">
                       {total}%
                     </div>
                     <div className="text-[10px] sm:text-xs text-slate-400 uppercase tracking-widest mt-2">
@@ -528,100 +553,21 @@ function CosmicOnceReport({ report, onBack }) {
                 <div className="absolute -inset-4 bg-gradient-to-r from-cyan-500/20 to-pink-500/20 rounded-full blur-2xl -z-10"></div>
               </div>
 
-              <div className="text-center md:text-left space-y-2">
+              <div className="text-center md:text-left space-y-1">
                 <div className="text-xl font-semibold text-slate-300">
                   Confidence Level
                 </div>
-                <div className="text-4xl font-bold text-white">
+                <div className="text-4xl font-bold text-white leading-none mb-1">
                   {confidence}%
                 </div>
                 <div className="text-sm text-slate-400">
                   Cosmic Certainty (Heuristic)
                 </div>
-                <div
-                  className={`inline-block px-6 py-3 rounded-full text-2xl font-bold ${
-                    report.verdict?.color || "text-white"
-                  } bg-white/5 border border-white/10 mt-4`}
-                >
-                  {report.verdict?.text || "Unique Union"}
-                </div>
               </div>
             </div>
 
-            {/* Action Buttons */}
-            <div className="flex flex-wrap justify-center gap-4 mb-12">
-              <button
-                onClick={exportPDF}
-                disabled={exporting}
-                className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white px-6 py-3 rounded-xl flex items-center gap-2 font-bold shadow-lg shadow-purple-500/30 transition-all"
-              >
-                {exporting ? "Preparing PDF..." : "📄 Download as PDF"}
-              </button>
-              <button
-                onClick={() => window.print()}
-                className="bg-slate-800/50 hover:bg-slate-700/50 backdrop-blur-md text-white px-6 py-3 rounded-xl font-bold border border-slate-600/30 transition-all"
-              >
-                🖨️ Print Report
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Person Cards */}
-        <div className="px-3 sm:px-4 md:px-8 lg:px-16 pb-12">
-          <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-4 sm:gap-6">
-            <div className="bg-gradient-to-br from-cyan-900/20 via-indigo-900/20 to-purple-900/20 border border-cyan-500/30 p-4 sm:p-8 rounded-2xl backdrop-blur-md shadow-2xl relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-16 sm:w-32 h-16 sm:h-32 bg-cyan-500/10 rounded-full blur-3xl"></div>
-              <div className="relative z-10">
-                <div className="flex items-center gap-3 mb-4">
-                  <User size={20} className="text-cyan-400 sm:block" />
-                  <User size={16} className="text-cyan-400 sm:hidden" />
-                  <div className="text-[10px] sm:text-xs text-cyan-300/60 uppercase tracking-widest">
-                    Person 1
-                  </div>
-                </div>
-                <div className="text-xl sm:text-3xl font-bold text-white mb-2">
-                  {report.p1?.name || "Unknown"}
-                </div>
-                <div className="text-base sm:text-lg text-cyan-200">
-                  {report.p1?.nak || report.details?.p1Nak || "Unknown"}{" "}
-                  Nakshatra
-                </div>
-                <div className="text-sm sm:text-base text-cyan-300/70">
-                  {report.p1?.rashi || report.details?.p1Rashi || ""}
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-gradient-to-br from-pink-900/20 via-purple-900/20 to-fuchsia-900/20 border border-pink-500/30 p-4 sm:p-8 rounded-2xl backdrop-blur-md shadow-2xl relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-16 sm:w-32 h-16 sm:h-32 bg-pink-500/10 rounded-full blur-3xl"></div>
-              <div className="relative z-10">
-                <div className="flex items-center gap-3 mb-4">
-                  <User size={20} className="text-pink-400 sm:block" />
-                  <User size={16} className="text-pink-400 sm:hidden" />
-                  <div className="text-[10px] sm:text-xs text-pink-300/60 uppercase tracking-widest">
-                    Person 2
-                  </div>
-                </div>
-                <div className="text-xl sm:text-3xl font-bold text-white mb-2">
-                  {report.p2?.name || "Unknown"}
-                </div>
-                <div className="text-base sm:text-lg text-pink-200">
-                  {report.p2?.nak || report.details?.p2Nak || "Unknown"}{" "}
-                  Nakshatra
-                </div>
-                <div className="text-sm sm:text-base text-pink-300/70">
-                  {report.p2?.rashi || report.details?.p2Rashi || ""}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* 5-Dimension Score Meters */}
-        <div className="px-4 md:px-8 lg:px-16 pb-12">
-          <div className="max-w-7xl mx-auto">
-            <h3 className="text-3xl font-bold text-center text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-pink-300 mb-8">
+            {/* 5. 5-Dimensional Compatibility Analysis */}
+            <h3 className="text-3xl font-bold text-center text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-pink-300 mb-6 mt-8">
               5-Dimensional Compatibility Analysis
             </h3>
             <div className="grid md:grid-cols-5 gap-4">
@@ -697,38 +643,41 @@ function CosmicOnceReport({ report, onBack }) {
           </div>
         </div>
 
-        {/* Elaborate Narrative Section */}
-        <div className="px-4 md:px-8 lg:px-16 pb-16">
+        {/* PAGE 3 - Cosmic Chronicle (Intro through Cosmic Biorhythms) */}
+        <div className="px-4 md:px-8 lg:px-16 pb-16 pdf-page-break-after">
           <div className="max-w-6xl mx-auto">
-            <div className="bg-gradient-to-br from-slate-900/80 via-slate-800/80 to-slate-900/80 border border-slate-700/50 rounded-3xl p-8 md:p-12 backdrop-blur-xl shadow-2xl">
-              <div className="flex items-center gap-3 mb-8">
-                <BookOpen size={32} className="text-cyan-400" />
-                <h3 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-purple-300">
-                  Complete Cosmic Chronicle
-                </h3>
-              </div>
-
-              <div
-                className="prose prose-invert prose-lg max-w-none"
-                style={{
-                  lineHeight: 1.8,
-                  fontSize: "1.05rem",
-                }}
-              >
-                <style>{`
-                  .prose h1 { color: #22d3ee; font-size: 2.5rem; margin-top: 2rem; margin-bottom: 1rem; font-weight: 800; background: linear-gradient(to right, #22d3ee, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-                  .prose h2 { color: #a78bfa; font-size: 1.875rem; margin-top: 2.5rem; margin-bottom: 1rem; font-weight: 700; }
-                  .prose h3 { color: #c084fc; font-size: 1.5rem; margin-top: 1.5rem; margin-bottom: 0.75rem; font-weight: 600; }
-                  .prose p { color: #cbd5e1; margin-bottom: 1.25rem; }
+            <div
+              className="prose prose-invert prose-lg max-w-none"
+              style={{
+                lineHeight: 1.3,
+                fontSize: "1.5rem",
+              }}
+            >
+              <style>{`
+                  .prose h1 { color: #22d3ee; font-size: 2rem; margin-top: 0; margin-bottom: 0.1rem; padding-bottom: 0; font-weight: 800; background: linear-gradient(to right, #22d3ee, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+                  .prose h2 { color: #a78bfa; font-size: 1.625rem; margin-top: 1.25rem; margin-bottom: 0.1rem; padding-bottom: 0; font-weight: 700; }
+                  .prose h2:first-child { margin-top: 0; }
+                  .prose h3 { color: #c084fc; font-size: 1.5rem; margin-top: 1rem; margin-bottom: 0.1rem; padding-bottom: 0; font-weight: 600; }
+                  .prose p { color: #cbd5e1; margin-bottom: 0.65rem; margin-top: 0; padding-top: 0; font-size: 1.5rem; line-height: 1.3; text-align: justify; }
                   .prose strong { color: #f0abfc; font-weight: 600; }
-                  .prose ul, .prose ol { color: #cbd5e1; margin-left: 1.5rem; margin-bottom: 1.5rem; }
-                  .prose li { margin-bottom: 0.75rem; }
-                  .prose hr { border-color: #475569; margin: 2rem 0; }
+                  .prose ul, .prose ol { color: #cbd5e1; margin-left: 1.5rem; margin-bottom: 0.65rem; margin-top: 0; }
+                  .prose li { margin-bottom: 0.3rem; margin-top: 0; font-size: 1.5rem; line-height: 1.3; }
+                  .prose hr { border-color: #475569; margin: 1.5rem 0; }
                   .prose em { color: #e0e7ff; font-style: italic; }
                 `}</style>
-                <div
-                  dangerouslySetInnerHTML={{
-                    __html: generateElaborateNarrative()
+              <div
+                dangerouslySetInnerHTML={{
+                  __html: (() => {
+                    const fullNarrative = generateElaborateNarrative();
+                    // Extract from start through Name Vibrations (exclude Cosmic Biorhythms)
+                    const biorhythmsStart = fullNarrative.indexOf(
+                      "## COSMIC BIORHYTHMS: WESTERN SYNCHRONIZATION",
+                    );
+                    const page3Content = fullNarrative.substring(
+                      0,
+                      biorhythmsStart,
+                    );
+                    return page3Content
                       .replace(/\n/g, "<br/>")
                       .replace(/#{3} (.+?)<br\/>/g, "<h3>$1</h3>")
                       .replace(/#{2} (.+?)<br\/>/g, "<h2>$1</h2>")
@@ -737,10 +686,221 @@ function CosmicOnceReport({ report, onBack }) {
                       .replace(/\*(.+?)\*/g, "<em>$1</em>")
                       .replace(/- (.+?)<br\/>/g, "<li>$1</li>")
                       .replace(/(<li>.*<\/li>)/s, "<ul>$1</ul>")
-                      .replace(/---<br\/>/g, "<hr/>"),
-                  }}
-                />
-              </div>
+                      .replace(/---<br\/>/g, "<hr/>");
+                  })(),
+                }}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* PAGE 4 - Elemental Alchemy & Five Dimensions */}
+        <div className="px-4 md:px-8 lg:px-16 pb-16 pdf-page-break-after">
+          <div className="max-w-6xl mx-auto">
+            <div
+              className="prose prose-invert prose-base max-w-none"
+              style={{
+                lineHeight: 1.3,
+                fontSize: "1.5rem",
+              }}
+            >
+              <style>{`
+                  .prose h2 { color: #a78bfa; font-size: 1.625rem; margin-top: 1.25rem; margin-bottom: 0.1rem; padding-bottom: 0; font-weight: 700; }
+                  .prose h2:first-child { margin-top: 0; }
+                  .prose h3 { color: #c084fc; font-size: 1.5rem; margin-top: 1rem; margin-bottom: 0.1rem; padding-bottom: 0; font-weight: 600; }
+                  .prose p { color: #cbd5e1; margin-bottom: 0.65rem; margin-top: 0; padding-top: 0; font-size: 1.5rem; line-height: 1.3; text-align: justify; }
+                  .prose strong { color: #f0abfc; font-weight: 600; }
+                  .prose li { font-size: 1.5rem; line-height: 1.3; margin-bottom: 0.3rem; margin-top: 0; }
+                  .prose ul, .prose ol { margin-bottom: 0.65rem; margin-top: 0; }
+                `}</style>
+              <div
+                dangerouslySetInnerHTML={{
+                  __html: (() => {
+                    const fullNarrative = generateElaborateNarrative();
+                    // Extract Cosmic Biorhythms + Elemental Alchemy sections (exclude Five Dimensions)
+                    const biorhythmsStart = fullNarrative.indexOf(
+                      "## COSMIC BIORHYTHMS: WESTERN SYNCHRONIZATION",
+                    );
+                    const fiveDimensionsStart = fullNarrative.indexOf(
+                      "## THE FIVE DIMENSIONS: HOLISTIC COMPATIBILITY",
+                    );
+                    const remediesStart = fullNarrative.indexOf(
+                      "## REMEDIES & RECOMMENDATIONS",
+                    );
+                    const page4Content = fullNarrative.substring(
+                      biorhythmsStart,
+                      fiveDimensionsStart,
+                    );
+                    return page4Content
+                      .replace(/\n/g, "<br/>")
+                      .replace(/#{3} (.+?)<br\/>/g, "<h3>$1</h3>")
+                      .replace(/#{2} (.+?)<br\/>/g, "<h2>$1</h2>")
+                      .replace(/#{1} (.+?)<br\/>/g, "<h1>$1</h1>")
+                      .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+                      .replace(/\*(.+?)\*/g, "<em>$1</em>")
+                      .replace(/- (.+?)<br\/>/g, "<li>$1</li>")
+                      .replace(/(<li>.*<\/li>)/s, "<ul>$1</ul>")
+                      .replace(/---<br\/>/g, "<hr/>");
+                  })(),
+                }}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* PAGE 5 - The Five Dimensions */}
+        <div className="px-4 md:px-8 lg:px-16 pb-16 pdf-page-break-after">
+          <div className="max-w-6xl mx-auto">
+            <div
+              className="prose prose-invert prose-base max-w-none"
+              style={{
+                lineHeight: 1.3,
+                fontSize: "1.5rem",
+              }}
+            >
+              <style>{`
+                  .prose h2 { color: #a78bfa; font-size: 1.625rem; margin-top: 1.25rem; margin-bottom: 0.1rem; padding-bottom: 0; font-weight: 700; }
+                  .prose h2:first-child { margin-top: 0; }
+                  .prose h3 { color: #c084fc; font-size: 1.5rem; margin-top: 1rem; margin-bottom: 0.1rem; padding-bottom: 0; font-weight: 600; }
+                  .prose p { color: #cbd5e1; margin-bottom: 0.65rem; margin-top: 0; padding-top: 0; font-size: 1.5rem; line-height: 1.3; text-align: justify; }
+                  .prose strong { color: #f0abfc; font-weight: 600; }
+                  .prose li { font-size: 1.5rem; line-height: 1.3; margin-bottom: 0.3rem; margin-top: 0; }
+                  .prose ul, .prose ol { margin-bottom: 0.65rem; margin-top: 0; }
+                `}</style>
+              <div
+                dangerouslySetInnerHTML={{
+                  __html: (() => {
+                    const fullNarrative = generateElaborateNarrative();
+                    // Extract Five Dimensions section
+                    const fiveDimensionsStart = fullNarrative.indexOf(
+                      "## THE FIVE DIMENSIONS: HOLISTIC COMPATIBILITY",
+                    );
+                    const remediesStart = fullNarrative.indexOf(
+                      "## REMEDIES & RECOMMENDATIONS",
+                    );
+                    const page5Content = fullNarrative.substring(
+                      fiveDimensionsStart,
+                      remediesStart,
+                    );
+                    return page5Content
+                      .replace(/\n/g, "<br/>")
+                      .replace(/#{3} (.+?)<br\/>/g, "<h3>$1</h3>")
+                      .replace(/#{2} (.+?)<br\/>/g, "<h2>$1</h2>")
+                      .replace(/#{1} (.+?)<br\/>/g, "<h1>$1</h1>")
+                      .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+                      .replace(/\*(.+?)\*/g, "<em>$1</em>")
+                      .replace(/- (.+?)<br\/>/g, "<li>$1</li>")
+                      .replace(/(<li>.*<\/li>)/s, "<ul>$1</ul>")
+                      .replace(/---<br\/>/g, "<hr/>");
+                  })(),
+                }}
+              />
+            </div>
+          </div>
+        </div>
+        {/* PAGE 6 - Remedies & Recommendations */}
+        <div className="px-4 md:px-8 lg:px-16 pb-16 pdf-page-break-after">
+          <div className="max-w-6xl mx-auto">
+            <div className="flex items-center gap-3 mb-6">
+              <Heart size={28} className="text-pink-400" />
+              <h3 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-300 to-purple-300">
+                Remedies & Recommendations
+              </h3>
+            </div>
+
+            <div
+              className="prose prose-invert prose-lg max-w-none"
+              style={{
+                lineHeight: 1.3,
+                fontSize: "1.5rem",
+              }}
+            >
+              <style>{`
+                  .prose p { color: #cbd5e1; margin-bottom: 0.65rem; margin-top: 0; padding-top: 0; font-size: 1.5rem; line-height: 1.3; text-align: justify; }
+                  .prose li { font-size: 1.5rem; line-height: 1.3; margin-bottom: 0.3rem; margin-top: 0; }
+                  .prose ul, .prose ol { margin-bottom: 0.65rem; margin-top: 0; }
+                  .prose strong { color: #f0abfc; font-weight: 600; }
+                  .prose h2 { margin-bottom: 0.1rem; padding-bottom: 0; }
+                  .prose h3 { margin-bottom: 0.1rem; padding-bottom: 0; }
+                `}</style>
+              <div
+                dangerouslySetInnerHTML={{
+                  __html: (() => {
+                    const fullNarrative = generateElaborateNarrative();
+                    // Extract Remedies section
+                    const remediesStart = fullNarrative.indexOf(
+                      "## REMEDIES & RECOMMENDATIONS",
+                    );
+                    const finalVerdictStart =
+                      fullNarrative.indexOf("## FINAL VERDICT");
+                    const remediesContent = fullNarrative.substring(
+                      remediesStart,
+                      finalVerdictStart,
+                    );
+                    return remediesContent
+                      .replace(/\n/g, "<br/>")
+                      .replace(/#{3} (.+?)<br\/>/g, "<h3>$1</h3>")
+                      .replace(/#{2} (.+?)<br\/>/g, "<h2>$1</h2>")
+                      .replace(/#{1} (.+?)<br\/>/g, "<h1>$1</h1>")
+                      .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+                      .replace(/\*(.+?)\*/g, "<em>$1</em>")
+                      .replace(/- (.+?)<br\/>/g, "<li>$1</li>")
+                      .replace(/(<li>.*<\/li>)/s, "<ul>$1</ul>")
+                      .replace(/---<br\/>/g, "<hr/>");
+                  })(),
+                }}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* PAGE 7 - Final Verdict (Separate page for print) */}
+        <div className="px-4 md:px-8 lg:px-16 pb-16 pdf-page-break-after">
+          <div className="max-w-6xl mx-auto">
+            <div className="flex items-center gap-3 mb-6">
+              <Award size={28} className="text-yellow-400" />
+              <h3 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-orange-300">
+                Final Verdict
+              </h3>
+            </div>
+
+            <div
+              className="prose prose-invert prose-lg max-w-none"
+              style={{
+                lineHeight: 1.3,
+                fontSize: "1.5rem",
+              }}
+            >
+              <style>{`
+                  .prose p { color: #cbd5e1; margin-bottom: 0.65rem; margin-top: 0; padding-top: 0; font-size: 1.5rem; line-height: 1.3; text-align: justify; }
+                  .prose li { font-size: 1.5rem; line-height: 1.3; margin-bottom: 0.3rem; margin-top: 0; }
+                  .prose ul, .prose ol { margin-bottom: 0.65rem; margin-top: 0; }
+                  .prose strong { color: #f0abfc; font-weight: 600; }
+                  .prose h2 { margin-bottom: 0.1rem; padding-bottom: 0; }
+                  .prose h3 { margin-bottom: 0.1rem; padding-bottom: 0; }
+                `}</style>
+              <div
+                dangerouslySetInnerHTML={{
+                  __html: (() => {
+                    const fullNarrative = generateElaborateNarrative();
+                    // Extract Final Verdict section
+                    const finalVerdictStart =
+                      fullNarrative.indexOf("## FINAL VERDICT");
+                    const finalVerdictContent =
+                      fullNarrative.substring(finalVerdictStart);
+                    return finalVerdictContent
+                      .replace(/\n/g, "<br/>")
+                      .replace(/#{3} (.+?)<br\/>/g, "<h3>$1</h3>")
+                      .replace(/#{2} (.+?)<br\/>/g, "<h2>$1</h2>")
+                      .replace(/#{1} (.+?)<br\/>/g, "<h1>$1</h1>")
+                      .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+                      .replace(/\*(.+?)\*/g, "<em>$1</em>")
+                      .replace(/- (.+?)<br\/>/g, "<li>$1</li>")
+                      .replace(/(<li>.*<\/li>)/s, "<ul>$1</ul>")
+                      .replace(/---<br\/>/g, "<hr/>");
+                  })(),
+                }}
+              />
             </div>
           </div>
         </div>
@@ -993,10 +1153,10 @@ const performAshtakoot = (n1, n2, r1, r2) => {
     [3, 7, 11].includes(r)
       ? 4
       : [0, 4, 8].includes(r)
-      ? 3
-      : [2, 6, 10].includes(r)
-      ? 2
-      : 1;
+        ? 3
+        : [2, 6, 10].includes(r)
+          ? 2
+          : 1;
   const vScore = getVarna(r1) >= getVarna(r2) ? 1 : 0;
   total += vScore;
   details.push({
@@ -1122,7 +1282,7 @@ const Calculator = {
     if (!dob) return 0;
     const [y, m, d] = dob.split("-").map(Number);
     return Calculator.reduce(
-      Calculator.reduce(y) + Calculator.reduce(m) + Calculator.reduce(d)
+      Calculator.reduce(y) + Calculator.reduce(m) + Calculator.reduce(d),
     );
   },
 
@@ -1353,8 +1513,8 @@ const SmartInput = ({ title, val, set, color }) => {
     if (q.length > 1) {
       setSuggestions(
         MOCK_CITIES.filter((c) =>
-          c.description.toLowerCase().includes(q.toLowerCase())
-        )
+          c.description.toLowerCase().includes(q.toLowerCase()),
+        ),
       );
     } else {
       setSuggestions([]);
@@ -1496,9 +1656,37 @@ export default function CosmicCompatibilityPage() {
     tz: "",
   });
   const [p2InputMode, setP2InputMode] = useState("family"); // 'family' or 'manual'
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editP2, setEditP2] = useState({ ...p2 });
+  const [editP2InputMode, setEditP2InputMode] = useState(p2InputMode);
+  const [editSelectedP2Id, setEditSelectedP2Id] = useState(selectedP2Id);
 
   const handleSignOut = async () => {
     await signOut();
+  };
+
+  const handleExportPDF = async () => {
+    if (!report || isDownloading) return;
+
+    setIsDownloading(true);
+
+    try {
+      const person1 = p1.name.replace(/[^a-zA-Z0-9]/g, "_");
+      const person2 = p2.name.replace(/[^a-zA-Z0-9]/g, "_");
+      const fileName = `KarmAnk_Cosmic_Compatibility_${person1}_${person2}_${new Date().toISOString().split("T")[0]}.pdf`;
+
+      await exportToPDF("cosmic-report-content", fileName, {
+        userName: `${p1.name} & ${p2.name}`,
+      });
+
+      console.log("✅ PDF exported successfully");
+    } catch (error) {
+      console.error("❌ PDF export failed:", error);
+      alert("Failed to export PDF. Please try again.");
+    }
+
+    setIsDownloading(false);
   };
 
   const handleBackToHome = () => {
@@ -1537,7 +1725,7 @@ export default function CosmicCompatibilityPage() {
     // Validate Person 1
     if (!selectedP1Id || !p1.dob || !p1.name) {
       alert(
-        "Please select a family member for Person 1 and ensure their details are loaded"
+        "Please select a family member for Person 1 and ensure their details are loaded",
       );
       return;
     }
@@ -1548,7 +1736,7 @@ export default function CosmicCompatibilityPage() {
 
     if (!hasP2FromFamily && !hasP2Manual) {
       alert(
-        "Please either select Person 2 from your family or enter their details manually"
+        "Please either select Person 2 from your family or enter their details manually",
       );
       return;
     }
@@ -1617,7 +1805,7 @@ export default function CosmicCompatibilityPage() {
 
       // Total Score
       const totalScore = Math.round(
-        vedicScore + numScore + nameScore + cosmic.score + elemScore
+        vedicScore + numScore + nameScore + cosmic.score + elemScore,
       );
       const verdict = generateVerdict(totalScore);
 
@@ -1626,30 +1814,34 @@ export default function CosmicCompatibilityPage() {
         100,
         Math.round(
           ((vedicRaw.details[6].score + vedicRaw.details[7].score) / 15) * 70 +
-            30
-        )
+            30,
+        ),
       );
       const intellectual = Math.min(
         100,
-        Math.round((vedicRaw.details[4].score / 5) * 60 + (nameScore / 10) * 40)
+        Math.round(
+          (vedicRaw.details[4].score / 5) * 60 + (nameScore / 10) * 40,
+        ),
       );
       const spiritual = Math.min(
         100,
         Math.round(
           (numScore / 15) * 50 +
             (vedicRaw.details[5].score / 6) * 30 +
-            (elemScore / 10) * 20
-        )
+            (elemScore / 10) * 20,
+        ),
       );
       const physical = Math.min(
         100,
-        Math.round((vedicRaw.details[3].score / 4) * 60 + (elemScore / 10) * 40)
+        Math.round(
+          (vedicRaw.details[3].score / 4) * 60 + (elemScore / 10) * 40,
+        ),
       );
       const practical = Math.min(
         100,
         Math.round(
-          (vedicRaw.details[0].score / 1) * 30 + (cosmic.score / 15) * 70
-        )
+          (vedicRaw.details[0].score / 1) * 30 + (cosmic.score / 15) * 70,
+        ),
       );
 
       setReport({
@@ -1699,7 +1891,7 @@ export default function CosmicCompatibilityPage() {
             name: "Practical",
             icon: ClipboardList,
             score: practical,
-            summary: "Work Ethic (Varna) & Biorhythms.",
+            summary: "Work Ethic & Biorhythms.",
           },
         ],
         verdict,
@@ -1713,19 +1905,268 @@ export default function CosmicCompatibilityPage() {
     }, 2000);
   };
 
+  // Modal handlers
+  const handleOpenEditModal = () => {
+    setEditP2({ ...p2 });
+    setEditP2InputMode(p2InputMode);
+    setEditSelectedP2Id(selectedP2Id);
+    setIsEditModalOpen(true);
+  };
+
+  const handleCloseEditModal = () => {
+    setIsEditModalOpen(false);
+  };
+
+  const handleEditP2FamilyMemberSelect = (memberId) => {
+    setEditSelectedP2Id(memberId);
+  };
+
+  const handleEditP2DetailsChange = (details) => {
+    setEditP2(details);
+  };
+
+  const handleSaveP2Edit = () => {
+    // Update the actual p2 state with edited values
+    setP2({ ...editP2 });
+    setP2InputMode(editP2InputMode);
+    setSelectedP2Id(editSelectedP2Id);
+
+    // Close modal
+    setIsEditModalOpen(false);
+
+    // Recalculate compatibility with new Person 2 data
+    // We'll trigger the calculate function automatically
+    setTimeout(() => {
+      calculate();
+    }, 100);
+  };
+
   return (
     <CosmicBackground density={140} useVideo={true}>
       <div className="min-h-screen relative px-4 md:px-6 py-6">
         <div className="max-w-6xl mx-auto relative z-10">
-          {/* Back Button on Left */}
-          <div className="flex justify-start items-center mb-6">
-            <button
-              onClick={handleBackToHome}
-              className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white border border-white/30 px-4 py-2 rounded-md text-sm font-medium transition duration-200"
+          {/* Edit Person 2 Modal */}
+          {isEditModalOpen && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+              <div className="bg-gradient-to-b from-gray-900 via-gray-950 to-black border border-purple-500/30 rounded-2xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+                {/* Modal Header */}
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+                    <Edit className="text-purple-400" size={24} />
+                    Edit Person 2 Details
+                  </h2>
+                  <button
+                    onClick={handleCloseEditModal}
+                    className="p-2 hover:bg-white/10 rounded-full transition-colors"
+                  >
+                    <X className="text-white/70 hover:text-white" size={20} />
+                  </button>
+                </div>
+
+                {/* Modal Content */}
+                <div className="space-y-6">
+                  {/* Toggle Buttons */}
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => {
+                        setEditP2InputMode("family");
+                        setEditSelectedP2Id(null);
+                        setEditP2({
+                          name: "",
+                          dob: "",
+                          tob: "",
+                          city: "",
+                          lat: "",
+                          lng: "",
+                          tz: "",
+                        });
+                      }}
+                      className={`flex-1 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                        editP2InputMode === "family"
+                          ? "bg-purple-500/40 border border-purple-400 text-purple-200"
+                          : "bg-white/10 border border-white/20 text-white/60 hover:bg-white/20"
+                      }`}
+                    >
+                      From Family
+                    </button>
+                    <button
+                      onClick={() => {
+                        setEditP2InputMode("manual");
+                        setEditSelectedP2Id(null);
+                      }}
+                      className={`flex-1 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                        editP2InputMode === "manual"
+                          ? "bg-purple-500/40 border border-purple-400 text-purple-200"
+                          : "bg-white/10 border border-white/20 text-white/60 hover:bg-white/20"
+                      }`}
+                    >
+                      Manual Entry
+                    </button>
+                  </div>
+
+                  {/* Family Selection Mode */}
+                  {editP2InputMode === "family" && (
+                    <div className="bg-white/5 border border-white/10 rounded-lg p-4">
+                      <FamilyMemberSelector
+                        selectedMemberId={editSelectedP2Id}
+                        onMemberSelect={handleEditP2FamilyMemberSelect}
+                        onDetailsChange={handleEditP2DetailsChange}
+                        label="Select Second Person"
+                        excludeMemberId={selectedP1Id}
+                      />
+                    </div>
+                  )}
+
+                  {/* Manual Entry Mode */}
+                  {editP2InputMode === "manual" && (
+                    <div className="space-y-3">
+                      <div>
+                        <label className="block text-sm text-purple-300 mb-1">
+                          Full Name
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="Full Name"
+                          value={editP2.name}
+                          onChange={(e) =>
+                            setEditP2((prev) => ({
+                              ...prev,
+                              name: e.target.value,
+                            }))
+                          }
+                          className="w-full px-4 py-2 bg-white/5 border border-white/20 rounded-lg text-white placeholder-white/40 focus:border-purple-400 focus:outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm text-purple-300 mb-1">
+                          Date of Birth
+                        </label>
+                        <input
+                          type="date"
+                          value={editP2.dob}
+                          onChange={(e) =>
+                            setEditP2((prev) => ({
+                              ...prev,
+                              dob: e.target.value,
+                            }))
+                          }
+                          className="w-full px-4 py-2 bg-white/5 border border-white/20 rounded-lg text-white focus:border-purple-400 focus:outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm text-purple-300 mb-1">
+                          Time of Birth
+                        </label>
+                        <input
+                          type="time"
+                          value={editP2.tob}
+                          onChange={(e) =>
+                            setEditP2((prev) => ({
+                              ...prev,
+                              tob: e.target.value,
+                            }))
+                          }
+                          className="w-full px-4 py-2 bg-white/5 border border-white/20 rounded-lg text-white focus:border-purple-400 focus:outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm text-purple-300 mb-1">
+                          Birth City (Optional)
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="Birth City (optional)"
+                          value={editP2.city}
+                          onChange={(e) =>
+                            setEditP2((prev) => ({
+                              ...prev,
+                              city: e.target.value,
+                            }))
+                          }
+                          className="w-full px-4 py-2 bg-white/5 border border-white/20 rounded-lg text-white placeholder-white/40 focus:border-purple-400 focus:outline-none"
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Modal Footer */}
+                <div className="flex gap-3 mt-6 pt-6 border-t border-white/10">
+                  <button
+                    onClick={handleCloseEditModal}
+                    className="flex-1 px-4 py-2 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg text-white font-medium transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleSaveP2Edit}
+                    className="flex-1 px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 rounded-lg text-white font-medium transition-all flex items-center justify-center gap-2"
+                  >
+                    <Save size={18} />
+                    Save & Recalculate
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+          {/* Header with Back, Download, and Sign Out */}
+          <div className="flex justify-between items-center mb-6">
+            {/* Back to Home button - Hide in detailed view to avoid confusion */}
+            {viewMode !== "detailed" && (
+              <button
+                onClick={handleBackToHome}
+                className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white border border-white/30 px-4 py-2 rounded-md text-sm font-medium transition duration-200"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Back
+              </button>
+            )}
+
+            <div
+              className={`flex items-center gap-3 ${viewMode === "detailed" ? "w-full justify-end" : ""}`}
             >
-              <ArrowLeft className="h-4 w-4" />
-              Back
-            </button>
+              <span className="text-sm text-white/70 hidden md:block">
+                {user?.email}
+              </span>
+
+              {/* Back to Summary & Download PDF Buttons - Only show in detailed view */}
+              {report && screen === "report" && viewMode === "detailed" && (
+                <>
+                  <button
+                    onClick={() => setViewMode("standard")}
+                    className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white rounded-lg shadow-lg text-sm font-medium transition-all"
+                  >
+                    <ArrowLeft className="h-4 w-4" />
+                    <span>Back to Summary</span>
+                  </button>
+
+                  <button
+                    onClick={handleExportPDF}
+                    disabled={isDownloading}
+                    className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-600/20 to-purple-600/20 hover:from-indigo-600/30 hover:to-purple-600/30 border border-purple-400/50 rounded-lg text-purple-300 text-sm font-medium transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isDownloading ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <span>Downloading...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Download className="h-4 w-4" />
+                        <span>Download PDF</span>
+                      </>
+                    )}
+                  </button>
+                </>
+              )}
+
+              <button
+                onClick={handleSignOut}
+                className="bg-red-500/20 hover:bg-red-500/30 text-red-300 border border-red-500/50 px-4 py-2 rounded-md text-sm font-medium transition duration-200"
+              >
+                Sign Out
+              </button>
+            </div>
           </div>
 
           {/* Futuristic Gate Header */}
@@ -1910,14 +2351,22 @@ export default function CosmicCompatibilityPage() {
 
           {screen === "report" && report && viewMode === "standard" && (
             <div className="animate-in slide-in-from-bottom-8 duration-700 space-y-8">
-              {/* View Toggle Button */}
-              <div className="flex justify-between items-center">
+              {/* View Toggle and Edit Buttons */}
+              <div className="flex flex-wrap justify-between items-center gap-3">
                 <button
                   onClick={() => setViewMode("detailed")}
                   className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white px-6 py-3 rounded-xl shadow-lg flex items-center gap-2 font-medium transition-all"
                 >
                   <FileText size={18} />
                   View Detailed Report
+                </button>
+
+                <button
+                  onClick={handleOpenEditModal}
+                  className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white px-6 py-3 rounded-xl shadow-lg flex items-center gap-2 font-medium transition-all"
+                >
+                  <Edit size={18} />
+                  Edit Person 2
                 </button>
               </div>
 
@@ -1976,8 +2425,20 @@ export default function CosmicCompatibilityPage() {
                       {report.details.num.info1.desc}
                     </p>
                   </div>
-                  <div className="bg-gray-900/50 border border-cyan-500/20 p-6 rounded-xl backdrop-blur-md">
-                    <div className="flex items-center justify-between mb-2">
+                  <div className="bg-gray-900/50 border border-cyan-500/20 p-6 rounded-xl backdrop-blur-md relative">
+                    {/* Edit Button */}
+                    <button
+                      onClick={handleOpenEditModal}
+                      className="absolute top-3 right-3 p-2 bg-purple-500/20 hover:bg-purple-500/30 border border-purple-400/30 rounded-lg transition-all group"
+                      title="Edit Person 2 Details"
+                    >
+                      <Edit
+                        size={16}
+                        className="text-purple-300 group-hover:text-purple-200"
+                      />
+                    </button>
+
+                    <div className="flex items-center justify-between mb-2 pr-10">
                       <h4 className="font-bold text-white">{p2.name}</h4>
                       <span className="text-xs font-bold text-pink-300 uppercase border border-pink-500/30 px-2 py-1 rounded">
                         Number {report.details.num.d2}

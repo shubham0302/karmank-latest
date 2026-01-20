@@ -92,4 +92,161 @@
     background-clip: text;
     -webkit-text-fill-color: transparent;
   }
+
+  /* Screen/Print View Controls */
+  .screen-only-content {
+    display: block;
+  }
+
+  .print-only-content {
+    display: none;
+  }
+
+  /* PDF Export Page Break Styles */
+  .pdf-page-break-after {
+    page-break-after: always;
+    break-after: page;
+  }
+
+  .pdf-page-break-before {
+    page-break-before: always;
+    break-before: page;
+  }
+
+  .pdf-page-break-avoid {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  /* Ensure proper margins for PDF pages */
+  @media print {
+    /* Override body background for print */
+    body {
+      background-color: white !important;
+      color: black !important;
+    }
+
+    /* Force screen/print view controls */
+    .screen-only-content {
+      display: none !important;
+    }
+
+    .print-only-content {
+      display: block !important;
+    }
+
+    .pdf-page-break-after {
+      page-break-after: always !important;
+      break-after: page !important;
+      margin-bottom: 60px !important;
+    }
+
+    .pdf-page-break-before {
+      page-break-before: always !important;
+      break-before: page !important;
+      margin-top: 60px !important;
+    }
+
+    .pdf-page-break-avoid {
+      page-break-inside: avoid !important;
+      break-inside: avoid !important;
+    }
+
+    .no-print {
+      display: none !important;
+    }
+
+    /* Add spacing between page sections */
+    .mt-12 {
+      margin-top: 80px !important;
+    }
+
+    .mb-12 {
+      margin-bottom: 80px !important;
+    }
+
+    /* Ensure sections don't split */
+    .grid {
+      page-break-inside: avoid !important;
+    }
+
+    /* Hide interactive elements in print */
+    button, input[type="date"], input[type="number"], .print\:hidden {
+      display: none !important;
+    }
+
+    /* Force hide screen view in print */
+    [style*="display: block"].print\:hidden {
+      display: none !important;
+    }
+
+    /* Force show print view in print */
+    [style*="display: none"].print\:block {
+      display: block !important;
+    }
+
+    /* Remove scroll containers */
+    .max-h-60, .max-h-96, .overflow-y-auto, .overflow-auto {
+      max-height: none !important;
+      overflow: visible !important;
+    }
+
+    /* Optimize icon and emoji sizes for print */
+    .text-3xl {
+      font-size: 1.25rem !important; /* Reduced from 1.875rem */
+    }
+
+    .text-2xl {
+      font-size: 1.125rem !important; /* Reduced from 1.5rem */
+    }
+
+    .text-xl {
+      font-size: 1rem !important; /* Reduced from 1.25rem */
+    }
+
+    .text-4xl {
+      font-size: 1.5rem !important; /* Reduced from 2.25rem */
+    }
+
+    /* Optimize padding and spacing */
+    .p-8 {
+      padding: 1.25rem !important; /* Reduced from 2rem */
+    }
+
+    .p-6 {
+      padding: 1rem !important; /* Reduced from 1.5rem */
+    }
+
+    .p-5 {
+      padding: 0.875rem !important; /* Reduced from 1.25rem */
+    }
+
+    /* Optimize gaps */
+    .gap-6 {
+      gap: 1rem !important; /* Reduced from 1.5rem */
+    }
+
+    .gap-5 {
+      gap: 0.875rem !important; /* Reduced from 1.25rem */
+    }
+
+    /* Optimize margins for better page utilization */
+    .mb-10 {
+      margin-bottom: 1.5rem !important; /* Reduced from 2.5rem */
+    }
+
+    .mb-8 {
+      margin-bottom: 1.25rem !important; /* Reduced from 2rem */
+    }
+
+    .my-8 {
+      margin-top: 1.25rem !important;
+      margin-bottom: 1.25rem !important;
+    }
+
+    /* Optimize line heights for print */
+    .leading-relaxed {
+      line-height: 1.5 !important; /* Slightly tighter */
+    }
+  }
 }

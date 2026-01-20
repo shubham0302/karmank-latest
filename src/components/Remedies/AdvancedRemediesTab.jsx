@@ -41,7 +41,7 @@ const AdvancedRemediesTab = ({ report, language = 'en' }) => {
     }, [baseKundliGrid, language, report.relevantData]);
 
     return (
-        <Card>
+        <Card className="pdf-page-break-after" style={{ pageBreakAfter: 'always', pageBreakInside: 'avoid' }}>
             <SectionTitle>Advanced Remedies for Amplified Numbers</SectionTitle>
             <p className="mb-6 text-yellow-200/70">This section provides specific recommendations when a number appears multiple times (two or more) in your chart, indicating amplified energy that may need balancing.</p>
             {applicableRemedies.length > 0 ? (

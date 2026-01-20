@@ -159,11 +159,10 @@ export default function HomePage() {
             transition={{ duration: 0.6, delay: 1.2 }}
             className="mt-12 text-center text-xs text-white/40 font-light"
           >
-            <p className="flex items-center justify-center gap-1.5 sm:gap-2">
-              <Sparkles className="h-2.5 w-2.5 sm:h-3 sm:w-3" />©{" "}
-              {new Date().getFullYear()} KarmAnk
-              <sup className="text-[0.5rem] text-white/40">™</sup> - Sacred
-              Technology
+            <p className="flex items-center justify-center gap-2">
+              <Sparkles className="h-3 w-3" />© {new Date().getFullYear()}{" "}
+              KarmAnk<sup className="text-[0.5rem] text-white/40">™</sup> - All
+              Rights Reserved.
             </p>
           </motion.div>
         </div>

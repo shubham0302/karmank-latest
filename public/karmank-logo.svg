@@ -1,0 +1,40 @@
+<svg width="200" height="60" viewBox="0 0 200 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Cosmic Circle Background -->
+  <circle cx="30" cy="30" r="25" fill="url(#grad1)" opacity="0.3"/>
+
+  <!-- Gradient Definition -->
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#22d3ee;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#a855f7;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="textGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#22d3ee;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#60a5fa;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#a855f7;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Sacred Geometry Symbol -->
+  <g transform="translate(30, 30)">
+    <!-- Outer triangle -->
+    <path d="M 0,-20 L 17.32,10 L -17.32,10 Z" stroke="url(#grad1)" stroke-width="2" fill="none" opacity="0.8"/>
+    <!-- Inner circle -->
+    <circle cx="0" cy="0" r="12" stroke="url(#grad1)" stroke-width="2" fill="none" opacity="0.6"/>
+    <!-- Center dot -->
+    <circle cx="0" cy="0" r="3" fill="url(#grad1)"/>
+  </g>
+
+  <!-- KarmAnk Text -->
+  <text x="65" y="32" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="url(#textGrad)">
+    KarmAnk
+  </text>
+  <text x="175" y="28" font-family="Arial, sans-serif" font-size="12" fill="#22d3ee">
+    ™
+  </text>
+
+  <!-- Tagline -->
+  <text x="65" y="46" font-family="Arial, sans-serif" font-size="8" fill="#64748b" letter-spacing="1.5">
+    VEDIC NUMEROLOGY SYSTEM
+  </text>
+</svg>

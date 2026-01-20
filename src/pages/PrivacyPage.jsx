@@ -124,6 +124,12 @@ export default function PrivacyPage() {
                   Cookies & Tracking
                 </a>
                 <a
+                  href="#chatbot"
+                  className="hover:text-cyan-300 transition-colors"
+                >
+                  Chatbot Conversations
+                </a>
+                <a
                   href="#retention"
                   className="hover:text-cyan-300 transition-colors"
                 >
@@ -302,6 +308,54 @@ export default function PrivacyPage() {
                 </p>
               </section>
 
+              <section id="chatbot">
+                <h2 className="text-xl font-semibold mb-3 text-cyan-300">
+                  Chatbot Conversations
+                </h2>
+                <p>
+                  KarmAnk™ includes an AI-powered chatbot feature to provide
+                  personalized numerology insights and answer your questions. By
+                  using our chatbot service, you consent to KarmAnk™ using your
+                  anonymized chatbot conversations to improve the service.
+                </p>
+                <ul className="list-disc pl-6 space-y-2 mt-3">
+                  <li>
+                    <strong>Data Collection:</strong> We collect and store
+                    chatbot conversations, including your questions and the
+                    chatbot's responses.
+                  </li>
+                  <li>
+                    <strong>Anonymization:</strong> All chatbot conversations
+                    are anonymized before being used for service improvement. We
+                    remove personally identifiable information such as names,
+                    email addresses, and specific dates before analysis.
+                  </li>
+                  <li>
+                    <strong>Purpose:</strong> Anonymized conversations are used
+                    to improve the accuracy, quality, and relevance of chatbot
+                    responses, train AI models, and enhance the overall user
+                    experience.
+                  </li>
+                  <li>
+                    <strong>Retention:</strong> Chatbot conversations are
+                    retained in anonymized form for up to 2 years for service
+                    improvement purposes.
+                  </li>
+                  <li>
+                    <strong>Your Control:</strong> You can request deletion of
+                    your chatbot conversation history at any time by contacting
+                    us at{" "}
+                    <a
+                      href="mailto:privacy@karmank.in"
+                      className="text-cyan-300 hover:text-cyan-200 underline font-semibold"
+                    >
+                      privacy@karmank.in
+                    </a>
+                    .
+                  </li>
+                </ul>
+              </section>
+
               <section id="retention">
                 <h2 className="text-xl font-semibold mb-3 text-cyan-300">
                   Data Retention
@@ -408,7 +462,9 @@ export default function PrivacyPage() {
                 </p>
                 <p className="mt-3">
                   Please include the subject line:{" "}
-                  <strong className="text-cyan-300">"Data Deletion Request – KarmAnk"</strong>
+                  <strong className="text-cyan-200">
+                    "Data Deletion Request – KarmAnk"
+                  </strong>
                 </p>
                 <p className="mt-3">
                   We will process all valid requests within a reasonable

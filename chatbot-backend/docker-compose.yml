@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: karmank-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    networks:
+      - karmank-network
+
+  chatbot:
+    build: .
+    container_name: karmank-chatbot
+    environment:
+      - PORT=8080
+      - NODE_ENV=production
+      - REDIS_URL=redis://redis:6379
+      - VITE_SUPABASE_URL=${VITE_SUPABASE_URL}
+      - SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_KEY}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - GEMINI_API_URL=${GEMINI_API_URL}
+      - FRONTEND_URL=${FRONTEND_URL:-http://localhost:5173}
+      - LEARNING_ENABLED=${LEARNING_ENABLED:-true}
+      - PATTERN_UPDATE_INTERVAL_HOURS=${PATTERN_UPDATE_INTERVAL_HOURS:-168}
+      - CACHE_TTL_SECONDS=${CACHE_TTL_SECONDS:-300}
+      - RATE_LIMIT_PER_MIN=${RATE_LIMIT_PER_MIN:-30}
+      - HASH_SALT=${HASH_SALT}
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+    ports:
+      - "8080:8080"
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:8080/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - karmank-network
+    restart: unless-stopped
+
+volumes:
+  redis-data:
+    driver: local
+
+networks:
+  karmank-network:
+    driver: bridge

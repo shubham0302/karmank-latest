@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test DOB 22-04-1987 - Kundli Grid</title>
+    <style>
+        body { font-family: monospace; padding: 20px; background: #1a1a1a; color: #0f0; }
+        pre { background: #000; padding: 15px; border: 1px solid #0f0; }
+        .section { margin: 20px 0; padding: 15px; border: 1px solid #0f0; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Debug DOB: 22-04-1987</h1>
+
+    <div class="section">
+        <h2>Step 1: Extract Digits</h2>
+        <pre id="step1"></pre>
+    </div>
+
+    <div class="section">
+        <h2>Step 2: Build Kundli Grid</h2>
+        <pre id="step2"></pre>
+    </div>
+
+    <div class="section">
+        <h2>Step 3: Check Rule: 9+4 without 5</h2>
+        <pre id="step3"></pre>
+    </div>
+
+    <script>
+        const dob = '1987-04-22';
+        const date = new Date(dob + 'T00:00:00');
+        const day = date.getDate();    // 22
+        const month = date.getMonth() + 1;  // 4
+        const year = date.getFullYear();    // 1987
+
+        document.getElementById('step1').textContent =
+            `DOB: ${dob}\n` +
+            `Day: ${day}\n` +
+            `Month: ${month}\n` +
+            `Year: ${year}\n` +
+            `Full string: ${day}${month}${year} = "2241987"`;
+
+        // Build kundli grid (mimic backend logic)
+        const kundliDigitsStr = (
+            String(day).padStart(2, '0') +
+            String(month).padStart(2, '0') +
+            String(year).substring(2)
+        ).replace(/0/g, '');
+
+        document.getElementById('step2').textContent =
+            `Padded day: ${String(day).padStart(2, '0')}\n` +
+            `Padded month: ${String(month).padStart(2, '0')}\n` +
+            `Year last 2: ${String(year).substring(2)}\n` +
+            `Combined: ${String(day).padStart(2, '0')}${String(month).padStart(2, '0')}${String(year).substring(2)}\n` +
+            `After removing zeros: "${kundliDigitsStr}"\n\n`;
+
+        // Count digits
+        const digitCounts = Array(10).fill(0);
+        for (const char of kundliDigitsStr) {
+            digitCounts[parseInt(char)]++;
+        }
+
+        // Calculate destiny and basic
+        const sumDigits = (str) => str.split('').reduce((sum, d) => sum + parseInt(d, 10), 0);
+        const destinySum = sumDigits(`${day}${month}${year}`);
+        const destinyNumber = sumDigits(String(destinySum));
+        const basicNumber = day > 9 ? sumDigits(String(day)) : day;
+
+        // Add destiny number
+        digitCounts[destinyNumber]++;
+
+        // Add basic number for two-digit days
+        if (day > 9 && day % 10 !== 0) {
+            digitCounts[basicNumber]++;
+        }
+
+        let output = 'Digit counts (after destiny + basic):\n';
+        digitCounts.forEach((count, digit) => {
+            if (count > 0) output += `  ${digit}: ${count}\n`;
+        });
+
+        output += `\nKundli Grid Array: ${JSON.stringify(digitCounts)}`;
+        document.getElementById('step2').textContent += output;
+
+        // Check rule
+        const has9 = digitCounts[9] > 0;
+        const has4 = digitCounts[4] > 0;
+        const has5 = digitCounts[5] > 0;
+        const shouldTrigger = has9 && has4 && !has5;
+
+        document.getElementById('step3').textContent =
+            `Has 9 in chart: ${has9} (count: ${digitCounts[9]})\n` +
+            `Has 4 in chart: ${has4} (count: ${digitCounts[4]})\n` +
+            `Has 5 in chart: ${has5} (count: ${digitCounts[5]})\n\n` +
+            `Rule "9 and 4 without 5":\n` +
+            `  digitCounts[9] > 0 && digitCounts[4] > 0 && digitCounts[5] === 0\n` +
+            `  ${digitCounts[9]} > 0 && ${digitCounts[4]} > 0 && ${digitCounts[5]} === 0\n` +
+            `  ${has9} && ${has4} && ${!has5}\n` +
+            `  = ${shouldTrigger}\n\n` +
+            (shouldTrigger
+                ? '✅ SHOULD show "Protection Remedy for 9-4 Combination"'
+                : '❌ Rule NOT triggered'
+            );
+    </script>
+</body>
+</html>

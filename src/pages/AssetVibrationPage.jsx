@@ -758,8 +758,8 @@ const AssetVibrationPage = () => {
                             </div>
                           )}
 
-                          {/* Remedial Guidance */}
-                          {compatibilityResult.remedy && (
+                          {/* Remedial Guidance - HIDDEN as it's for person not asset */}
+                          {/* {compatibilityResult.remedy && (
                             <div className={`p-5 rounded-xl border-2 ${
                               [4, 8].includes(compatibilityResult.assetNum)
                                 ? 'bg-red-900/20 border-red-500/50'
@@ -785,7 +785,7 @@ const AssetVibrationPage = () => {
                                 </p>
                               </div>
                             </div>
-                          )}
+                          )} */}
 
                           {/* Secondary Check with Basic Number */}
                           {compatibilityResult.basicStatus !== compatibilityResult.destinyStatus && (
@@ -804,8 +804,8 @@ const AssetVibrationPage = () => {
                             </div>
                           )}
 
-                          {/* Remedial Suggestions */}
-                          {compatibilityResult.destinyStatus === 'avoid' && compatibilityMatrix && (
+                          {/* Remedial Suggestions - HIDDEN as it's for person not asset */}
+                          {/* {compatibilityResult.destinyStatus === 'avoid' && compatibilityMatrix && (
                             <div className="bg-red-900/20 border border-red-400/30 rounded-lg p-4">
                               <h5 className="font-semibold text-red-300 mb-2 flex items-center gap-2">
                                 <AlertCircle className="w-5 h-5" />
@@ -824,7 +824,7 @@ const AssetVibrationPage = () => {
                                 </li>
                               </ul>
                             </div>
-                          )}
+                          )} */}
                         </motion.div>
                       )}
 

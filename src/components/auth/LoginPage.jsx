@@ -373,6 +373,7 @@ export default function LoginPage() {
                         >
                           Refund Policy
                         </a>
+                        .
                       </label>
                     </div>
 

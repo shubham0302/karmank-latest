@@ -10,12 +10,26 @@ node_modules/
 dist/
 build/
 
-# Environment variables
+# Environment variables - NEVER COMMIT THESE!
 .env
 .env.local
+.env.development
 .env.development.local
+.env.test
 .env.test.local
+.env.production
 .env.production.local
+chatbot-backend/.env
+chatbot-backend/.env.local
+chatbot-backend/.env.development
+chatbot-backend/.env.production
+lambda-package/.env
+lambda-package/.env.production
+
+# Allow example env files
+!.env.example
+!chatbot-backend/.env.example
+!lambda-package/.env.example
 
 # Editor directories and files
 .vscode/*

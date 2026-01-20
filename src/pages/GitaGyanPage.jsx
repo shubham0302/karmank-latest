@@ -32,7 +32,7 @@ export default function GitaGyanPage() {
   const navigate = useNavigate();
 
   // Navigation state
-  const [viewMode, setViewMode] = useState("browse"); // 'browse', 'theme', 'mood', 'random', 'daily'
+  const [viewMode, setViewMode] = useState("daily"); // 'browse', 'theme', 'mood', 'random', 'daily' - default to 'daily' instead of 'browse'
   const [selectedChapter, setSelectedChapter] = useState(1);
   const [selectedShloka, setSelectedShloka] = useState(null);
   const [activeTab, setActiveTab] = useState("translation"); // 'translation', 'general', 'corporate', 'genz'
@@ -292,7 +292,8 @@ export default function GitaGyanPage() {
             transition={{ duration: 0.6, delay: 1.0 }}
             className="flex flex-wrap gap-3 justify-center mb-8"
           >
-            <button
+            {/* Browse Chapters, Search by Theme, and Search by Mood buttons hidden as requested */}
+            {/* <button
               onClick={() => {
                 setViewMode("browse");
                 setSelectedTheme(null);
@@ -306,8 +307,8 @@ export default function GitaGyanPage() {
             >
               <Book className={`h-5 w-5 ${viewMode === "browse" ? "text-cyan-300" : "text-cyan-400/60 group-hover:text-cyan-400"}`} />
               <span className="font-semibold">Browse Chapters</span>
-            </button>
-            <button
+            </button> */}
+            {/* <button
               onClick={() => {
                 setViewMode("theme");
                 setSelectedMood(null);
@@ -320,8 +321,8 @@ export default function GitaGyanPage() {
             >
               <Search className={`h-5 w-5 ${viewMode === "theme" ? "text-purple-300" : "text-purple-400/60 group-hover:text-purple-400"}`} />
               <span className="font-semibold">Search by Theme</span>
-            </button>
-            <button
+            </button> */}
+            {/* <button
               onClick={() => {
                 setViewMode("mood");
                 setSelectedTheme(null);
@@ -334,7 +335,7 @@ export default function GitaGyanPage() {
             >
               <Smile className={`h-5 w-5 ${viewMode === "mood" ? "text-pink-300" : "text-pink-400/60 group-hover:text-pink-400"}`} />
               <span className="font-semibold">Search by Mood</span>
-            </button>
+            </button> */}
             <button
               onClick={() => {
                 setViewMode("random");
@@ -436,9 +437,9 @@ export default function GitaGyanPage() {
           </AnimatePresence>
 
           {/* Main Content Area */}
-          <div className={`grid grid-cols-1 ${viewMode === "browse" ? "lg:grid-cols-3" : "lg:grid-cols-1"} gap-6`}>
-            {/* Left: Chapter/Shloka List - Only show for Browse mode */}
-            {viewMode === "browse" && (
+          <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
+            {/* Left: Chapter/Shloka List - HIDDEN as requested */}
+            {/* {viewMode === "browse" && (
               <div className="lg:col-span-1 space-y-4">
                 {Object.keys(CHAPTER_INFO).map((chapterNum) => {
                   const chapter = parseInt(chapterNum);
@@ -510,10 +511,10 @@ export default function GitaGyanPage() {
                   );
                 })}
               </div>
-            )}
+            )} */}
 
             {/* Shloka Detail */}
-            <div className={viewMode === "browse" ? "lg:col-span-2" : "lg:col-span-1 max-w-4xl mx-auto w-full"}>
+            <div className="lg:col-span-1 max-w-4xl mx-auto w-full">
               {selectedShloka && GITA_DATA[selectedChapter]?.[selectedShloka] ? (
                 <div className="space-y-4">
                   <ShlokaDetailCard

@@ -1,40 +1,19 @@
 import { useState, useRef, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  ArrowLeft,
-  ArrowRight,
-  BookOpen,
-  Link as LinkIcon,
-  Briefcase,
-  FlaskConical,
-  Loader2,
-  AlertCircle,
-  Wand2,
-  MousePointerClick,
-  XCircle,
-  Sun,
-  PenTool,
-  Upload,
-  Trash2,
-  Sparkles,
-  Download,
-  Activity,
-  TrendingUp,
-  Globe,
-  Disc,
-  CheckCircle2,
-  Building2,
-  Factory,
-  Camera,
-  DollarSign,
-} from "lucide-react";
-import jsPDF from "jspdf";
-import CosmicBackground from "../components/CosmicBackground";
-import { GradientText, gradientUtils } from "../components/GradientText";
-import FamilyMemberSelector from "../components/FamilyMemberSelector";
-import { useAuth } from "../contexts/AuthContext";
-import { useFamilyMembers } from "../hooks/useFamilyMembers";
-import { ChevronDown } from "lucide-react";
+  ArrowLeft, ArrowRight, BookOpen, Link as LinkIcon, Briefcase, FlaskConical,
+  Loader2, AlertCircle, Wand2, MousePointerClick, XCircle,
+  Sun, PenTool, Upload, Trash2, Sparkles, Download, Activity,
+  TrendingUp, Globe, Disc, CheckCircle2, Building2, Factory, Camera, DollarSign
+} from 'lucide-react';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
+import CosmicBackground from '../components/CosmicBackground';
+import FamilyMemberSelector from '../components/FamilyMemberSelector';
+import { useAuth } from '../contexts/AuthContext';
+import { useFamilyMembers } from '../hooks/useFamilyMembers';
+import { ChevronDown } from 'lucide-react';
+import { exportToPDF } from '../utils/pdfExport';
 
 // --- PYTHAGOREAN CONSTANTS ---
 const PYTHAGOREAN_CONSTANTS = {
@@ -644,7 +623,7 @@ function calculateHarmonicAdjustments(
   return suggestions;
 }
 
-// --- PDF GENERATION FUNCTION ---
+// --- OLD PDF GENERATION FUNCTION (keeping for backward compatibility) ---
 function generatePDF(report) {
   const { pythagoreanProfile, profile } = report;
   const doc = new jsPDF();
@@ -868,10 +847,57 @@ function generatePDF(report) {
   doc.save(`${profile.name.replace(/\s+/g, "_")}_Numerology_Report.pdf`);
 }
 
-// --- GEMINI API FUNCTION (DISABLED FOR PRODUCTION) ---
+// --- SECURE BACKEND API FUNCTION ---
+// ✅ API key is now secure on backend, not exposed in frontend
 async function fetchGeminiAnalysis(prompt, imageBase64 = null) {
-  // Gemini API integration disabled for production deployment
-  return "AI-powered signature analysis is temporarily unavailable. Your signature has been received and you can continue with the name analysis below.";
+  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080';
+
+  // Use different endpoint for image analysis (signature)
+  if (imageBase64) {
+    const url = `${BACKEND_URL}/nlg/analyze-signature`;
+
+    const payload = {
+      prompt: prompt,
+      imageBase64: imageBase64
+    };
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Signature analysis failed');
+    }
+
+    const data = await response.json();
+    return data.data?.text || data.text || '';
+  }
+
+  // Text-only analysis
+  const url = `${BACKEND_URL}/nlg/generate`;
+
+  const payload = {
+    prompt: prompt,
+    language: 'en' // Can be made dynamic if needed
+  };
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || 'Backend API request failed');
+  }
+
+  const data = await response.json();
+  // Backend returns: { success: true, data: { text: "..." } }
+  return data.data?.text || data.text || '';
 }
 
 // --- UI COMPONENTS ---
@@ -1126,101 +1152,93 @@ const NameDeepDiveTab = ({ report }) => {
         </div>
       )}
 
-      {/* Main Cards Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4">
-        {cards.map((card) => (
-          <div
-            key={card.id}
-            onClick={() => setActiveDefinition(card)}
-            className={`cursor-pointer hover:scale-[1.02] transition-all duration-200 text-center p-2 sm:p-4 bg-gradient-to-br ${card.bgGradient} border ${card.borderColor} rounded-xl relative group`}
-          >
-            <MousePointerClick className="absolute top-1 right-1 sm:top-2 sm:right-2 w-3 h-3 sm:w-4 sm:h-4 text-gray-500 group-hover:text-white transition-colors" />
-            <p className={`text-xs ${card.color} mb-0.5`}>{card.label}</p>
-            <p className="text-[10px] sm:text-xs text-gray-400 mb-2">({card.sublabel})</p>
-            <p className={`text-4xl sm:text-6xl font-bold ${card.color}`}>{card.val}</p>
-          </div>
-        ))}
-
-        {/* Zodiac Card */}
-        <div className="bg-gray-900/60 p-2 sm:p-4 rounded-xl border border-gray-700 text-center">
-          <Sun className="w-3 h-3 sm:w-4 sm:h-4 text-yellow-400 mx-auto mb-2" />
-          <p className="text-[10px] sm:text-xs text-gray-400 mb-1">Zodiac</p>
-          <p className="text-xl sm:text-2xl mb-1">{pythagoreanProfile.zodiac.symbol}</p>
-          <p className="text-xs sm:text-sm text-white font-medium">
-            {pythagoreanProfile.zodiac.name}
-          </p>
-          <p className="text-[10px] sm:text-xs text-gray-500">
-            {pythagoreanProfile.zodiac.element}
-          </p>
-        </div>
-      </div>
-
-      {/* Vibrational Friction Bar */}
-      <div className="bg-gray-900/50 p-6 rounded-xl border border-gray-700">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-sm text-gray-400">Vibrational Alignment</span>
-          <div className="flex items-center gap-2">
-            <span className={`text-sm font-bold ${vibrationalStatus.color}`}>
-              {vibrationalStatus.label}
-            </span>
-            <span
-              className={`text-xs font-mono ${vibrationalStatus.color} bg-gray-800/50 px-2 py-0.5 rounded`}
+      {/* PAGE 2: Cards + Vibrational Alignment + Chronos Narrative */}
+      <div className="pdf-page-break-after space-y-8">
+        {/* Main Cards Grid */}
+        <div className="grid md:grid-cols-4 gap-4">
+          {cards.map(card => (
+            <div
+              key={card.id}
+              onClick={() => setActiveDefinition(card)}
+              className={`cursor-pointer hover:scale-[1.02] transition-all duration-200 text-center p-4 bg-gradient-to-br ${card.bgGradient} border ${card.borderColor} rounded-xl relative group`}
             >
-              {vibrationalStatus.percent}%
-            </span>
+              <MousePointerClick className="absolute top-2 right-2 w-4 h-4 text-gray-500 group-hover:text-white transition-colors" />
+              <p className={`text-xs ${card.color} mb-0.5`}>{card.label}</p>
+              <p className="text-xs text-gray-400 mb-2">({card.sublabel})</p>
+              <p className={`text-6xl font-bold ${card.color}`}>{card.val}</p>
+            </div>
+          ))}
+
+          {/* Zodiac Card */}
+          <div className="bg-gray-900/60 p-4 rounded-xl border border-gray-700 text-center">
+            <Sun className="w-4 h-4 text-yellow-400 mx-auto mb-2" />
+            <p className="text-xs text-gray-400 mb-1">Zodiac</p>
+            <p className="text-2xl mb-1">{pythagoreanProfile.zodiac.symbol}</p>
+            <p className="text-sm text-white font-medium">{pythagoreanProfile.zodiac.name}</p>
+            <p className="text-xs text-gray-500">{pythagoreanProfile.zodiac.element}</p>
           </div>
         </div>
-        <div className="w-full bg-gray-800 rounded-full h-3 overflow-hidden">
-          <div
-            className={`h-full ${vibrationalStatus.bgColor} transition-all duration-1000 ease-out`}
-            style={{ width: `${vibrationalStatus.percent}%` }}
-          />
+
+        {/* Vibrational Friction Bar */}
+        <div className="bg-gray-900/50 p-6 rounded-xl border border-gray-700">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm text-gray-400">Vibrational Alignment</span>
+            <div className="flex items-center gap-2">
+              <span className={`text-sm font-bold ${vibrationalStatus.color}`}>
+                {vibrationalStatus.label}
+              </span>
+              <span className={`text-xs font-mono ${vibrationalStatus.color} bg-gray-800/50 px-2 py-0.5 rounded`}>
+                {vibrationalStatus.percent}%
+              </span>
+            </div>
+          </div>
+          <div className="w-full bg-gray-800 rounded-full h-3 overflow-hidden">
+            <div
+              className={`h-full ${vibrationalStatus.bgColor} transition-all duration-1000 ease-out`}
+              style={{ width: `${vibrationalStatus.percent}%` }}
+            />
+          </div>
+          <p className="text-xs text-gray-500 mt-2">
+            Measures the harmony between your outer expression and inner desires.
+          </p>
         </div>
-        <p className="text-xs text-gray-500 mt-2">
-          Measures the harmony between your outer expression and inner desires.
-        </p>
+
+        {/* Artistic Narrative */}
+        <ArtisticNarrative report={report} />
       </div>
 
-      {/* Artistic Narrative */}
-      <ArtisticNarrative report={report} />
-
-      {/* High-Intensity Zones */}
-      {pythagoreanProfile.amplifiedTraits.length > 0 && (
-        <div className="bg-gray-900/50 p-6 rounded-xl border border-yellow-500/20">
-          <h3 className="text-lg font-bold text-yellow-400 mb-4 flex items-center gap-2">
-            <Sparkles className="w-5 h-5" />
-            High-Intensity Zones
-          </h3>
-          <div className="space-y-3">
-            {pythagoreanProfile.amplifiedTraits.map((trait, idx) => (
-              <div
-                key={idx}
-                className="bg-gray-950/50 p-4 rounded-lg border border-gray-700"
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-2xl font-bold text-yellow-400">
-                    {trait.letter}
-                  </span>
-                  <span className="text-sm text-gray-400">
-                    appears {trait.count}× in your name
-                  </span>
+      {/* PAGE 3: High-Intensity Zones + Professional Alignment */}
+      <div className="pdf-page-break-after space-y-8">
+        {/* High-Intensity Zones */}
+        {pythagoreanProfile.amplifiedTraits.length > 0 && (
+          <div className="bg-gray-900/50 p-6 rounded-xl border border-yellow-500/20">
+            <h3 className="text-lg font-bold text-yellow-400 mb-6 flex items-center gap-2">
+              <Sparkles className="w-5 h-5" />
+              High-Intensity Zones
+            </h3>
+            <div className="space-y-4">
+              {pythagoreanProfile.amplifiedTraits.map((trait, idx) => (
+                <div key={idx} className="bg-gray-950/50 p-4 rounded-lg border border-gray-700">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-2xl font-bold text-yellow-400">{trait.letter}</span>
+                    <span className="text-sm text-gray-400">appears {trait.count}× in your name</span>
+                  </div>
+                  <p className="text-sm text-white mb-1">{trait.meaning}</p>
+                  <p className="text-xs text-gray-500 italic">{trait.effect}</p>
                 </div>
-                <p className="text-sm text-white mb-1">{trait.meaning}</p>
-                <p className="text-xs text-gray-500 italic">{trait.effect}</p>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Professional Alignment */}
-      <div className="bg-gray-900/60 p-6 rounded-xl border border-green-500/20">
-        <h3 className="text-xl font-bold text-green-400 mb-4 flex items-center gap-2">
+        {/* Professional Alignment */}
+        <div className="bg-gray-900/60 p-6 rounded-xl border border-green-500/20">
+        <h3 className="text-xl font-bold text-green-400 mb-6 flex items-center gap-2">
           <Briefcase className="w-5 h-5" />
           Professional Alignment
         </h3>
 
-        <div className="space-y-4">
+        <div className="space-y-5">
           {/* Career Strengths based on Expression Number */}
           <div className="bg-gray-950/50 p-4 rounded-lg border border-cyan-500/30">
             <h4 className="text-sm font-bold text-cyan-400 uppercase tracking-wider mb-2">
@@ -1309,22 +1327,6 @@ const NameDeepDiveTab = ({ report }) => {
           </div>
         </div>
       </div>
-
-      {/* Identity Card */}
-      <ShareableIdentityCard
-        name={profile.name}
-        pythagoreanProfile={pythagoreanProfile}
-      />
-
-      {/* Download PDF Button */}
-      <div className="flex justify-center mt-6">
-        <button
-          onClick={() => generatePDF(report)}
-          className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-cyan-600 to-purple-600 hover:from-cyan-500 hover:to-purple-500 text-white font-bold rounded-lg transition-all duration-200 transform hover:scale-[1.02] shadow-lg shadow-cyan-500/20"
-        >
-          <Download className="w-5 h-5" />
-          Download PDF Report
-        </button>
       </div>
     </div>
   );
@@ -1472,9 +1474,9 @@ const SynergyTab = ({ report }) => {
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      {/* Cosmic Alignment Status */}
+      {/* Cosmic Alignment Status - Hide in PDF */}
       {profile.destinyNumber && (
-        <div className="bg-gray-900/60 p-6 rounded-xl border border-gray-800">
+        <div className="bg-gray-900/60 p-6 rounded-xl border border-gray-800 print:hidden">
           <div className="text-center">
             <h4 className="text-xs uppercase tracking-widest mb-3 text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-blue-400 to-purple-500">
               Cosmic Alignment
@@ -1490,9 +1492,9 @@ const SynergyTab = ({ report }) => {
         </div>
       )}
 
-      {/* DOB Required Message */}
+      {/* DOB Required Message - Hide in PDF */}
       {!profile.destinyNumber && (
-        <div className="p-6 bg-yellow-900/20 border border-yellow-500/50 rounded-xl">
+        <div className="p-6 bg-yellow-900/20 border border-yellow-500/50 rounded-xl print:hidden">
           <div className="flex items-center gap-3">
             <AlertCircle className="w-6 h-6 text-yellow-400" />
             <div>
@@ -1508,8 +1510,8 @@ const SynergyTab = ({ report }) => {
         </div>
       )}
 
-      {/* Goal Harmonizer */}
-      <div className="bg-gray-900/60 p-6 rounded-xl border border-gray-800">
+      {/* Goal Harmonizer - Hide in PDF */}
+      <div className="bg-gray-900/60 p-6 rounded-xl border border-gray-800 print:hidden">
         <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
           <Wand2 className="w-5 h-5 text-cyan-400" />
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-blue-400 to-purple-500">
@@ -1576,26 +1578,19 @@ const SynergyTab = ({ report }) => {
         )}
       </div>
 
-      {/* Vedic Numerology Section */}
+      {/* PAGE 4: Name-Destiny Synergy */}
       {profile.destinyNumber && (
-        <div className="bg-gray-900/60 p-6 rounded-xl border border-green-500/20">
-          <h3 className="text-xl font-bold text-green-400 mb-4 flex items-center gap-2">
+        <div className="bg-gray-900/60 p-6 rounded-xl border border-green-500/20 pdf-page-break-after">
+          <h3 className="text-xl font-bold text-green-400 mb-6 flex items-center gap-2">
             <LinkIcon className="w-5 h-5" />
             Name-Destiny Synergy
           </h3>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-6">
-            <div className="bg-gray-950/50 p-3 sm:p-4 rounded-lg border border-cyan-500/30">
-              <div className="text-xs sm:text-sm text-gray-400 mb-2">
-                Pythagorean Expression
-              </div>
-              <div className="text-3xl sm:text-4xl font-bold text-cyan-400 mb-2">
-                {pythagoreanProfile.expression}
-              </div>
-              <p className="text-xs sm:text-sm text-gray-300">
-                {NUMBER_MEANINGS[pythagoreanProfile.expression].slice(0, 150)}
-                ...
-              </p>
+          <div className="grid md:grid-cols-2 gap-6 mb-8">
+            <div className="bg-gray-950/50 p-4 rounded-lg border border-cyan-500/30">
+              <div className="text-sm text-gray-400 mb-2">Pythagorean Expression</div>
+              <div className="text-4xl font-bold text-cyan-400 mb-2">{pythagoreanProfile.expression}</div>
+              <p className="text-sm text-gray-300">{NUMBER_MEANINGS[pythagoreanProfile.expression].slice(0, 150)}...</p>
             </div>
 
             <div className="bg-gray-950/50 p-3 sm:p-4 rounded-lg border border-green-500/30">
@@ -1657,74 +1652,15 @@ const SynergyTab = ({ report }) => {
 };
 
 const SignatureTab = () => {
-  const canvasRef = useRef(null);
   const fileInputRef = useRef(null);
-  const [mode, setMode] = useState("draw");
-  const [isDrawing, setIsDrawing] = useState(false);
   const [hasSignature, setHasSignature] = useState(false);
   const [uploadedImage, setUploadedImage] = useState(null);
   const [analysis, setAnalysis] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    if (canvasRef.current && mode === "draw") {
-      const canvas = canvasRef.current;
-      const ctx = canvas.getContext("2d");
-      ctx.fillStyle = "#000000";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-    }
-  }, [mode]);
-
-  // Coming Soon overlay component
-  const ComingSoonOverlay = () => (
-    <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] flex items-center justify-center rounded-xl z-50">
-      <div className="text-center">
-        <Sparkles className="w-16 h-16 text-yellow-400 mx-auto mb-4 animate-pulse" />
-        <h3 className="text-3xl font-bold text-yellow-400 mb-2">Coming Soon</h3>
-        <p className="text-gray-300 text-lg">
-          The Signature Alchemist feature is being enhanced
-        </p>
-      </div>
-    </div>
-  );
-
-  const startDrawing = (e) => {
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext("2d");
-    const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    ctx.strokeStyle = "#FACC15";
-    ctx.lineWidth = 2;
-    ctx.lineCap = "round";
-    ctx.lineJoin = "round";
-    ctx.beginPath();
-    ctx.moveTo(x, y);
-    setIsDrawing(true);
-  };
-
-  const draw = (e) => {
-    if (!isDrawing) return;
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext("2d");
-    const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    ctx.lineTo(x, y);
-    ctx.stroke();
-    setHasSignature(true);
-  };
-
-  const stopDrawing = () => {
-    setIsDrawing(false);
-  };
-
   const clearSignature = () => {
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext("2d");
-    ctx.fillStyle = "#000000";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    setUploadedImage(null);
     setHasSignature(false);
     setAnalysis(null);
     setError(null);
@@ -1748,20 +1684,17 @@ const SignatureTab = () => {
     setLoading(true);
     setError(null);
     try {
-      let imageBase64;
-      if (mode === "draw") {
-        imageBase64 = canvasRef.current.toDataURL("image/png").split(",")[1];
-      } else {
-        imageBase64 = uploadedImage.split(",")[1];
-      }
+      // Extract base64 from uploaded image (remove data:image/png;base64, prefix)
+      const imageBase64 = uploadedImage.split(',')[1];
 
-      const prompt = `Analyze this signature from a numerological and graphological perspective. Provide insights about:
-1. Overall personality traits revealed
-2. Confidence and self-expression level
-3. Emotional stability
-4. Leadership qualities
-5. Creative tendencies
-Keep the response concise and insightful (3-4 sentences).`;
+      const prompt = `Analyze this signature from a graphological (handwriting analysis) perspective. Provide insights about:
+1. Overall personality traits revealed by the signature style
+2. Confidence and self-expression level (based on size, slant, pressure)
+3. Emotional stability (based on baseline, rhythm, flow)
+4. Leadership qualities (based on dominant strokes, emphasis)
+5. Creative tendencies (based on uniqueness, flair, artistic elements)
+
+Provide a detailed, insightful analysis in 4-6 sentences. Focus on what the handwriting reveals about the person's character.`;
 
       const result = await fetchGeminiAnalysis(prompt, imageBase64);
       setAnalysis(result);
@@ -1781,53 +1714,48 @@ Keep the response concise and insightful (3-4 sentences).`;
             The Signature Alchemist
           </h3>
 
-          <div className="flex gap-2 mb-4">
-            <button
-              onClick={() => {
-                setMode("draw");
-                setHasSignature(false);
-                setAnalysis(null);
-                setUploadedImage(null);
-              }}
-              className={`flex-1 py-2 rounded-lg font-medium transition-all ${
-                mode === "draw"
-                  ? "bg-yellow-500/20 text-yellow-300 border border-yellow-500/50"
-                  : "bg-gray-800 text-gray-400 hover:bg-gray-700"
-              }`}
-            >
-              <PenTool className="w-4 h-4 inline mr-2" />
-              DRAW
-            </button>
-            <button
-              onClick={() => {
-                setMode("upload");
-                setHasSignature(false);
-                setAnalysis(null);
-              }}
-              className={`flex-1 py-2 rounded-lg font-medium transition-all ${
-                mode === "upload"
-                  ? "bg-yellow-500/20 text-yellow-300 border border-yellow-500/50"
-                  : "bg-gray-800 text-gray-400 hover:bg-gray-700"
-              }`}
-            >
-              <Upload className="w-4 h-4 inline mr-2" />
-              UPLOAD
-            </button>
+        <div className="border border-dashed border-gray-700 rounded-xl bg-gray-950 mb-4 overflow-hidden">
+          <div className="p-8 text-center">
+            <input
+              type="file"
+              accept="image/*"
+              ref={fileInputRef}
+              onChange={handleFileUpload}
+              className="hidden"
+            />
+            {uploadedImage ? (
+              <img src={uploadedImage} alt="Uploaded signature" className="max-h-48 mx-auto" />
+            ) : (
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                className="px-6 py-3 bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-300 border border-yellow-500/50 rounded-lg font-medium transition-all"
+              >
+                <Upload className="w-5 h-5 inline mr-2" />
+                Choose Image
+              </button>
+            )}
           </div>
+        </div>
 
-          <div className="border border-dashed border-gray-700 rounded-xl bg-gray-950 mb-4 overflow-hidden">
-            {mode === "draw" ? (
-              <canvas
-                ref={canvasRef}
-                width={600}
-                height={200}
-                onMouseDown={startDrawing}
-                onMouseMove={draw}
-                onMouseUp={stopDrawing}
-                onMouseLeave={stopDrawing}
-                className="w-full cursor-crosshair"
-                style={{ touchAction: "none" }}
-              />
+        <div className="flex gap-2">
+          <button
+            onClick={clearSignature}
+            disabled={!hasSignature}
+            className="flex-1 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <Trash2 className="w-4 h-4 inline mr-2" />
+            Clear
+          </button>
+          <button
+            onClick={analyzeSignature}
+            disabled={!hasSignature || loading}
+            className="flex-1 py-2 bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-300 border border-yellow-500/50 rounded-lg font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {loading ? (
+              <>
+                <Loader2 className="w-4 h-4 inline mr-2 animate-spin" />
+                Analyzing...
+              </>
             ) : (
               <div className="p-8 text-center">
                 <input
@@ -2135,7 +2063,8 @@ export default function NameAnalysisPage() {
   const [report, setReport] = useState(null);
   const [activeTab, setActiveTab] = useState("deepDive");
   const [memberDropdownOpen, setMemberDropdownOpen] = useState(false);
-  const [isLoadingMemberChange, setIsLoadingMemberChange] = useState(false);
+  const [downloadDropdownOpen, setDownloadDropdownOpen] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
 
   // Fetch family members and auto-select first one
   useEffect(() => {
@@ -2208,6 +2137,34 @@ export default function NameAnalysisPage() {
     { id: "signature", label: "Signature", icon: PenTool },
   ];
 
+  const handleExportPDF = async () => {
+    if (!report || isDownloading) return;
+
+    setIsDownloading(true);
+    setDownloadDropdownOpen(false);
+
+    try {
+      // Switch to Deep Dive tab first
+      setActiveTab('deepDive');
+
+      // Wait for tab to render
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      // Export using the same method as numerology
+      const sanitizedName = name.replace(/[^a-zA-Z0-9]/g, '_');
+      const fileName = `KarmAnk_${sanitizedName}_Name_Analysis_${new Date().toISOString().split('T')[0]}.pdf`;
+
+      await exportToPDF('report-content', fileName, { userName: name });
+
+      console.log('✅ PDF exported successfully');
+    } catch (error) {
+      console.error('❌ PDF export failed:', error);
+      alert('Failed to export PDF. Please try again.');
+    }
+
+    setIsDownloading(false);
+  };
+
   return (
     <CosmicBackground density={140} useVideo={true}>
       <div className="min-h-screen relative px-3 sm:px-4 md:px-6 py-4 sm:py-6">
@@ -2223,7 +2180,42 @@ export default function NameAnalysisPage() {
               <span className="sm:hidden">Back</span>
             </button>
 
-            <div className="flex items-center gap-2 sm:gap-4">
+            <div className="flex items-center gap-4">
+              {/* Download Dropdown */}
+              {report && (
+                <div className="relative">
+                  <button
+                    onClick={() => setDownloadDropdownOpen(!downloadDropdownOpen)}
+                    disabled={isDownloading}
+                    className="flex items-center gap-2 px-4 py-2 bg-green-500/20 hover:bg-green-500/30 border border-green-400/50 rounded-lg text-green-300 text-sm font-medium transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isDownloading ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <span>Downloading...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Download className="h-4 w-4" />
+                        <span>Download</span>
+                        <ChevronDown className="h-4 w-4" />
+                      </>
+                    )}
+                  </button>
+                  {downloadDropdownOpen && !isDownloading && (
+                    <div className="absolute top-full right-0 mt-2 bg-gray-900 border border-green-400/50 rounded-lg shadow-lg z-50 min-w-48">
+                      <button
+                        onClick={handleExportPDF}
+                        className="w-full text-left px-4 py-3 hover:bg-green-400/10 transition flex items-center gap-2 text-white"
+                      >
+                        <Download className="h-4 w-4 text-green-400" />
+                        <span>Full Report (PDF)</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* Member Selector Dropdown */}
               <div className="relative">
                 <button
@@ -2327,27 +2319,21 @@ export default function NameAnalysisPage() {
               </div>
 
               {/* Tab Content */}
-              <div>
-                {activeTab === "deepDive" && (
+              <div id="report-content">
+                {/* Deep Dive Tab - Always render for PDF, hide if not active on screen */}
+                <div className={activeTab !== 'deepDive' ? 'hidden print:block' : ''}>
                   <NameDeepDiveTab report={report} />
-                )}
-                {activeTab === "sandbox" && (
-                  <SandboxTab profile={report.profile} />
-                )}
-                {activeTab === "synergy" && <SynergyTab report={report} />}
-                {activeTab === "business" && <BusinessTab />}
-                {activeTab === "signature" && <SignatureTab />}
-              </div>
+                </div>
 
-              {/* Reset Button */}
-              <div className="flex justify-center mt-8">
-                <button
-                  onClick={handleReset}
-                  className="px-6 py-3 bg-gray-800 hover:bg-gray-700 text-white rounded-lg font-medium transition-all duration-200 flex items-center gap-2"
-                >
-                  <ArrowLeft className="w-4 h-4" />
-                  New Analysis
-                </button>
+                {/* Synergy Tab - Always render for PDF, hide if not active on screen */}
+                <div className={activeTab !== 'synergy' ? 'hidden print:block' : ''}>
+                  <SynergyTab report={report} />
+                </div>
+
+                {/* Other tabs - only render when active */}
+                {activeTab === 'sandbox' && <SandboxTab profile={report.profile} />}
+                {activeTab === 'business' && <BusinessTab />}
+                {activeTab === 'signature' && <SignatureTab />}
               </div>
             </div>
           )}

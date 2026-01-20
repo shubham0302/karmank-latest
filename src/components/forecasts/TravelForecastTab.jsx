@@ -149,7 +149,7 @@ const TravelForecastTab = ({ report, dashaReport, targetDate }) => {
 
     return (
         <div className="space-y-6">
-            <Card>
+            <Card className="pdf-page-break-after" style={{ pageBreakAfter: 'always', pageBreakInside: 'avoid' }}>
                 <SectionTitle>Travel & Relocation Forecast</SectionTitle>
                 {travelAnalysis ? (
                     <div className="bg-gray-900/50 p-4 rounded-lg">

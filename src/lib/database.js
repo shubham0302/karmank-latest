@@ -1,4 +1,5 @@
 import { supabase } from './supabase'
+import { validateEmail, formatValidationError } from './validators'
 
 /**
  * Get or create user profile
@@ -8,6 +9,18 @@ import { supabase } from './supabase'
  */
 export const getOrCreateUserProfile = async (userId, email) => {
   try {
+    // ✅ SECURITY: Validate email input
+    let validatedEmail
+    try {
+      validatedEmail = validateEmail(email)
+    } catch (validationError) {
+      console.error('Email validation failed:', validationError)
+      return {
+        data: null,
+        error: { message: formatValidationError(validationError) }
+      }
+    }
+
     // Try to get existing profile
     const { data, error } = await supabase
       .from('user_profiles')
@@ -21,7 +34,7 @@ export const getOrCreateUserProfile = async (userId, email) => {
         .from('user_profiles')
         .insert({
           id: userId,
-          email,
+          email: validatedEmail,
           onboarding_completed: false
         })
         .select()
@@ -129,17 +142,30 @@ export const getFamilyMembersCount = async (userId) => {
  */
 export const addFamilyMember = async (userId, memberData) => {
   try {
+    // ✅ SECURITY: Validate and sanitize input
+    let validated
+    try {
+      const { validateAndSanitizeFamilyMember } = await import('./validators')
+      validated = validateAndSanitizeFamilyMember(memberData)
+    } catch (validationError) {
+      console.error('Family member validation failed:', validationError)
+      return {
+        data: null,
+        error: { message: formatValidationError(validationError) }
+      }
+    }
+
     const { data, error } = await supabase
       .from('family_members')
       .insert({
         user_id: userId,
-        name: memberData.name,
-        gender: memberData.gender,
-        date_of_birth: memberData.date_of_birth,
-        birth_place: memberData.birth_place,
-        birth_time: memberData.birth_time || null,
-        relationship: memberData.relationship || 'other',
-        display_order: memberData.display_order
+        name: validated.name,
+        gender: validated.gender,
+        date_of_birth: validated.date_of_birth,
+        birth_place: validated.birth_place,
+        birth_time: validated.birth_time || null,
+        relationship: validated.relationship || 'other',
+        display_order: validated.display_order
       })
       .select()
       .single()
@@ -164,8 +190,25 @@ export const addFamilyMember = async (userId, memberData) => {
  */
 export const addFamilyMembers = async (userId, membersData) => {
   try {
-    // Insert all members with their display_order
-    const membersToInsert = membersData.map((member, index) => ({
+    // ✅ SECURITY: Validate and sanitize all members
+    const { validateAndSanitizeFamilyMember } = await import('./validators')
+    const validatedMembers = []
+
+    for (const member of membersData) {
+      try {
+        const validated = validateAndSanitizeFamilyMember(member)
+        validatedMembers.push(validated)
+      } catch (validationError) {
+        console.error('Family member validation failed:', validationError)
+        return {
+          data: [],
+          error: { message: `Invalid data for member: ${formatValidationError(validationError)}` }
+        }
+      }
+    }
+
+    // Insert all validated members with their display_order
+    const membersToInsert = validatedMembers.map((member, index) => ({
       user_id: userId,
       name: member.name,
       gender: member.gender,
@@ -202,9 +245,62 @@ export const addFamilyMembers = async (userId, membersData) => {
  */
 export const updateFamilyMember = async (memberId, userId, updates) => {
   try {
+    // ✅ SECURITY: Validate partial updates (only provided fields)
+    const { FamilyMemberSchema, sanitizeInput } = await import('./validators')
+    const validatedUpdates = {}
+
+    // Validate each field that's being updated
+    if (updates.name !== undefined) {
+      try {
+        validatedUpdates.name = sanitizeInput(FamilyMemberSchema.shape.name.parse(updates.name))
+      } catch (e) {
+        return { data: null, error: { message: formatValidationError(e) } }
+      }
+    }
+
+    if (updates.gender !== undefined) {
+      try {
+        validatedUpdates.gender = FamilyMemberSchema.shape.gender.parse(updates.gender)
+      } catch (e) {
+        return { data: null, error: { message: formatValidationError(e) } }
+      }
+    }
+
+    if (updates.date_of_birth !== undefined) {
+      try {
+        validatedUpdates.date_of_birth = FamilyMemberSchema.shape.date_of_birth.parse(updates.date_of_birth)
+      } catch (e) {
+        return { data: null, error: { message: formatValidationError(e) } }
+      }
+    }
+
+    if (updates.birth_place !== undefined) {
+      try {
+        validatedUpdates.birth_place = sanitizeInput(FamilyMemberSchema.shape.birth_place.parse(updates.birth_place))
+      } catch (e) {
+        return { data: null, error: { message: formatValidationError(e) } }
+      }
+    }
+
+    if (updates.birth_time !== undefined) {
+      try {
+        validatedUpdates.birth_time = FamilyMemberSchema.shape.birth_time.parse(updates.birth_time)
+      } catch (e) {
+        return { data: null, error: { message: formatValidationError(e) } }
+      }
+    }
+
+    if (updates.relationship !== undefined) {
+      try {
+        validatedUpdates.relationship = FamilyMemberSchema.shape.relationship.parse(updates.relationship)
+      } catch (e) {
+        return { data: null, error: { message: formatValidationError(e) } }
+      }
+    }
+
     const { data, error } = await supabase
       .from('family_members')
-      .update(updates)
+      .update(validatedUpdates)
       .eq('id', memberId)
       .eq('user_id', userId)
       .select()

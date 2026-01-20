@@ -13,24 +13,37 @@ export const calculateNumerology = (dob) => {
     const month = date.getMonth() + 1;
     const year = date.getFullYear();
 
+    console.log('🔍 [calculateNumerology] DOB:', dob);
+    console.log('🔍 [calculateNumerology] Parsed:', { day, month, year });
+
     const basicNumber = reduceToSingleDigit(day);
     const dobString = `${day}${month}${year}`;
     const destinyNumber = reduceToSingleDigit(dobString.split('').reduce((sum, digit) => sum + parseInt(digit, 10), 0));
-    
+
+    console.log('🔍 [calculateNumerology] Basic Number:', basicNumber);
+    console.log('🔍 [calculateNumerology] Destiny Number:', destinyNumber);
+
     const kundliDigitsStr = (String(day).padStart(2, '0') + String(month).padStart(2, '0') + String(year).substring(2)).replace(/0/g, '');
-    
+    console.log('🔍 [calculateNumerology] Kundli digits string:', kundliDigitsStr);
+
     const digitCounts = Array(10).fill(0);
     for (const char of kundliDigitsStr) {
         digitCounts[parseInt(char)]++;
     }
 
+    console.log('🔍 [calculateNumerology] Initial digit counts:', digitCounts);
+
     // Add destiny number to kundli grid
     digitCounts[destinyNumber]++;
+    console.log('🔍 [calculateNumerology] After adding destiny:', digitCounts);
 
     // Add basic number for two-digit days
     if (day > 9 && day % 10 !== 0) {
         digitCounts[basicNumber]++;
+        console.log('🔍 [calculateNumerology] After adding basic (two-digit day):', digitCounts);
     }
+
+    console.log('🔍 [calculateNumerology] Final baseKundliGrid:', digitCounts);
     
     const yogas = [];
     // Standard Yoga check based on number presence

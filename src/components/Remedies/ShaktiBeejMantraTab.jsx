@@ -31,7 +31,7 @@ const ShaktiBeejMantraTab = ({ report, language = 'en' }) => {
     const mantraData = shaktiBeejMantras[selectedPurpose];
     
     return (
-        <Card>
+        <Card className="pdf-page-break-after" style={{ pageBreakAfter: 'always', pageBreakInside: 'avoid' }}>
             <SectionTitle>Shakti Beej Mantra Activation</SectionTitle>
             <div className="mb-6">
                 <label htmlFor="purpose-select" className="block text-sm font-medium text-yellow-500 mb-2">Select Your Desired Purpose:</label>

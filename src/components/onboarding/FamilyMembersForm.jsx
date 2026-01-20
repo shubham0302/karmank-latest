@@ -8,17 +8,20 @@ import { Button } from '../ui/button'
 import { useFamilyMembers } from '@/hooks/useFamilyMembers'
 import { useAuth } from '@/contexts/AuthContext'
 
-export default function FamilyMembersForm({ onComplete }) {
+export default function FamilyMembersForm({ onComplete, isOnboarding = true }) {
   const navigate = useNavigate()
   const { user } = useAuth()
   const { addMultipleMembers } = useFamilyMembers()
 
-  const [currentStep, setCurrentStep] = useState(0) // 0, 1, 2 for max 3 members
+  const [currentStep, setCurrentStep] = useState(0) // 0 for first member during onboarding
   const [members, setMembers] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
 
+  // During onboarding: require 1 member, allow up to 3 total
+  // After onboarding: allow adding remaining members
   const maxMembers = 3
+  const minRequiredMembers = isOnboarding ? 1 : 0
   const canAddMore = members.length < maxMembers
 
   const handleAddMember = async (formData) => {
@@ -34,8 +37,12 @@ export default function FamilyMembersForm({ onComplete }) {
       const updatedMembers = [...members, newMember]
       setMembers(updatedMembers)
 
-      // Move to next step or show success
-      if (updatedMembers.length < maxMembers) {
+      // During onboarding: After adding 1st member, user can complete setup
+      // After onboarding: Allow adding more members
+      if (isOnboarding && updatedMembers.length >= minRequiredMembers) {
+        // First member added during onboarding - show complete option
+        setCurrentStep(0)
+      } else if (updatedMembers.length < maxMembers) {
         setCurrentStep(currentStep + 1)
       }
 
@@ -64,8 +71,11 @@ export default function FamilyMembersForm({ onComplete }) {
   }
 
   const handleSubmit = async () => {
-    if (members.length === 0) {
-      setError('Please add at least one family member')
+    // Validate minimum members requirement
+    if (members.length < minRequiredMembers) {
+      setError(isOnboarding
+        ? 'Please add at least one family member to continue'
+        : 'Please add at least one family member')
       return
     }
 
@@ -95,6 +105,13 @@ export default function FamilyMembersForm({ onComplete }) {
     }
   }
 
+  const handleSkipAdditional = async () => {
+    // Allow completing onboarding with just 1 member
+    if (members.length >= minRequiredMembers) {
+      await handleSubmit()
+    }
+  }
+
   const totalSteps = Math.min(members.length + 1, maxMembers)
 
   return (
@@ -108,11 +125,15 @@ export default function FamilyMembersForm({ onComplete }) {
       <div className="mb-8 text-center">
         <h2 className="text-3xl md:text-4xl font-serif font-bold mb-2">
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-purple-400 to-pink-400">
-            Add Family Members
+            {isOnboarding ? 'Add Your Details' : 'Add Family Members'}
           </span>
         </h2>
         <p className="text-white/70 text-sm md:text-base">
-          Member {currentStep + 1} of {totalSteps} (Maximum 3)
+          {isOnboarding
+            ? members.length === 0
+              ? 'Start by adding yourself (Required)'
+              : `${members.length} member added • You can add ${maxMembers - members.length} more later`
+            : `Member ${currentStep + 1} of ${totalSteps} (Maximum 3)`}
         </p>
       </div>
 
@@ -189,44 +210,77 @@ export default function FamilyMembersForm({ onComplete }) {
       )}
 
       {/* Navigation Buttons */}
-      <div className="flex gap-3 justify-between mt-8">
-        <Button
-          onClick={handlePrevious}
-          disabled={currentStep === 0 || loading}
-          className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 text-white border border-white/30 rounded-lg transition duration-200 disabled:opacity-50"
-        >
-          <ChevronLeft className="h-4 w-4" />
-          Previous
-        </Button>
+      <div className="flex flex-col gap-3 mt-8">
+        {/* Primary Actions */}
+        <div className="flex gap-3 justify-between">
+          <Button
+            onClick={handlePrevious}
+            disabled={currentStep === 0 || loading || members.length === 0}
+            className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 text-white border border-white/30 rounded-lg transition duration-200 disabled:opacity-50"
+          >
+            <ChevronLeft className="h-4 w-4" />
+            Previous
+          </Button>
 
-        {!canAddMore || currentStep === maxMembers - 1 ? (
-          <Button
-            onClick={handleSubmit}
-            disabled={members.length === 0 || loading}
-            className="flex items-center gap-2 px-6 py-2 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-semibold rounded-lg transition duration-200 disabled:opacity-50"
-          >
-            {loading ? 'Completing...' : 'Complete Setup'}
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        ) : (
-          <Button
-            onClick={handleNext}
-            disabled={!canAddMore || loading}
-            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white font-semibold rounded-lg transition duration-200 disabled:opacity-50"
-          >
-            Next
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        )}
+          {/* During onboarding: Show complete button after 1st member */}
+          {isOnboarding && members.length >= minRequiredMembers ? (
+            <div className="flex gap-3 flex-1 justify-end">
+              {/* Add More Button (optional) */}
+              {canAddMore && members.length === 1 && (
+                <Button
+                  onClick={handleNext}
+                  disabled={!canAddMore || loading}
+                  className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 text-white border border-white/30 rounded-lg transition duration-200 disabled:opacity-50"
+                >
+                  Add Another
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              )}
+              {/* Complete Setup Button */}
+              <Button
+                onClick={handleSubmit}
+                disabled={loading}
+                className="flex items-center gap-2 px-6 py-2 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-semibold rounded-lg transition duration-200 disabled:opacity-50"
+              >
+                {loading ? 'Completing...' : 'Complete Setup'}
+                <Sparkles className="h-4 w-4" />
+              </Button>
+            </div>
+          ) : !canAddMore || currentStep === maxMembers - 1 ? (
+            <Button
+              onClick={handleSubmit}
+              disabled={members.length < minRequiredMembers || loading}
+              className="flex items-center gap-2 px-6 py-2 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-semibold rounded-lg transition duration-200 disabled:opacity-50"
+            >
+              {loading ? 'Saving...' : isOnboarding ? 'Complete Setup' : 'Save Members'}
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          ) : (
+            <Button
+              onClick={handleNext}
+              disabled={!canAddMore || loading}
+              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white font-semibold rounded-lg transition duration-200 disabled:opacity-50"
+            >
+              Next
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Info Text */}
       <p className="text-xs text-white/50 text-center mt-4">
-        {members.length === 0
-          ? 'Start by adding your details'
-          : members.length < 3
-            ? `You can add up to ${maxMembers - members.length} more member${maxMembers - members.length > 1 ? 's' : ''}`
-            : 'Maximum family members reached'}
+        {isOnboarding
+          ? members.length === 0
+            ? 'Add yourself to get started • You can add family members later'
+            : members.length === 1
+              ? 'Great! You can complete setup now or add up to 2 more members'
+              : `${maxMembers - members.length} more member${maxMembers - members.length > 1 ? 's' : ''} can be added`
+          : members.length === 0
+            ? 'Start by adding your details'
+            : members.length < 3
+              ? `You can add up to ${maxMembers - members.length} more member${maxMembers - members.length > 1 ? 's' : ''}`
+              : 'Maximum family members reached'}
       </p>
     </motion.div>
   )

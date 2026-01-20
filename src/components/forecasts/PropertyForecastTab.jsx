@@ -107,7 +107,7 @@ const PropertyForecastTab = ({ report, dashaReport, targetDate }) => {
 
     return (
         <div className="space-y-6">
-            <Card>
+            <Card className="pdf-page-break-after" style={{ pageBreakAfter: 'always', pageBreakInside: 'avoid' }}>
                 <SectionTitle>Property & Asset Forecast</SectionTitle>
                 <div className="space-y-4">
 
