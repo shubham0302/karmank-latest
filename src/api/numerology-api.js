@@ -224,19 +224,43 @@ export async function calculateNumerology(dob) {
     // Step 8: Get special remedies from enrichment data
     const specialRemedies = enrichmentData.specialRemedies || [];
 
+    // Build relevantData object from enrichment data
+    // This is the structure expected by components via localData.ts
+    const relevantData = {
+      numberDetails: enrichmentData.numberDetails || {},
+      remedies: enrichmentData.remedies || {},
+      rudrakshaRemedies: enrichmentData.rudrakshaRemedies || {},
+      advancedRudrakshaRemedies: enrichmentData.advancedRudrakshaRemedies || {},
+      mantras: enrichmentData.mantras || {},
+      yogas: yogas,
+      combinationInsights: enrichmentData.combinationInsight || null,
+      dashaTraits: enrichmentData.dashaTraits || {},
+      recurringNumberInfluences: recurringNumbersAnalysis,
+      specialInsights: specialInsights,
+      specialRemedies: specialRemedies,
+      genderTraits: enrichmentData.genderTraits || null,
+      assetCompatibility: enrichmentData.assetCompatibility || null,
+      colors: enrichmentData.colors || {},
+      multipleNumberRemedies: enrichmentData.multipleNumberRemedies || {},
+      chakraData: enrichmentData.chakraData || null,
+      destinyCompatibility: enrichmentData.destinyCompatibility || {},
+    };
+
     return {
       dob: date,
       basicNumber,
       destinyNumber,
       baseKundliGrid: kundliGrid,
       yogas,
-      recurringNumbersAnalysis,
+      recurringAnalysis: recurringNumbersAnalysis, // Renamed for consistency with WelcomeTab
+      recurringNumbersAnalysis, // Keep for backwards compatibility
       specialInsights,
       specialRemedies,
       combinationInsight: enrichmentData.combinationInsight, // from backend
       // Extract specific data from backend numberDetails (don't pass the whole object)
       destinyTraits: enrichmentData.numberDetails?.traits || {}, // For NumerologyTraitsTab
       destinyProfessions: enrichmentData.numberDetails?.professions || null, // For NumerologyTraitsTab
+      relevantData, // Add relevantData for components that need it
     };
   } catch (error) {
     console.error('Error in calculateNumerology:', error);
