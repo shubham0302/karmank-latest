@@ -18,6 +18,7 @@ import FamilyMemberForm from "@/components/onboarding/FamilyMemberForm";
 import MemberCard from "@/components/onboarding/MemberCard";
 import { Button } from "@/components/ui/button";
 import { GlassCard } from "@/components/ui/glass-card";
+import { GradientText } from "../components/GradientText";
 
 const MAX_MEMBERS = 3;
 const TABS = {
