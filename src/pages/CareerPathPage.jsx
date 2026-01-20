@@ -2,6 +2,7 @@ import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import CosmicBackground from '../components/CosmicBackground';
+import { GradientText, gradientUtils } from "../components/GradientText";
 import FamilyMemberSelector from '../components/FamilyMemberSelector';
 import { useFamilyMembers } from '../hooks/useFamilyMembers';
 import { useAuth } from '../contexts/AuthContext';
@@ -16,7 +17,7 @@ import {
   STREAM_RECOMMENDATIONS,
   CAREER_CLUSTERS
 } from '../data/careerPathData';
-import { calculateNumerology } from '../utils/calculators';
+import { calculateNumerology } from '../api/numerologyClient';
 import { DATA } from '../data/data';
 import {
   Chart,
@@ -142,35 +143,8 @@ export default function CareerPathPage() {
   const [aptitudeScores, setAptitudeScores] = useState(null);
   const [numerologyReport, setNumerologyReport] = useState(null);
 
-  // Fetch family members and auto-select first one
-  useEffect(() => {
-    const loadMembers = async () => {
-      const result = await getFamilyMembersData();
-      if (result.members && result.members.length > 0) {
-        const firstMember = result.members[0];
-        setSelectedFamilyMemberId(firstMember.id);
-        const memberData = {
-          name: firstMember.name,
-          dob: firstMember.date_of_birth,
-          class: '',
-          schoolName: '',
-          city: '',
-          state: '',
-          email: '',
-          phone: ''
-        };
-        setUserData(memberData);
-        // Auto-generate numerology report for first family member
-        try {
-          const numReport = calculateNumerology(firstMember.date_of_birth);
-          setNumerologyReport(numReport);
-        } catch (error) {
-          console.error('Error generating numerology report for first member:', error);
-        }
-      }
-    };
-    loadMembers();
-  }, []);
+  // Note: Family members are loaded via useFamilyMembers hook above
+  // No auto-selection - user must manually select a family member
 
   // ============================================================
   // SCREEN CONFIGURATIONS
@@ -226,12 +200,22 @@ export default function CareerPathPage() {
     }));
   };
 
-  const handleWelcomeSubmit = (formData) => {
+  const handleWelcomeSubmit = async (formData) => {
     setUserData(formData);
 
-    // Calculate numerology report
-    const numReport = calculateNumerology(formData.dob);
-    setNumerologyReport(numReport);
+    // Calculate numerology report via API
+    try {
+      const calcResult = await calculateNumerology({
+        dob: formData.dob,
+        name: formData.name,
+        gender: 'Other'
+      });
+      if (calcResult.success) {
+        setNumerologyReport(calcResult.report);
+      }
+    } catch (error) {
+      console.error('Error generating numerology report:', error);
+    }
 
     // Determine path based on class
     const classNum = parseInt(formData.class);
@@ -482,7 +466,7 @@ export default function CareerPathPage() {
                     {members.map(member => (
                       <button
                         key={member.id}
-                        onClick={() => {
+                        onClick={async () => {
                           setSelectedFamilyMemberId(member.id);
                           setUserData(prev => ({
                             ...prev,
@@ -492,8 +476,14 @@ export default function CareerPathPage() {
                           setMemberDropdownOpen(false);
                           // Auto-generate numerology report when member is selected
                           try {
-                            const numReport = calculateNumerology(member.date_of_birth);
-                            setNumerologyReport(numReport);
+                            const calcResult = await calculateNumerology({
+                              dob: member.date_of_birth,
+                              name: member.name,
+                              gender: 'Other'
+                            });
+                            if (calcResult.success) {
+                              setNumerologyReport(calcResult.report);
+                            }
                           } catch (error) {
                             console.error('Error generating numerology report:', error);
                           }
@@ -527,10 +517,10 @@ export default function CareerPathPage() {
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="text-center space-y-2 relative z-10">
                 <div className="text-4xl font-bold">
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-blue-400 to-purple-500">
+                  <GradientText as="span" size="4xl" className="font-serif">
                     KarmAnk
-                  </span>
-                  <sup className="text-2xl -top-2 text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-blue-400 to-purple-500">
+                  </GradientText>
+                  <sup className={`text-2xl -top-2 ${gradientUtils.text}`}>
                     ™
                   </sup>
                 </div>
@@ -604,8 +594,8 @@ function WelcomeScreen({ onSubmit, selectedFamilyMemberId, onFamilyMemberSelect,
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!selectedFamilyMemberId || !formData.name || !formData.dob || !formData.class || !formData.schoolName || !formData.city || !formData.email || !formData.phone) {
-      alert('Please select a family member and fill in all fields');
+    if (!formData.name || !formData.dob || !formData.class || !formData.schoolName || !formData.city || !formData.email || !formData.phone) {
+      alert('Please fill in all fields');
       return;
     }
     onSubmit(formData);
@@ -616,10 +606,12 @@ function WelcomeScreen({ onSubmit, selectedFamilyMemberId, onFamilyMemberSelect,
   };
 
   const handleFamilyMemberDetailsChange = (details) => {
+    // Format dob to YYYY-MM-DD for the date input field
+    const formattedDob = details.dob ? details.dob.split('T')[0] : '';
     setFormData(prev => ({
       ...prev,
       name: details.name,
-      dob: details.dob
+      dob: formattedDob
     }));
     onFamilyMemberDetailsChange(details);
   };
@@ -691,96 +683,114 @@ function WelcomeScreen({ onSubmit, selectedFamilyMemberId, onFamilyMemberSelect,
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Family Member Selector - Required */}
+          {/* Family Member Selector - Optional */}
           <div className="p-4 bg-gradient-to-r from-cyan-500/10 to-blue-500/10 border border-cyan-400/30 rounded-lg">
-            <p className="text-sm text-cyan-300 mb-3 font-semibold">Select a Family Member to Begin Career Guidance:</p>
+            <p className="text-sm text-cyan-300 mb-3 font-semibold">Select a Family Member (Optional) to Auto-Fill Details:</p>
             <FamilyMemberSelector
               selectedMemberId={selectedFamilyMemberId}
               onMemberSelect={handleFamilyMemberSelect}
               onDetailsChange={handleFamilyMemberDetailsChange}
-              label="Select Family Member"
+              label="Select Family Member (Optional)"
             />
           </div>
 
-          {!selectedFamilyMemberId ? (
-            <div className="p-4 bg-amber-500/10 border border-amber-500/30 rounded-lg text-center text-amber-300 text-sm">
-              Please select a family member from above to proceed with career guidance.
+          <div className="space-y-6">
+            {/* Manual Name and DOB Inputs */}
+            <div className="group relative">
+              <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-600 to-purple-600 rounded-lg blur opacity-20 group-hover:opacity-60 transition duration-1000 group-hover:duration-200"></div>
+              <input
+                type="text"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                placeholder="YOUR FULL NAME"
+                className="relative w-full px-6 py-5 bg-gray-950 border border-gray-800 rounded-lg focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/50 text-gray-300 text-center tracking-widest uppercase outline-none placeholder-gray-600"
+                required
+              />
             </div>
-          ) : (
-            <div className="space-y-6">
-              <div className="group relative">
-                <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-600 to-purple-600 rounded-lg blur opacity-20 group-hover:opacity-60 transition duration-1000 group-hover:duration-200"></div>
-                <select
-                  value={formData.class}
-                  onChange={(e) => setFormData({ ...formData, class: e.target.value })}
-                  className="relative w-full px-6 py-5 bg-gray-950 border border-gray-800 rounded-lg focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/50 text-gray-300 text-center tracking-widest uppercase outline-none"
-                  required
-                >
-                  <option value="" className="bg-gray-900">SELECT YOUR CLASS</option>
-                  <option value="9" className="bg-gray-900">CLASS 9</option>
-                  <option value="10" className="bg-gray-900">CLASS 10</option>
-                  <option value="11" className="bg-gray-900">CLASS 11</option>
-                  <option value="12" className="bg-gray-900">CLASS 12</option>
-                </select>
-              </div>
 
-              <div className="group relative">
-                <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-600 to-purple-600 rounded-lg blur opacity-20 group-hover:opacity-60 transition duration-1000 group-hover:duration-200"></div>
-                <input
-                  type="text"
-                  value={formData.schoolName}
-                  onChange={(e) => setFormData({ ...formData, schoolName: e.target.value })}
-                  placeholder="YOUR SCHOOL NAME"
-                  className="relative w-full px-6 py-5 bg-gray-950 border border-gray-800 rounded-lg focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/50 text-gray-300 text-center tracking-widest uppercase outline-none placeholder-gray-600"
-                  required
-                />
-              </div>
+            <div className="group relative">
+              <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-600 to-purple-600 rounded-lg blur opacity-20 group-hover:opacity-60 transition duration-1000 group-hover:duration-200"></div>
+              <input
+                type="date"
+                value={formData.dob}
+                onChange={(e) => setFormData({ ...formData, dob: e.target.value })}
+                className="relative w-full px-6 py-5 bg-gray-950 border border-gray-800 rounded-lg focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/50 text-gray-400 text-center outline-none"
+                required
+              />
+            </div>
 
-              <div className="group relative">
-                <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-600 to-purple-600 rounded-lg blur opacity-20 group-hover:opacity-60 transition duration-1000 group-hover:duration-200"></div>
-                <input
-                  type="text"
-                  value={formData.city}
-                  onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                  placeholder="YOUR CITY"
-                  className="relative w-full px-6 py-5 bg-gray-950 border border-gray-800 rounded-lg focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/50 text-gray-300 text-center tracking-widest uppercase outline-none placeholder-gray-600"
-                  required
-                />
-              </div>
-
-              <div className="group relative">
-                <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-600 to-purple-600 rounded-lg blur opacity-20 group-hover:opacity-60 transition duration-1000 group-hover:duration-200"></div>
-                <input
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  placeholder="YOUR EMAIL ADDRESS"
-                  className="relative w-full px-6 py-5 bg-gray-950 border border-gray-800 rounded-lg focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/50 text-gray-300 text-center tracking-widest uppercase outline-none placeholder-gray-600"
-                  required
-                />
-              </div>
-
-              <div className="group relative">
-                <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-600 to-purple-600 rounded-lg blur opacity-20 group-hover:opacity-60 transition duration-1000 group-hover:duration-200"></div>
-                <input
-                  type="tel"
-                  value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  placeholder="YOUR PHONE NUMBER"
-                  pattern="[0-9]{10}"
-                  className="relative w-full px-6 py-5 bg-gray-950 border border-gray-800 rounded-lg focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/50 text-gray-300 text-center tracking-widest uppercase outline-none placeholder-gray-600"
-                  required
-                />
-              </div>
-
-              <button
-                type="submit"
-                className="w-full py-4 bg-gradient-to-r from-cyan-600 to-purple-600 hover:from-cyan-500 hover:to-purple-500 text-white font-bold rounded-lg transition-all duration-200 transform hover:scale-[1.02] shadow-lg shadow-cyan-500/20"
+            <div className="group relative">
+              <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-600 to-purple-600 rounded-lg blur opacity-20 group-hover:opacity-60 transition duration-1000 group-hover:duration-200"></div>
+              <select
+                value={formData.class}
+                onChange={(e) => setFormData({ ...formData, class: e.target.value })}
+                className="relative w-full px-6 py-5 bg-gray-950 border border-gray-800 rounded-lg focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/50 text-gray-300 text-center tracking-widest uppercase outline-none"
+                required
               >
-                INITIATE ANALYSIS
-              </button>
+                <option value="" className="bg-gray-900">SELECT YOUR CLASS</option>
+                <option value="9" className="bg-gray-900">CLASS 9</option>
+                <option value="10" className="bg-gray-900">CLASS 10</option>
+                <option value="11" className="bg-gray-900">CLASS 11</option>
+                <option value="12" className="bg-gray-900">CLASS 12</option>
+              </select>
             </div>
-          )}
+
+            <div className="group relative">
+              <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-600 to-purple-600 rounded-lg blur opacity-20 group-hover:opacity-60 transition duration-1000 group-hover:duration-200"></div>
+              <input
+                type="text"
+                value={formData.schoolName}
+                onChange={(e) => setFormData({ ...formData, schoolName: e.target.value })}
+                placeholder="YOUR SCHOOL NAME"
+                className="relative w-full px-6 py-5 bg-gray-950 border border-gray-800 rounded-lg focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/50 text-gray-300 text-center tracking-widest uppercase outline-none placeholder-gray-600"
+                required
+              />
+            </div>
+
+            <div className="group relative">
+              <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-600 to-purple-600 rounded-lg blur opacity-20 group-hover:opacity-60 transition duration-1000 group-hover:duration-200"></div>
+              <input
+                type="text"
+                value={formData.city}
+                onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                placeholder="YOUR CITY"
+                className="relative w-full px-6 py-5 bg-gray-950 border border-gray-800 rounded-lg focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/50 text-gray-300 text-center tracking-widest uppercase outline-none placeholder-gray-600"
+                required
+              />
+            </div>
+
+            <div className="group relative">
+              <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-600 to-purple-600 rounded-lg blur opacity-20 group-hover:opacity-60 transition duration-1000 group-hover:duration-200"></div>
+              <input
+                type="email"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                placeholder="YOUR EMAIL ADDRESS"
+                className="relative w-full px-6 py-5 bg-gray-950 border border-gray-800 rounded-lg focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/50 text-gray-300 text-center tracking-widest uppercase outline-none placeholder-gray-600"
+                required
+              />
+            </div>
+
+            <div className="group relative">
+              <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-600 to-purple-600 rounded-lg blur opacity-20 group-hover:opacity-60 transition duration-1000 group-hover:duration-200"></div>
+              <input
+                type="tel"
+                value={formData.phone}
+                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                placeholder="YOUR PHONE NUMBER"
+                pattern="[0-9]{10}"
+                className="relative w-full px-6 py-5 bg-gray-950 border border-gray-800 rounded-lg focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/50 text-gray-300 text-center tracking-widest uppercase outline-none placeholder-gray-600"
+                required
+              />
+            </div>
+
+            <button
+              type="submit"
+              className="w-full py-4 bg-gradient-to-r from-cyan-600 to-purple-600 hover:from-cyan-500 hover:to-purple-500 text-white font-bold rounded-lg transition-all duration-200 transform hover:scale-[1.02] shadow-lg shadow-cyan-500/20"
+            >
+              INITIATE ANALYSIS
+            </button>
+          </div>
         </form>
 
         <div className="mt-6 pt-6 border-t border-cyan-500/20">
@@ -1797,22 +1807,22 @@ function DashboardScreen({ userData, path, bigFiveScores, riasecScores, aptitude
       </motion.div>
 
       {/* Futuristic Dashboard Grid - 3 Columns */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
         {/* Column 1: RIASEC Radar Chart */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="bg-gradient-to-br from-gray-900 via-cyan-900/20 to-black backdrop-blur-xl border border-cyan-400/30 rounded-2xl p-6 hover:scale-[1.02] transition-all duration-300"
+          className="bg-gradient-to-br from-gray-900 via-cyan-900/20 to-black backdrop-blur-xl border border-cyan-400/30 rounded-2xl p-3 sm:p-6 hover:scale-[1.02] transition-all duration-300"
           style={{
             boxShadow: '0 0 15px rgba(0, 255, 255, 0.3)',
           }}
         >
           <div className="flex items-center gap-3 mb-4">
-            <Target className="h-6 w-6 text-cyan-400" />
-            <h3 className="text-lg font-serif font-bold text-white">Interest Hexagon</h3>
+            <Target className="h-5 w-5 sm:h-6 sm:w-6 text-cyan-400" />
+            <h3 className="text-base sm:text-lg font-serif font-bold text-white">Interest Hexagon</h3>
           </div>
-          <p className="text-white/60 text-xs mb-4">RIASEC Model Visualization</p>
+          <p className="text-white/60 text-[10px] sm:text-xs mb-4">RIASEC Model Visualization</p>
 
           <div className="aspect-square">
             <RadarChart
@@ -1895,16 +1905,16 @@ function DashboardScreen({ userData, path, bigFiveScores, riasecScores, aptitude
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="bg-gradient-to-br from-gray-900 via-purple-900/20 to-black backdrop-blur-xl border border-purple-400/30 rounded-2xl p-6 hover:scale-[1.02] transition-all duration-300"
+          className="bg-gradient-to-br from-gray-900 via-purple-900/20 to-black backdrop-blur-xl border border-purple-400/30 rounded-2xl p-3 sm:p-6 hover:scale-[1.02] transition-all duration-300"
           style={{
             boxShadow: '0 0 15px rgba(138, 43, 226, 0.3)',
           }}
         >
           <div className="flex items-center gap-3 mb-4">
-            <Brain className="h-6 w-6 text-purple-400" />
-            <h3 className="text-lg font-serif font-bold text-white">Personality Spectrum</h3>
+            <Brain className="h-5 w-5 sm:h-6 sm:w-6 text-purple-400" />
+            <h3 className="text-base sm:text-lg font-serif font-bold text-white">Personality Spectrum</h3>
           </div>
-          <p className="text-white/60 text-xs mb-4">Big Five Trait Rankings</p>
+          <p className="text-white/60 text-[10px] sm:text-xs mb-4">Big Five Trait Rankings</p>
 
           <div className="aspect-[4/3]">
             <BarChart

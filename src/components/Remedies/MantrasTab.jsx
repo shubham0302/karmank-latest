@@ -1,43 +1,75 @@
-import React from 'react';
-import Card from '../Card';
-import { DATA } from '../../data/data';
-import { getText } from '../../utils/helpers';
+import React from "react";
+import Card from "../Card";
+import { getText } from "../../utils/helpers";
+import { GradientText } from "../GradientText";
+import { getMantraData, getRelevantNumbers } from "../../utils/localData";
 
-const MantrasTab = ({ report, language = 'en' }) => { 
-    const uniqueNumbers = [...new Set([report.basicNumber, report.destinyNumber])];
+const MantrasTab = ({ report, language = "en" }) => {
+  if (!report?.relevantData) {
+    return (
+      <Card>
+        <p className="text-yellow-400">Report data not fully loaded.</p>
+      </Card>
+    );
+  }
 
-    const MantraCard = ({ number }) => {
-        const mantraData = DATA.mantraRemedies[number];
-        if (!mantraData) return null;
+  const uniqueNumbers = getRelevantNumbers(report);
 
-        return (
-            <Card className="print:mb-4" style={{ pageBreakInside: 'avoid' }}>
-                <h2 className="text-2xl font-bold text-yellow-400 mb-4">
-                    Mantra for Number {number} ({getText(mantraData.planet, language)})
-                </h2>
-                <div className="mb-4">
-                    <p className="text-lg text-cyan-300 font-semibold">{getText(mantraData.mantra, language)}</p>
-                    {/* <p className="text-sm text-white/70">{getText(mantraData.transliteration, language)}</p> */}
-                </div>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
-                    <div className="bg-gray-900/50 p-3 rounded-md"><strong>Deity:</strong> {getText(mantraData.deity, language)}</div>
-                    <div className="bg-gray-900/50 p-3 rounded-md"><strong>Purpose:</strong> {getText(mantraData.purpose, language)}</div>
-                    <div className="bg-gray-900/50 p-3 rounded-md"><strong>Metal:</strong> {getText(mantraData.metal, language)}</div>
-                    <div className="bg-gray-900/50 p-3 rounded-md"><strong>Finger:</strong> {getText(mantraData.finger, language)}</div>
-                    <div className="bg-gray-900/50 p-3 rounded-md"><strong>Day:</strong> {getText(mantraData.day, language)}</div>
-                    <div className="bg-gray-900/50 p-3 rounded-md"><strong>Chant Count:</strong> {mantraData.count}</div>
-                    <div className="bg-gray-900/50 p-3 rounded-md"><strong>Mala Type:</strong> {getText(mantraData.mala, language)}</div>
-                    <div className="bg-gray-900/50 p-3 rounded-md col-span-2 md:col-span-1"><strong>Notes:</strong> {getText(mantraData.notes, language)}</div>
-                </div>
-            </Card>
-        );
-    };
+  const MantraCard = ({ number }) => {
+    const mantraData = getMantraData(report, number);
+    if (!mantraData) return null;
 
     return (
-        <div className="space-y-6 pdf-page-break-after" style={{ pageBreakAfter: 'always' }}>
-            {uniqueNumbers.map(num => <MantraCard key={num} number={num} />)}
+      <Card className="print:mb-4" style={{ pageBreakInside: "avoid" }}>
+        <h2 className="text-2xl font-bold text-yellow-400 mb-4">
+          Mantra for Number {number} ({getText(mantraData.planet, language)})
+        </h2>
+        <div className="mb-4">
+          <p className="text-lg text-cyan-300 font-semibold">
+            {getText(mantraData.mantra, language)}
+          </p>
+          {/* <p className="text-sm text-white/70">{getText(mantraData.transliteration, language)}</p> */}
         </div>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
+          <div className="bg-gray-900/50 p-3 rounded-md">
+            <strong>Deity:</strong> {getText(mantraData.deity, language)}
+          </div>
+          <div className="bg-gray-900/50 p-3 rounded-md">
+            <strong>Purpose:</strong> {getText(mantraData.purpose, language)}
+          </div>
+          <div className="bg-gray-900/50 p-3 rounded-md">
+            <strong>Metal:</strong> {getText(mantraData.metal, language)}
+          </div>
+          <div className="bg-gray-900/50 p-3 rounded-md">
+            <strong>Finger:</strong> {getText(mantraData.finger, language)}
+          </div>
+          <div className="bg-gray-900/50 p-3 rounded-md">
+            <strong>Day:</strong> {getText(mantraData.day, language)}
+          </div>
+          <div className="bg-gray-900/50 p-3 rounded-md">
+            <strong>Chant Count:</strong> {mantraData.count}
+          </div>
+          <div className="bg-gray-900/50 p-3 rounded-md">
+            <strong>Mala Type:</strong> {getText(mantraData.mala, language)}
+          </div>
+          <div className="bg-gray-900/50 p-3 rounded-md col-span-2 md:col-span-1">
+            <strong>Notes:</strong> {getText(mantraData.notes, language)}
+          </div>
+        </div>
+      </Card>
     );
+  };
+
+  return (
+    <div
+      className="space-y-6 pdf-page-break-after"
+      style={{ pageBreakAfter: "always" }}
+    >
+      {uniqueNumbers.map((num) => (
+        <MantraCard key={num} number={num} />
+      ))}
+    </div>
+  );
 };
 
 export default MantrasTab;

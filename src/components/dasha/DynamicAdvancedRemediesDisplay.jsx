@@ -1,18 +1,19 @@
 import React, { useMemo } from 'react';
 import Card from '../Card';
 import SectionTitle from '../SectionTitle';
-import { DATA } from '../../data/data'; // Import DATA
 import { getText } from '../../utils/helpers'; // Import getText
 
-const DynamicAdvancedRemediesDisplay = ({ dynamicGrid }) => {
-    // Using 'en' as a default, pass language as a prop if needed
-    const language = 'en'; 
+const DynamicAdvancedRemediesDisplay = ({ report, dynamicGrid, language = 'en' }) => {
     const applicableRemedies = useMemo(() => {
         const remedies = [];
-        if (!dynamicGrid) return remedies;
+        if (!dynamicGrid || !report?.relevantData) return remedies;
+
+        // Get multiple number remedies from relevantData
+        const multipleNumberRemedies = report.relevantData?.multipleNumberRemedies || {};
+
         dynamicGrid.forEach((count, number) => {
             if (count > 3) {
-                const remedy = DATA.multipleNumberRemedies[number];
+                const remedy = multipleNumberRemedies[number];
                 if (remedy) {
                     remedies.push({
                         number,
@@ -23,7 +24,7 @@ const DynamicAdvancedRemediesDisplay = ({ dynamicGrid }) => {
             }
         });
         return remedies;
-    }, [dynamicGrid, language]);
+    }, [dynamicGrid, language, report?.relevantData]);
 
     if (applicableRemedies.length === 0) {
         return null; // Don't render the card if there are no remedies

@@ -1,14 +1,24 @@
 import React, { useMemo } from 'react';
 import Card from '../Card';
 import SectionTitle from '../SectionTitle';
-import { DATA } from '../../data/data'; // Import DATA
+import { getDashaNumborsForDate } from './dashaUtils';
 
 const PropertyForecastTab = ({ report, dashaReport, targetDate }) => {
     if (!report || !dashaReport) return null;
 
+    // Helper to ensure dates are Date objects
+    const toDate = (date) => (date instanceof Date ? date : new Date(date));
+
     const propertyAnalysis = useMemo(() => {
-        const annualDasha = dashaReport.yearlyDashaTimeline.find(d => targetDate >= d.startDate && targetDate <= d.endDate);
-        const mahaDasha = dashaReport.mahaDashaTimeline.find(d => targetDate >= d.startDate && targetDate <= d.endDate);
+        const dashaData = getDashaNumborsForDate(dashaReport, targetDate, toDate);
+
+        if (!dashaData.isValid) {
+            console.warn('[PropertyForecast] Could not find dasha periods for date:', targetDate);
+            return { opportunities: [], warnings:[], specialInsights: [] };
+        }
+
+        const annualDasha = dashaData.yearlyDasha;
+        const mahaDasha = dashaData.mahaDasha;
 
         if (!annualDasha || !mahaDasha) {
             return { opportunities: [], warnings:[], specialInsights: [] };

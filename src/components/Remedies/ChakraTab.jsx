@@ -1,31 +1,22 @@
 import React from 'react';
 import Card from '../Card';
 import SectionTitle from '../SectionTitle';
-import { DATA } from '../../data/data';
 import { getText } from '../../utils/helpers';
+import { getRudrakshaData, getRelevantNumbers } from '../../utils/localData';
 
 const ChakraTab = ({ report, language = 'en' }) => {
     try {
 
-        if (!report) {
+        if (!report?.relevantData) {
             return (
                 <Card>
                     <SectionTitle>Chakra Activation through Rudraksha</SectionTitle>
-                    <p className="text-red-400">Report data is not available.</p>
+                    <p className="text-yellow-400">Report data not fully loaded.</p>
                 </Card>
             );
         }
 
-        if (!report.basicNumber || !report.destinyNumber) {
-            return (
-                <Card>
-                    <SectionTitle>Chakra Activation through Rudraksha</SectionTitle>
-                    <p className="text-red-400">Basic number or destiny number is missing.</p>
-                </Card>
-            );
-        }
-
-        const uniqueNumbers = [...new Set([report.basicNumber, report.destinyNumber])].filter(Boolean);
+        const uniqueNumbers = getRelevantNumbers(report);
 
         if (uniqueNumbers.length === 0) {
             return (
@@ -38,22 +29,24 @@ const ChakraTab = ({ report, language = 'en' }) => {
 
         // Get all recommended Mukhis (e.g., "1 Mukhi", "12 Mukhi", "2 Mukhi", "Gauri Shankar")
         const recommendedMukhis = uniqueNumbers.flatMap(num => {
-            const remedy = DATA.rudrakshaRemedies?.[num];
+            const remedy = getRudrakshaData(report, num);
             // Use getText to ensure we are reading the string from the language object
             const mukhiText = remedy ? getText(remedy.mukhi, language) : "";
             return mukhiText.split(' / ');
         }).filter(Boolean); // Filter out any empty strings
 
-        if (!DATA.chakraData) {
+        // Get chakra data from relevantData if available
+        const chakraData = report.relevantData?.chakraData;
+        if (!chakraData) {
             return (
                 <Card>
                     <SectionTitle>Chakra Activation through Rudraksha</SectionTitle>
-                    <p className="text-red-400">Chakra data is not available.</p>
+                    <p className="text-blue-400">Chakra data is not available.</p>
                 </Card>
             );
         }
 
-        const relevantChakras = Object.entries(DATA.chakraData).filter(([_, chakraDetails]) =>
+        const relevantChakras = Object.entries(chakraData).filter(([_, chakraDetails]) =>
             chakraDetails.mukhi.some(mukhi => recommendedMukhis.includes(mukhi))
         );
 

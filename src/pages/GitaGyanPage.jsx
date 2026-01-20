@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import CosmicBackground from "../components/CosmicBackground";
+import { GradientText, gradientUtils } from "../components/GradientText";
 import {
   ArrowLeft,
   Sparkles,
@@ -167,7 +168,7 @@ export default function GitaGyanPage() {
 
   return (
     <CosmicBackground density={160} useVideo={true}>
-      <div className="min-h-screen relative px-4 md:px-6 py-6 pb-20">
+      <div className="min-h-screen relative px-3 sm:px-4 md:px-6 py-4 sm:py-6 pb-16 sm:pb-20">
         <div className="relative z-10 max-w-7xl mx-auto">
           {/* Back Button on Left */}
           <div className="flex justify-start items-center mb-6">
@@ -188,7 +189,7 @@ export default function GitaGyanPage() {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
-            className="relative w-full h-48 mb-8 overflow-hidden rounded-xl border border-cyan-500/20"
+            className="relative w-full h-32 sm:h-40 md:h-48 mb-6 sm:mb-8 overflow-hidden rounded-xl border border-cyan-500/20"
           >
             <div className="absolute inset-0 bg-gradient-to-b from-cyan-950/40 via-gray-950 to-black" />
             <div className="absolute inset-0" style={{
@@ -225,33 +226,35 @@ export default function GitaGyanPage() {
             </div>
 
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="text-center space-y-2 relative z-10">
+              <div className="text-center space-y-1 sm:space-y-2 relative z-10 px-2">
                 <motion.div
                   initial={{ scale: 0.9, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{ duration: 0.8, delay: 0.2 }}
-                  className="text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-blue-400 to-purple-500"
+                  className="text-3xl sm:text-4xl md:text-5xl font-bold"
                 >
-                  Gita Gyan
+                  <GradientText as="span" size="3xl" className="font-serif sm:size-4xl md:size-5xl">
+                    Gita Gyan
+                  </GradientText>
                 </motion.div>
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ duration: 0.8, delay: 0.4 }}
-                  className="text-sm text-cyan-400/60 tracking-widest flex items-center justify-center gap-2"
+                  className="text-[10px] sm:text-xs text-cyan-400/60 tracking-widest flex items-center justify-center gap-2"
                 >
-                  <Sparkles className="h-4 w-4" />
+                  <Sparkles className="h-3 w-3 sm:h-4 sm:w-4" />
                   COSMIC WISDOM FOR MODERN LIFE
                 </motion.div>
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ duration: 0.8, delay: 0.6 }}
-                  className="flex items-center justify-center gap-2 mt-3"
+                  className="flex items-center justify-center gap-2 mt-2 sm:mt-3"
                 >
-                  <div className="h-px w-16 bg-gradient-to-r from-transparent via-cyan-400/50 to-transparent"></div>
+                  <div className="h-px w-8 sm:w-16 bg-gradient-to-r from-transparent via-cyan-400/50 to-transparent"></div>
                   <div className="text-xs text-cyan-400/40">★</div>
-                  <div className="h-px w-16 bg-gradient-to-r from-transparent via-cyan-400/50 to-transparent"></div>
+                  <div className="h-px w-8 sm:w-16 bg-gradient-to-r from-transparent via-cyan-400/50 to-transparent"></div>
                 </motion.div>
               </div>
             </div>

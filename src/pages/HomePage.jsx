@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import CosmicBackground from "../components/CosmicBackground";
 import HoloDestinyCard from "../components/ui/HoloDestinyCard";
+import { GradientText, gradientUtils } from "../components/GradientText";
 import { Crown, Sparkles, User } from "lucide-react";
 
 export default function HomePage() {
@@ -69,12 +70,14 @@ export default function HomePage() {
               transition={{ duration: 0.6 }}
               className="flex items-center gap-3"
             >
-              <Crown className="h-8 w-8 text-auric-gold" />
-              <h1 className="text-3xl md:text-4xl font-serif font-bold">
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-cyan-400 to-blue-500">
+              {/* <Crown className="h-8 w-8 text-auric-gold" /> */}
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-serif font-bold">
+                <GradientText as="span" size="4xl" className="font-serif">
                   KarmAnk
-                </span>
-                <sup className="text-xl md:text-2xl -top-2 text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-cyan-400 to-blue-500">
+                </GradientText>
+                <sup
+                  className={`text-xs sm:text-sm md:text-lg lg:text-2xl -top-2 ${gradientUtils.text}`}
+                >
                   ™
                 </sup>
               </h1>
@@ -88,10 +91,10 @@ export default function HomePage() {
             >
               <button
                 onClick={handleProfileClick}
-                className="p-2 rounded-full bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/50 transition duration-200"
+                className="p-1.5 sm:p-2 rounded-full bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/50 transition duration-200"
                 title="Go to Profile"
               >
-                <User className="h-6 w-6" />
+                <User className="h-5 w-5 sm:h-6 sm:w-6" />
               </button>
             </motion.div>
           </div>
@@ -103,25 +106,23 @@ export default function HomePage() {
             transition={{ duration: 0.8, delay: 0.2 }}
             className="text-center mb-6 md:mb-12"
           >
-            <h2
-              className="
-                text-center text-4xl md:text-6xl p-1 font-serif font-extrabold leading-snug
-                bg-[linear-gradient(90deg,#facc15_0%,#fbbf24_20%,#f9a8d4_60%,#c084fc_100%)]
-                bg-clip-text text-transparent
-                drop-shadow-[0_0_12px_rgba(0,255,255,.25)]
-              "
-            >
-              Choose your cosmic path
-              <br className="hidden md:block" />
-              to begin your KarmAnk Journey
+            <h2 className="text-center text-[2rem] sm:text-4xl md:text-6xl p-1 font-serif font-extrabold leading-[1.2]">
+              <GradientText
+                as="div"
+                size="6xl"
+                className="font-serif drop-shadow-[0_0_12px_rgba(0,255,255,.25)] pb-2"
+              >
+                Choose your cosmic path
+                <br className="hidden md:block" /> to begin your KarmAnk Journey
+              </GradientText>
             </h2>
             <motion.p
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.6, delay: 0.4 }}
-              className="mt-4 text-sm md:text-base text-white/70 flex items-center justify-center gap-2"
+              className="mt-4 text-xs sm:text-sm md:text-base text-white/70 flex items-center justify-center gap-2"
             >
-              <Sparkles className="h-4 w-4 text-auric-gold" />
+              <Sparkles className="h-3 w-3 sm:h-4 sm:w-4 text-auric-gold" />
               Each card is a gateway. Enter any module—switch anytime from the
               navigation.
             </motion.p>
@@ -160,7 +161,8 @@ export default function HomePage() {
           >
             <p className="flex items-center justify-center gap-2">
               <Sparkles className="h-3 w-3" />© {new Date().getFullYear()}{" "}
-              KarmAnk<sup className="text-[0.5rem] text-white/40">™</sup> - All Rights Reserved.
+              KarmAnk<sup className="text-[0.5rem] text-white/40">™</sup> - All
+              Rights Reserved.
             </p>
           </motion.div>
         </div>

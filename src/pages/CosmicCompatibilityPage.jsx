@@ -31,6 +31,7 @@ import {
   Save,
 } from "lucide-react";
 import CosmicBackground from "../components/CosmicBackground";
+import { GradientText, gradientUtils } from "../components/GradientText";
 import FamilyMemberSelector from "../components/FamilyMemberSelector";
 import { useAuth } from "../contexts/AuthContext";
 import { exportToPDF } from "../utils/pdfExport";
@@ -66,10 +67,10 @@ function CosmicOnceReport({ report, onBack }) {
 
     Promise.all([
       loadScript(
-        "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"
+        "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js",
       ),
       loadScript(
-        "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"
+        "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js",
       ),
     ])
       .then(() => setLibsLoaded(true))
@@ -97,28 +98,28 @@ function CosmicOnceReport({ report, onBack }) {
     total >= 90
       ? 95
       : total >= 75
-      ? 88
-      : total >= 60
-      ? 75
-      : total >= 45
-      ? 60
-      : 45
+        ? 88
+        : total >= 60
+          ? 75
+          : total >= 45
+            ? 60
+            : 45,
   );
   const title =
     total >= 85
       ? "A Celestial Confluence"
       : total >= 65
-      ? "A Strong Constellation"
-      : total >= 40
-      ? "A Work-in-Progress Constellation"
-      : "A Transformative Challenge";
+        ? "A Strong Constellation"
+        : total >= 40
+          ? "A Work-in-Progress Constellation"
+          : "A Transformative Challenge";
 
   // PDF export
   const exportPDF = async () => {
     if (!rootRef.current) return;
     if (!libsLoaded) {
       alert(
-        "PDF libraries are initializing. Please try again in a few seconds."
+        "PDF libraries are initializing. Please try again in a few seconds.",
       );
       return;
     }
@@ -156,7 +157,7 @@ function CosmicOnceReport({ report, onBack }) {
         (pageWidth - imgScaledWidth) / 2,
         20,
         imgScaledWidth,
-        imgScaledHeight
+        imgScaledHeight,
       );
       pdf.setFontSize(10);
       pdf.setTextColor(150);
@@ -164,18 +165,18 @@ function CosmicOnceReport({ report, onBack }) {
       pdf.text(
         `Cosmic Score: ${total}% • Confidence: ${confidence}%`,
         pageWidth - 260,
-        pageHeight - 30
+        pageHeight - 30,
       );
 
       pdf.save(
         `Cosmic-Report-${report.p1?.name || "A"}-vs-${
           report.p2?.name || "B"
-        }.pdf`
+        }.pdf`,
       );
     } catch (err) {
       console.error("Export failed", err);
       alert(
-        "PDF export initiated. If this fails, please ensure html2canvas and jsPDF are loaded."
+        "PDF export initiated. If this fails, please ensure html2canvas and jsPDF are loaded.",
       );
     } finally {
       setExporting(false);
@@ -185,7 +186,9 @@ function CosmicOnceReport({ report, onBack }) {
   const ScorePill = ({ number }) => (
     <div className="w-28 h-28 rounded-full flex items-center justify-center bg-gradient-to-tr from-indigo-600 to-fuchsia-600 text-white shadow-2xl">
       <div className="text-center">
-        <div className="text-3xl font-extrabold leading-none mb-1.5">{number}%</div>
+        <div className="text-3xl font-extrabold leading-none mb-1.5">
+          {number}%
+        </div>
         <div className="text-xs opacity-90">COSMIC SCORE</div>
       </div>
     </div>
@@ -275,36 +278,36 @@ function CosmicOnceReport({ report, onBack }) {
             percent === 100
               ? "Exceptional physical and sexual compatibility. Deep biological harmony.\n"
               : percent >= 50
-              ? "Decent intimacy potential. Focus on emotional connection.\n"
-              : "Physical chemistry needs conscious nurturing and patience.\n";
+                ? "Decent intimacy potential. Focus on emotional connection.\n"
+                : "Physical chemistry needs conscious nurturing and patience.\n";
         else if (guna.name === "Graha Maitri")
           narrative +=
             percent === 100
               ? "Planetary friendship is perfect. Mental and emotional wavelengths match beautifully.\n"
               : percent >= 60
-              ? "Good mental compatibility. You understand each other well.\n"
-              : "Mental friction exists. Practice active listening and empathy.\n";
+                ? "Good mental compatibility. You understand each other well.\n"
+                : "Mental friction exists. Practice active listening and empathy.\n";
         else if (guna.name === "Gana")
           narrative +=
             percent === 100
               ? "Identical temperaments create effortless understanding and peace.\n"
               : percent === 0
-              ? "GANA DOSHA detected: Temperamental differences are significant. Requires remedies and patience.\n"
-              : "Moderate temperamental harmony. Flexibility is key.\n";
+                ? "GANA DOSHA detected: Temperamental differences are significant. Requires remedies and patience.\n"
+                : "Moderate temperamental harmony. Flexibility is key.\n";
         else if (guna.name === "Bhakoot")
           narrative +=
             percent === 100
               ? "Perfect Rashi (zodiac) harmony. Material prosperity and family life are blessed.\n"
               : percent === 0
-              ? "BHAKOOT DOSHA present: Financial/family stress possible. Plan finances together carefully.\n"
-              : "Decent material compatibility. Joint goals will help.\n";
+                ? "BHAKOOT DOSHA present: Financial/family stress possible. Plan finances together carefully.\n"
+                : "Decent material compatibility. Joint goals will help.\n";
         else if (guna.name === "Nadi")
           narrative +=
             percent === 100
               ? "NADI compatibility is excellent. Health, progeny, and genetic harmony are assured.\n"
               : percent === 0
-              ? "NADI DOSHA: Critical issue for health and children. REMEDIES ESSENTIAL (consult Vedic astrologer).\n"
-              : "Acceptable Nadi match. Health awareness recommended.\n";
+                ? "NADI DOSHA: Critical issue for health and children. REMEDIES ESSENTIAL (consult Vedic astrologer).\n"
+                : "Acceptable Nadi match. Health awareness recommended.\n";
       });
       narrative += `\n`;
     }
@@ -490,7 +493,14 @@ function CosmicOnceReport({ report, onBack }) {
                 <h1 className="text-4xl md:text-6xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-purple-400 to-pink-400">
                   COSMIC CHRONICLE
                 </h1>
-                <Sparkles size={40} className="text-pink-400 animate-pulse" />
+                <Sparkles
+                  size={24}
+                  className="text-pink-400 animate-pulse sm:block hidden"
+                />
+                <Sparkles
+                  size={16}
+                  className="text-pink-400 animate-pulse sm:hidden"
+                />
               </div>
 
               <div className="text-sm md:text-base text-cyan-300/60 uppercase tracking-[0.3em] mb-4">
@@ -501,10 +511,12 @@ function CosmicOnceReport({ report, onBack }) {
             {/* 2. Person Names and Nakshatras */}
             <div className="text-center mb-6">
               <h2 className="text-3xl md:text-4xl font-bold text-white mb-2">
-                {report.p1?.name || "Person 1"} & {report.p2?.name || "Person 2"}
+                {report.p1?.name || "Person 1"} &{" "}
+                {report.p2?.name || "Person 2"}
               </h2>
               <div className="text-lg text-slate-300">
-                {report.p1?.nak || "Unknown"} Nakshatra & {report.p2?.nak || "Unknown"} Nakshatra
+                {report.p1?.nak || "Unknown"} Nakshatra &{" "}
+                {report.p2?.nak || "Unknown"} Nakshatra
               </div>
             </div>
 
@@ -514,12 +526,13 @@ function CosmicOnceReport({ report, onBack }) {
                 className={`inline-block px-8 py-4 rounded-full font-bold ${
                   report.verdict?.color || "text-white"
                 } bg-white/5 border border-white/10 mb-3`}
-                style={{ fontSize: '26px' }}
+                style={{ fontSize: "26px" }}
               >
                 {report.verdict?.text || "Unique Union"}
               </div>
               <p className="text-base md:text-lg text-slate-300 leading-relaxed">
-                {report.verdict?.desc || "The stars align in a unique pattern for this relationship."}
+                {report.verdict?.desc ||
+                  "The stars align in a unique pattern for this relationship."}
               </p>
             </div>
 
@@ -532,7 +545,7 @@ function CosmicOnceReport({ report, onBack }) {
                     <div className="text-5xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-br from-cyan-300 to-pink-300">
                       {total}%
                     </div>
-                    <div className="text-xs text-slate-400 uppercase tracking-widest mt-2">
+                    <div className="text-[10px] sm:text-xs text-slate-400 uppercase tracking-widest mt-2">
                       Cosmic Score
                     </div>
                   </div>
@@ -633,14 +646,14 @@ function CosmicOnceReport({ report, onBack }) {
         {/* PAGE 3 - Cosmic Chronicle (Intro through Cosmic Biorhythms) */}
         <div className="px-4 md:px-8 lg:px-16 pb-16 pdf-page-break-after">
           <div className="max-w-6xl mx-auto">
-              <div
-                className="prose prose-invert prose-lg max-w-none"
-                style={{
-                  lineHeight: 1.3,
-                  fontSize: "1.5rem",
-                }}
-              >
-                <style>{`
+            <div
+              className="prose prose-invert prose-lg max-w-none"
+              style={{
+                lineHeight: 1.3,
+                fontSize: "1.5rem",
+              }}
+            >
+              <style>{`
                   .prose h1 { color: #22d3ee; font-size: 2rem; margin-top: 0; margin-bottom: 0.1rem; padding-bottom: 0; font-weight: 800; background: linear-gradient(to right, #22d3ee, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
                   .prose h2 { color: #a78bfa; font-size: 1.625rem; margin-top: 1.25rem; margin-bottom: 0.1rem; padding-bottom: 0; font-weight: 700; }
                   .prose h2:first-child { margin-top: 0; }
@@ -652,41 +665,46 @@ function CosmicOnceReport({ report, onBack }) {
                   .prose hr { border-color: #475569; margin: 1.5rem 0; }
                   .prose em { color: #e0e7ff; font-style: italic; }
                 `}</style>
-                <div
-                  dangerouslySetInnerHTML={{
-                    __html: (() => {
-                      const fullNarrative = generateElaborateNarrative();
-                      // Extract from start through Name Vibrations (exclude Cosmic Biorhythms)
-                      const biorhythmsStart = fullNarrative.indexOf('## COSMIC BIORHYTHMS: WESTERN SYNCHRONIZATION');
-                      const page3Content = fullNarrative.substring(0, biorhythmsStart);
-                      return page3Content
-                        .replace(/\n/g, "<br/>")
-                        .replace(/#{3} (.+?)<br\/>/g, "<h3>$1</h3>")
-                        .replace(/#{2} (.+?)<br\/>/g, "<h2>$1</h2>")
-                        .replace(/#{1} (.+?)<br\/>/g, "<h1>$1</h1>")
-                        .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
-                        .replace(/\*(.+?)\*/g, "<em>$1</em>")
-                        .replace(/- (.+?)<br\/>/g, "<li>$1</li>")
-                        .replace(/(<li>.*<\/li>)/s, "<ul>$1</ul>")
-                        .replace(/---<br\/>/g, "<hr/>");
-                    })()
-                  }}
-                />
-              </div>
+              <div
+                dangerouslySetInnerHTML={{
+                  __html: (() => {
+                    const fullNarrative = generateElaborateNarrative();
+                    // Extract from start through Name Vibrations (exclude Cosmic Biorhythms)
+                    const biorhythmsStart = fullNarrative.indexOf(
+                      "## COSMIC BIORHYTHMS: WESTERN SYNCHRONIZATION",
+                    );
+                    const page3Content = fullNarrative.substring(
+                      0,
+                      biorhythmsStart,
+                    );
+                    return page3Content
+                      .replace(/\n/g, "<br/>")
+                      .replace(/#{3} (.+?)<br\/>/g, "<h3>$1</h3>")
+                      .replace(/#{2} (.+?)<br\/>/g, "<h2>$1</h2>")
+                      .replace(/#{1} (.+?)<br\/>/g, "<h1>$1</h1>")
+                      .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+                      .replace(/\*(.+?)\*/g, "<em>$1</em>")
+                      .replace(/- (.+?)<br\/>/g, "<li>$1</li>")
+                      .replace(/(<li>.*<\/li>)/s, "<ul>$1</ul>")
+                      .replace(/---<br\/>/g, "<hr/>");
+                  })(),
+                }}
+              />
+            </div>
           </div>
         </div>
 
         {/* PAGE 4 - Elemental Alchemy & Five Dimensions */}
         <div className="px-4 md:px-8 lg:px-16 pb-16 pdf-page-break-after">
           <div className="max-w-6xl mx-auto">
-              <div
-                className="prose prose-invert prose-base max-w-none"
-                style={{
-                  lineHeight: 1.3,
-                  fontSize: "1.5rem",
-                }}
-              >
-                <style>{`
+            <div
+              className="prose prose-invert prose-base max-w-none"
+              style={{
+                lineHeight: 1.3,
+                fontSize: "1.5rem",
+              }}
+            >
+              <style>{`
                   .prose h2 { color: #a78bfa; font-size: 1.625rem; margin-top: 1.25rem; margin-bottom: 0.1rem; padding-bottom: 0; font-weight: 700; }
                   .prose h2:first-child { margin-top: 0; }
                   .prose h3 { color: #c084fc; font-size: 1.5rem; margin-top: 1rem; margin-bottom: 0.1rem; padding-bottom: 0; font-weight: 600; }
@@ -695,44 +713,52 @@ function CosmicOnceReport({ report, onBack }) {
                   .prose li { font-size: 1.5rem; line-height: 1.3; margin-bottom: 0.3rem; margin-top: 0; }
                   .prose ul, .prose ol { margin-bottom: 0.65rem; margin-top: 0; }
                 `}</style>
-                <div
-                  dangerouslySetInnerHTML={{
-                    __html: (() => {
-                      const fullNarrative = generateElaborateNarrative();
-                      // Extract Cosmic Biorhythms + Elemental Alchemy sections (exclude Five Dimensions)
-                      const biorhythmsStart = fullNarrative.indexOf('## COSMIC BIORHYTHMS: WESTERN SYNCHRONIZATION');
-                      const fiveDimensionsStart = fullNarrative.indexOf('## THE FIVE DIMENSIONS: HOLISTIC COMPATIBILITY');
-                      const remediesStart = fullNarrative.indexOf('## REMEDIES & RECOMMENDATIONS');
-                      const page4Content = fullNarrative.substring(biorhythmsStart, fiveDimensionsStart);
-                      return page4Content
-                        .replace(/\n/g, "<br/>")
-                        .replace(/#{3} (.+?)<br\/>/g, "<h3>$1</h3>")
-                        .replace(/#{2} (.+?)<br\/>/g, "<h2>$1</h2>")
-                        .replace(/#{1} (.+?)<br\/>/g, "<h1>$1</h1>")
-                        .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
-                        .replace(/\*(.+?)\*/g, "<em>$1</em>")
-                        .replace(/- (.+?)<br\/>/g, "<li>$1</li>")
-                        .replace(/(<li>.*<\/li>)/s, "<ul>$1</ul>")
-                        .replace(/---<br\/>/g, "<hr/>");
-                    })()
-                  }}
-                />
-              </div>
+              <div
+                dangerouslySetInnerHTML={{
+                  __html: (() => {
+                    const fullNarrative = generateElaborateNarrative();
+                    // Extract Cosmic Biorhythms + Elemental Alchemy sections (exclude Five Dimensions)
+                    const biorhythmsStart = fullNarrative.indexOf(
+                      "## COSMIC BIORHYTHMS: WESTERN SYNCHRONIZATION",
+                    );
+                    const fiveDimensionsStart = fullNarrative.indexOf(
+                      "## THE FIVE DIMENSIONS: HOLISTIC COMPATIBILITY",
+                    );
+                    const remediesStart = fullNarrative.indexOf(
+                      "## REMEDIES & RECOMMENDATIONS",
+                    );
+                    const page4Content = fullNarrative.substring(
+                      biorhythmsStart,
+                      fiveDimensionsStart,
+                    );
+                    return page4Content
+                      .replace(/\n/g, "<br/>")
+                      .replace(/#{3} (.+?)<br\/>/g, "<h3>$1</h3>")
+                      .replace(/#{2} (.+?)<br\/>/g, "<h2>$1</h2>")
+                      .replace(/#{1} (.+?)<br\/>/g, "<h1>$1</h1>")
+                      .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+                      .replace(/\*(.+?)\*/g, "<em>$1</em>")
+                      .replace(/- (.+?)<br\/>/g, "<li>$1</li>")
+                      .replace(/(<li>.*<\/li>)/s, "<ul>$1</ul>")
+                      .replace(/---<br\/>/g, "<hr/>");
+                  })(),
+                }}
+              />
+            </div>
           </div>
         </div>
-
 
         {/* PAGE 5 - The Five Dimensions */}
         <div className="px-4 md:px-8 lg:px-16 pb-16 pdf-page-break-after">
           <div className="max-w-6xl mx-auto">
-              <div
-                className="prose prose-invert prose-base max-w-none"
-                style={{
-                  lineHeight: 1.3,
-                  fontSize: "1.5rem",
-                }}
-              >
-                <style>{`
+            <div
+              className="prose prose-invert prose-base max-w-none"
+              style={{
+                lineHeight: 1.3,
+                fontSize: "1.5rem",
+              }}
+            >
+              <style>{`
                   .prose h2 { color: #a78bfa; font-size: 1.625rem; margin-top: 1.25rem; margin-bottom: 0.1rem; padding-bottom: 0; font-weight: 700; }
                   .prose h2:first-child { margin-top: 0; }
                   .prose h3 { color: #c084fc; font-size: 1.5rem; margin-top: 1rem; margin-bottom: 0.1rem; padding-bottom: 0; font-weight: 600; }
@@ -741,48 +767,55 @@ function CosmicOnceReport({ report, onBack }) {
                   .prose li { font-size: 1.5rem; line-height: 1.3; margin-bottom: 0.3rem; margin-top: 0; }
                   .prose ul, .prose ol { margin-bottom: 0.65rem; margin-top: 0; }
                 `}</style>
-                <div
-                  dangerouslySetInnerHTML={{
-                    __html: (() => {
-                      const fullNarrative = generateElaborateNarrative();
-                      // Extract Five Dimensions section
-                      const fiveDimensionsStart = fullNarrative.indexOf('## THE FIVE DIMENSIONS: HOLISTIC COMPATIBILITY');
-                      const remediesStart = fullNarrative.indexOf('## REMEDIES & RECOMMENDATIONS');
-                      const page5Content = fullNarrative.substring(fiveDimensionsStart, remediesStart);
-                      return page5Content
-                        .replace(/\n/g, "<br/>")
-                        .replace(/#{3} (.+?)<br\/>/g, "<h3>$1</h3>")
-                        .replace(/#{2} (.+?)<br\/>/g, "<h2>$1</h2>")
-                        .replace(/#{1} (.+?)<br\/>/g, "<h1>$1</h1>")
-                        .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
-                        .replace(/\*(.+?)\*/g, "<em>$1</em>")
-                        .replace(/- (.+?)<br\/>/g, "<li>$1</li>")
-                        .replace(/(<li>.*<\/li>)/s, "<ul>$1</ul>")
-                        .replace(/---<br\/>/g, "<hr/>");
-                    })()
-                  }}
-                />
-              </div>
+              <div
+                dangerouslySetInnerHTML={{
+                  __html: (() => {
+                    const fullNarrative = generateElaborateNarrative();
+                    // Extract Five Dimensions section
+                    const fiveDimensionsStart = fullNarrative.indexOf(
+                      "## THE FIVE DIMENSIONS: HOLISTIC COMPATIBILITY",
+                    );
+                    const remediesStart = fullNarrative.indexOf(
+                      "## REMEDIES & RECOMMENDATIONS",
+                    );
+                    const page5Content = fullNarrative.substring(
+                      fiveDimensionsStart,
+                      remediesStart,
+                    );
+                    return page5Content
+                      .replace(/\n/g, "<br/>")
+                      .replace(/#{3} (.+?)<br\/>/g, "<h3>$1</h3>")
+                      .replace(/#{2} (.+?)<br\/>/g, "<h2>$1</h2>")
+                      .replace(/#{1} (.+?)<br\/>/g, "<h1>$1</h1>")
+                      .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+                      .replace(/\*(.+?)\*/g, "<em>$1</em>")
+                      .replace(/- (.+?)<br\/>/g, "<li>$1</li>")
+                      .replace(/(<li>.*<\/li>)/s, "<ul>$1</ul>")
+                      .replace(/---<br\/>/g, "<hr/>");
+                  })(),
+                }}
+              />
+            </div>
           </div>
         </div>
         {/* PAGE 6 - Remedies & Recommendations */}
         <div className="px-4 md:px-8 lg:px-16 pb-16 pdf-page-break-after">
           <div className="max-w-6xl mx-auto">
-              <div className="flex items-center gap-3 mb-6">
-                <Heart size={28} className="text-pink-400" />
-                <h3 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-300 to-purple-300">
-                  Remedies & Recommendations
-                </h3>
-              </div>
+            <div className="flex items-center gap-3 mb-6">
+              <Heart size={28} className="text-pink-400" />
+              <h3 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-300 to-purple-300">
+                Remedies & Recommendations
+              </h3>
+            </div>
 
-              <div
-                className="prose prose-invert prose-lg max-w-none"
-                style={{
-                  lineHeight: 1.3,
-                  fontSize: "1.5rem",
-                }}
-              >
-                <style>{`
+            <div
+              className="prose prose-invert prose-lg max-w-none"
+              style={{
+                lineHeight: 1.3,
+                fontSize: "1.5rem",
+              }}
+            >
+              <style>{`
                   .prose p { color: #cbd5e1; margin-bottom: 0.65rem; margin-top: 0; padding-top: 0; font-size: 1.5rem; line-height: 1.3; text-align: justify; }
                   .prose li { font-size: 1.5rem; line-height: 1.3; margin-bottom: 0.3rem; margin-top: 0; }
                   .prose ul, .prose ol { margin-bottom: 0.65rem; margin-top: 0; }
@@ -790,49 +823,55 @@ function CosmicOnceReport({ report, onBack }) {
                   .prose h2 { margin-bottom: 0.1rem; padding-bottom: 0; }
                   .prose h3 { margin-bottom: 0.1rem; padding-bottom: 0; }
                 `}</style>
-                <div
-                  dangerouslySetInnerHTML={{
-                    __html: (() => {
-                      const fullNarrative = generateElaborateNarrative();
-                      // Extract Remedies section
-                      const remediesStart = fullNarrative.indexOf('## REMEDIES & RECOMMENDATIONS');
-                      const finalVerdictStart = fullNarrative.indexOf('## FINAL VERDICT');
-                      const remediesContent = fullNarrative.substring(remediesStart, finalVerdictStart);
-                      return remediesContent
-                        .replace(/\n/g, "<br/>")
-                        .replace(/#{3} (.+?)<br\/>/g, "<h3>$1</h3>")
-                        .replace(/#{2} (.+?)<br\/>/g, "<h2>$1</h2>")
-                        .replace(/#{1} (.+?)<br\/>/g, "<h1>$1</h1>")
-                        .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
-                        .replace(/\*(.+?)\*/g, "<em>$1</em>")
-                        .replace(/- (.+?)<br\/>/g, "<li>$1</li>")
-                        .replace(/(<li>.*<\/li>)/s, "<ul>$1</ul>")
-                        .replace(/---<br\/>/g, "<hr/>");
-                    })()
-                  }}
-                />
-              </div>
+              <div
+                dangerouslySetInnerHTML={{
+                  __html: (() => {
+                    const fullNarrative = generateElaborateNarrative();
+                    // Extract Remedies section
+                    const remediesStart = fullNarrative.indexOf(
+                      "## REMEDIES & RECOMMENDATIONS",
+                    );
+                    const finalVerdictStart =
+                      fullNarrative.indexOf("## FINAL VERDICT");
+                    const remediesContent = fullNarrative.substring(
+                      remediesStart,
+                      finalVerdictStart,
+                    );
+                    return remediesContent
+                      .replace(/\n/g, "<br/>")
+                      .replace(/#{3} (.+?)<br\/>/g, "<h3>$1</h3>")
+                      .replace(/#{2} (.+?)<br\/>/g, "<h2>$1</h2>")
+                      .replace(/#{1} (.+?)<br\/>/g, "<h1>$1</h1>")
+                      .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+                      .replace(/\*(.+?)\*/g, "<em>$1</em>")
+                      .replace(/- (.+?)<br\/>/g, "<li>$1</li>")
+                      .replace(/(<li>.*<\/li>)/s, "<ul>$1</ul>")
+                      .replace(/---<br\/>/g, "<hr/>");
+                  })(),
+                }}
+              />
+            </div>
           </div>
         </div>
 
         {/* PAGE 7 - Final Verdict (Separate page for print) */}
         <div className="px-4 md:px-8 lg:px-16 pb-16 pdf-page-break-after">
           <div className="max-w-6xl mx-auto">
-              <div className="flex items-center gap-3 mb-6">
-                <Award size={28} className="text-yellow-400" />
-                <h3 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-orange-300">
-                  Final Verdict
-                </h3>
-              </div>
+            <div className="flex items-center gap-3 mb-6">
+              <Award size={28} className="text-yellow-400" />
+              <h3 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-orange-300">
+                Final Verdict
+              </h3>
+            </div>
 
-              <div
-                className="prose prose-invert prose-lg max-w-none"
-                style={{
-                  lineHeight: 1.3,
-                  fontSize: "1.5rem",
-                }}
-              >
-                <style>{`
+            <div
+              className="prose prose-invert prose-lg max-w-none"
+              style={{
+                lineHeight: 1.3,
+                fontSize: "1.5rem",
+              }}
+            >
+              <style>{`
                   .prose p { color: #cbd5e1; margin-bottom: 0.65rem; margin-top: 0; padding-top: 0; font-size: 1.5rem; line-height: 1.3; text-align: justify; }
                   .prose li { font-size: 1.5rem; line-height: 1.3; margin-bottom: 0.3rem; margin-top: 0; }
                   .prose ul, .prose ol { margin-bottom: 0.65rem; margin-top: 0; }
@@ -840,27 +879,29 @@ function CosmicOnceReport({ report, onBack }) {
                   .prose h2 { margin-bottom: 0.1rem; padding-bottom: 0; }
                   .prose h3 { margin-bottom: 0.1rem; padding-bottom: 0; }
                 `}</style>
-                <div
-                  dangerouslySetInnerHTML={{
-                    __html: (() => {
-                      const fullNarrative = generateElaborateNarrative();
-                      // Extract Final Verdict section
-                      const finalVerdictStart = fullNarrative.indexOf('## FINAL VERDICT');
-                      const finalVerdictContent = fullNarrative.substring(finalVerdictStart);
-                      return finalVerdictContent
-                        .replace(/\n/g, "<br/>")
-                        .replace(/#{3} (.+?)<br\/>/g, "<h3>$1</h3>")
-                        .replace(/#{2} (.+?)<br\/>/g, "<h2>$1</h2>")
-                        .replace(/#{1} (.+?)<br\/>/g, "<h1>$1</h1>")
-                        .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
-                        .replace(/\*(.+?)\*/g, "<em>$1</em>")
-                        .replace(/- (.+?)<br\/>/g, "<li>$1</li>")
-                        .replace(/(<li>.*<\/li>)/s, "<ul>$1</ul>")
-                        .replace(/---<br\/>/g, "<hr/>");
-                    })()
-                  }}
-                />
-              </div>
+              <div
+                dangerouslySetInnerHTML={{
+                  __html: (() => {
+                    const fullNarrative = generateElaborateNarrative();
+                    // Extract Final Verdict section
+                    const finalVerdictStart =
+                      fullNarrative.indexOf("## FINAL VERDICT");
+                    const finalVerdictContent =
+                      fullNarrative.substring(finalVerdictStart);
+                    return finalVerdictContent
+                      .replace(/\n/g, "<br/>")
+                      .replace(/#{3} (.+?)<br\/>/g, "<h3>$1</h3>")
+                      .replace(/#{2} (.+?)<br\/>/g, "<h2>$1</h2>")
+                      .replace(/#{1} (.+?)<br\/>/g, "<h1>$1</h1>")
+                      .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+                      .replace(/\*(.+?)\*/g, "<em>$1</em>")
+                      .replace(/- (.+?)<br\/>/g, "<li>$1</li>")
+                      .replace(/(<li>.*<\/li>)/s, "<ul>$1</ul>")
+                      .replace(/---<br\/>/g, "<hr/>");
+                  })(),
+                }}
+              />
+            </div>
           </div>
         </div>
 
@@ -1112,10 +1153,10 @@ const performAshtakoot = (n1, n2, r1, r2) => {
     [3, 7, 11].includes(r)
       ? 4
       : [0, 4, 8].includes(r)
-      ? 3
-      : [2, 6, 10].includes(r)
-      ? 2
-      : 1;
+        ? 3
+        : [2, 6, 10].includes(r)
+          ? 2
+          : 1;
   const vScore = getVarna(r1) >= getVarna(r2) ? 1 : 0;
   total += vScore;
   details.push({
@@ -1241,7 +1282,7 @@ const Calculator = {
     if (!dob) return 0;
     const [y, m, d] = dob.split("-").map(Number);
     return Calculator.reduce(
-      Calculator.reduce(y) + Calculator.reduce(m) + Calculator.reduce(d)
+      Calculator.reduce(y) + Calculator.reduce(m) + Calculator.reduce(d),
     );
   },
 
@@ -1472,8 +1513,8 @@ const SmartInput = ({ title, val, set, color }) => {
     if (q.length > 1) {
       setSuggestions(
         MOCK_CITIES.filter((c) =>
-          c.description.toLowerCase().includes(q.toLowerCase())
-        )
+          c.description.toLowerCase().includes(q.toLowerCase()),
+        ),
       );
     } else {
       setSuggestions([]);
@@ -1631,18 +1672,18 @@ export default function CosmicCompatibilityPage() {
     setIsDownloading(true);
 
     try {
-      const person1 = p1.name.replace(/[^a-zA-Z0-9]/g, '_');
-      const person2 = p2.name.replace(/[^a-zA-Z0-9]/g, '_');
-      const fileName = `KarmAnk_Cosmic_Compatibility_${person1}_${person2}_${new Date().toISOString().split('T')[0]}.pdf`;
+      const person1 = p1.name.replace(/[^a-zA-Z0-9]/g, "_");
+      const person2 = p2.name.replace(/[^a-zA-Z0-9]/g, "_");
+      const fileName = `KarmAnk_Cosmic_Compatibility_${person1}_${person2}_${new Date().toISOString().split("T")[0]}.pdf`;
 
-      await exportToPDF('cosmic-report-content', fileName, {
-        userName: `${p1.name} & ${p2.name}`
+      await exportToPDF("cosmic-report-content", fileName, {
+        userName: `${p1.name} & ${p2.name}`,
       });
 
-      console.log('✅ PDF exported successfully');
+      console.log("✅ PDF exported successfully");
     } catch (error) {
-      console.error('❌ PDF export failed:', error);
-      alert('Failed to export PDF. Please try again.');
+      console.error("❌ PDF export failed:", error);
+      alert("Failed to export PDF. Please try again.");
     }
 
     setIsDownloading(false);
@@ -1684,7 +1725,7 @@ export default function CosmicCompatibilityPage() {
     // Validate Person 1
     if (!selectedP1Id || !p1.dob || !p1.name) {
       alert(
-        "Please select a family member for Person 1 and ensure their details are loaded"
+        "Please select a family member for Person 1 and ensure their details are loaded",
       );
       return;
     }
@@ -1695,7 +1736,7 @@ export default function CosmicCompatibilityPage() {
 
     if (!hasP2FromFamily && !hasP2Manual) {
       alert(
-        "Please either select Person 2 from your family or enter their details manually"
+        "Please either select Person 2 from your family or enter their details manually",
       );
       return;
     }
@@ -1764,7 +1805,7 @@ export default function CosmicCompatibilityPage() {
 
       // Total Score
       const totalScore = Math.round(
-        vedicScore + numScore + nameScore + cosmic.score + elemScore
+        vedicScore + numScore + nameScore + cosmic.score + elemScore,
       );
       const verdict = generateVerdict(totalScore);
 
@@ -1773,30 +1814,34 @@ export default function CosmicCompatibilityPage() {
         100,
         Math.round(
           ((vedicRaw.details[6].score + vedicRaw.details[7].score) / 15) * 70 +
-            30
-        )
+            30,
+        ),
       );
       const intellectual = Math.min(
         100,
-        Math.round((vedicRaw.details[4].score / 5) * 60 + (nameScore / 10) * 40)
+        Math.round(
+          (vedicRaw.details[4].score / 5) * 60 + (nameScore / 10) * 40,
+        ),
       );
       const spiritual = Math.min(
         100,
         Math.round(
           (numScore / 15) * 50 +
             (vedicRaw.details[5].score / 6) * 30 +
-            (elemScore / 10) * 20
-        )
+            (elemScore / 10) * 20,
+        ),
       );
       const physical = Math.min(
         100,
-        Math.round((vedicRaw.details[3].score / 4) * 60 + (elemScore / 10) * 40)
+        Math.round(
+          (vedicRaw.details[3].score / 4) * 60 + (elemScore / 10) * 40,
+        ),
       );
       const practical = Math.min(
         100,
         Math.round(
-          (vedicRaw.details[0].score / 1) * 30 + (cosmic.score / 15) * 70
-        )
+          (vedicRaw.details[0].score / 1) * 30 + (cosmic.score / 15) * 70,
+        ),
       );
 
       setReport({
@@ -1976,47 +2021,67 @@ export default function CosmicCompatibilityPage() {
                   {editP2InputMode === "manual" && (
                     <div className="space-y-3">
                       <div>
-                        <label className="block text-sm text-purple-300 mb-1">Full Name</label>
+                        <label className="block text-sm text-purple-300 mb-1">
+                          Full Name
+                        </label>
                         <input
                           type="text"
                           placeholder="Full Name"
                           value={editP2.name}
                           onChange={(e) =>
-                            setEditP2((prev) => ({ ...prev, name: e.target.value }))
+                            setEditP2((prev) => ({
+                              ...prev,
+                              name: e.target.value,
+                            }))
                           }
                           className="w-full px-4 py-2 bg-white/5 border border-white/20 rounded-lg text-white placeholder-white/40 focus:border-purple-400 focus:outline-none"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm text-purple-300 mb-1">Date of Birth</label>
+                        <label className="block text-sm text-purple-300 mb-1">
+                          Date of Birth
+                        </label>
                         <input
                           type="date"
                           value={editP2.dob}
                           onChange={(e) =>
-                            setEditP2((prev) => ({ ...prev, dob: e.target.value }))
+                            setEditP2((prev) => ({
+                              ...prev,
+                              dob: e.target.value,
+                            }))
                           }
                           className="w-full px-4 py-2 bg-white/5 border border-white/20 rounded-lg text-white focus:border-purple-400 focus:outline-none"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm text-purple-300 mb-1">Time of Birth</label>
+                        <label className="block text-sm text-purple-300 mb-1">
+                          Time of Birth
+                        </label>
                         <input
                           type="time"
                           value={editP2.tob}
                           onChange={(e) =>
-                            setEditP2((prev) => ({ ...prev, tob: e.target.value }))
+                            setEditP2((prev) => ({
+                              ...prev,
+                              tob: e.target.value,
+                            }))
                           }
                           className="w-full px-4 py-2 bg-white/5 border border-white/20 rounded-lg text-white focus:border-purple-400 focus:outline-none"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm text-purple-300 mb-1">Birth City (Optional)</label>
+                        <label className="block text-sm text-purple-300 mb-1">
+                          Birth City (Optional)
+                        </label>
                         <input
                           type="text"
                           placeholder="Birth City (optional)"
                           value={editP2.city}
                           onChange={(e) =>
-                            setEditP2((prev) => ({ ...prev, city: e.target.value }))
+                            setEditP2((prev) => ({
+                              ...prev,
+                              city: e.target.value,
+                            }))
                           }
                           className="w-full px-4 py-2 bg-white/5 border border-white/20 rounded-lg text-white placeholder-white/40 focus:border-purple-400 focus:outline-none"
                         />
@@ -2057,8 +2122,12 @@ export default function CosmicCompatibilityPage() {
               </button>
             )}
 
-            <div className={`flex items-center gap-3 ${viewMode === "detailed" ? "w-full justify-end" : ""}`}>
-              <span className="text-sm text-white/70 hidden md:block">{user?.email}</span>
+            <div
+              className={`flex items-center gap-3 ${viewMode === "detailed" ? "w-full justify-end" : ""}`}
+            >
+              <span className="text-sm text-white/70 hidden md:block">
+                {user?.email}
+              </span>
 
               {/* Back to Summary & Download PDF Buttons - Only show in detailed view */}
               {report && screen === "report" && viewMode === "detailed" && (
@@ -2118,10 +2187,10 @@ export default function CosmicCompatibilityPage() {
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="text-center space-y-2 relative z-10">
                 <div className="text-4xl font-bold">
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-blue-400 to-purple-500">
+                  <GradientText as="span" size="4xl" className="font-serif">
                     KarmAnk
-                  </span>
-                  <sup className="text-2xl -top-2 text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-blue-400 to-purple-500">
+                  </GradientText>
+                  <sup className={`text-2xl -top-2 ${gradientUtils.text}`}>
                     ™
                   </sup>
                 </div>
@@ -2363,7 +2432,10 @@ export default function CosmicCompatibilityPage() {
                       className="absolute top-3 right-3 p-2 bg-purple-500/20 hover:bg-purple-500/30 border border-purple-400/30 rounded-lg transition-all group"
                       title="Edit Person 2 Details"
                     >
-                      <Edit size={16} className="text-purple-300 group-hover:text-purple-200" />
+                      <Edit
+                        size={16}
+                        className="text-purple-300 group-hover:text-purple-200"
+                      />
                     </button>
 
                     <div className="flex items-center justify-between mb-2 pr-10">

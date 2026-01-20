@@ -1,8 +1,9 @@
 import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Home, Building2, Car, Briefcase, Landmark, TrendingUp, AlertCircle, CheckCircle, MinusCircle, XCircle } from 'lucide-react';
-import { DATA } from '../../data/data';
 import { getText } from '../../utils/helpers';
+import { GradientText } from '../GradientText';
+import { getAssetCompatibility } from '../../utils/localData';
 
 // Asset Type Icons
 const assetIcons = {
@@ -35,6 +36,10 @@ const AssetVibrationCard = ({ report, userData, language = 'en' }) => {
   const [assetNumber, setAssetNumber] = useState('');
   const [compatibilityResult, setCompatibilityResult] = useState(null);
   const [showAdvanced, setShowAdvanced] = useState(false);
+
+  if (!report?.relevantData) {
+    return <div className="text-yellow-400 p-4">Report data not fully loaded.</div>;
+  }
 
   // Extract user's primary numbers
   const { destinyNumber, basicNumber } = report;
@@ -73,25 +78,25 @@ const AssetVibrationCard = ({ report, userData, language = 'en' }) => {
     }
 
     // Use destiny number as primary reference
-    const compatibility = DATA.assetCompatibility[destinyNumber];
+    const compatibility = getAssetCompatibility(report, destinyNumber);
 
     let status = 'neutral';
-    if (compatibility.auspicious.includes(num)) {
+    if (compatibility && compatibility.auspicious && compatibility.auspicious.includes(num)) {
       status = 'auspicious';
-    } else if (compatibility.good.includes(num)) {
+    } else if (compatibility && compatibility.good && compatibility.good.includes(num)) {
       status = 'good';
-    } else if (compatibility.avoid.includes(num)) {
+    } else if (compatibility && compatibility.avoid && compatibility.avoid.includes(num)) {
       status = 'avoid';
     }
 
     // Also check with basic number
-    const basicCompatibility = DATA.assetCompatibility[basicNumber];
+    const basicCompatibility = getAssetCompatibility(report, basicNumber);
     let basicStatus = 'neutral';
-    if (basicCompatibility.auspicious.includes(num)) {
+    if (basicCompatibility && basicCompatibility.auspicious && basicCompatibility.auspicious.includes(num)) {
       basicStatus = 'auspicious';
-    } else if (basicCompatibility.good.includes(num)) {
+    } else if (basicCompatibility && basicCompatibility.good && basicCompatibility.good.includes(num)) {
       basicStatus = 'good';
-    } else if (basicCompatibility.avoid.includes(num)) {
+    } else if (basicCompatibility && basicCompatibility.avoid && basicCompatibility.avoid.includes(num)) {
       basicStatus = 'avoid';
     }
 
@@ -146,14 +151,22 @@ const AssetVibrationCard = ({ report, userData, language = 'en' }) => {
 
   // Comprehensive compatibility matrix
   const compatibilityMatrix = useMemo(() => {
-    const destinyCompat = DATA.assetCompatibility[destinyNumber];
+    const destinyCompat = getAssetCompatibility(report, destinyNumber);
+    if (!destinyCompat) {
+      return {
+        auspicious: [],
+        good: [],
+        neutral: [],
+        avoid: [],
+      };
+    }
     return {
-      auspicious: destinyCompat.auspicious,
-      good: destinyCompat.good,
-      neutral: destinyCompat.neutral,
-      avoid: destinyCompat.avoid,
+      auspicious: destinyCompat.auspicious || [],
+      good: destinyCompat.good || [],
+      neutral: destinyCompat.neutral || [],
+      avoid: destinyCompat.avoid || [],
     };
-  }, [destinyNumber]);
+  }, [destinyNumber, report]);
 
   return (
     <motion.div
@@ -286,9 +299,9 @@ const AssetVibrationCard = ({ report, userData, language = 'en' }) => {
                   <div className="flex items-center gap-3 mb-3">
                     <StatusIcon status={compatibilityResult.destinyStatus} className="w-8 h-8" />
                     <div>
-                      <h4 className="text-xl font-bold text-white">
+                      <GradientText as="h4" size="xl">
                         {getStatusText(compatibilityResult.destinyStatus)}
-                      </h4>
+                      </GradientText>
                       <p className="text-sm text-white/80">
                         Asset Number {compatibilityResult.assetNum} vs. Destiny Number {destinyNumber}
                       </p>
@@ -396,10 +409,12 @@ const AssetVibrationCard = ({ report, userData, language = 'en' }) => {
                     </div>
                   </div>
 
-                  {/* Description from DATA */}
+                  {/* Description from report data */}
                   <div className="bg-purple-900/30 border border-purple-400/20 rounded-lg p-4">
                     <p className="text-xs text-purple-200/80 leading-relaxed">
-                      {getText(DATA.assetCompatibility[destinyNumber].description, language)}
+                      {getAssetCompatibility(report, destinyNumber)?.description
+                        ? getText(getAssetCompatibility(report, destinyNumber).description, language)
+                        : 'Asset compatibility analysis for your destiny number.'}
                     </p>
                   </div>
                 </motion.div>

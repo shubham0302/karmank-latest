@@ -1,5 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
+import GradientText from "../GradientText";
 
 export default function HoloDestinyCard({
   title,
@@ -58,17 +59,13 @@ export default function HoloDestinyCard({
           {/* CONTENT */}
           <div className="relative z-10 h-full flex flex-col p-5 md:p-6">
             {/* Title */}
-            <h3
-              className="
-                text-center text-xl md:text-2xl font-serif font-extrabold
-                bg-[linear-gradient(90deg,#facc15_0%,#fbbf24_22%,#f9a8d4_60%,#c084fc_100%)]
-                bg-clip-text text-transparent
-                drop-shadow-[0_0_8px_rgba(255,255,255,0.15)]
-                pb-1
-              "
+
+            <GradientText
+              as="span"
+              className="font-serif text-center font-extrabold text-xl md:text-2xl"
             >
               {title}
-            </h3>
+            </GradientText>
 
             {/* Blurb */}
             <p className="mt-3 text-center text-white/85 tracking-[0.01em] leading-7 md:leading-7">

@@ -7,11 +7,13 @@ import {
   Sparkles, Wand2, CheckCircle2, Star, ChevronDown
 } from 'lucide-react';
 import CosmicBackground from '../components/CosmicBackground';
-import { DATA } from '../data/data';
+import { GradientText, gradientUtils } from '../components/GradientText';
 import { getText } from '../utils/helpers';
 import { useAuth } from '../contexts/AuthContext';
 import { useFamilyMembers } from '../hooks/useFamilyMembers';
 import { useEffect } from 'react';
+import { getAssetCompatibility } from '../utils/localData';
+import { DATA } from '../data/data';
 
 // Enhanced Asset Data with Pythagorean Letter Values
 const ASSET_DATA = {
@@ -497,13 +499,15 @@ const AssetVibrationPage = () => {
               <div className="relative">
                 <button
                   onClick={() => setMemberDropdownOpen(!memberDropdownOpen)}
-                  className="flex items-center gap-2 px-4 py-2 bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-400/50 rounded-lg text-cyan-300 text-sm font-medium transition"
+                  className="flex items-center gap-2 px-2 sm:px-4 py-2 bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-400/50 rounded-lg text-cyan-300 text-xs sm:text-sm font-medium transition truncate"
                 >
-                  {selectedFamilyMemberId && members.find(m => m.id === selectedFamilyMemberId)?.name || 'Select Member'}
-                  <ChevronDown className="h-4 w-4" />
+                  <span className="truncate max-w-[100px] sm:max-w-none">
+                    {selectedFamilyMemberId && members.find(m => m.id === selectedFamilyMemberId)?.name || 'Member'}
+                  </span>
+                  <ChevronDown className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
                 </button>
                 {memberDropdownOpen && (
-                  <div className="absolute top-full right-0 mt-2 bg-gray-900 border border-cyan-400/50 rounded-lg shadow-lg z-50 min-w-64">
+                  <div className="absolute top-full right-0 mt-2 bg-gray-900 border border-cyan-400/50 rounded-lg shadow-lg z-50 min-w-56 sm:min-w-64 max-h-64 overflow-y-auto">
                     {members.map(member => (
                       <button
                         key={member.id}
@@ -560,7 +564,7 @@ const AssetVibrationPage = () => {
           </div>
 
           {/* Futuristic Gate Header */}
-          <div className="relative w-full h-40 mb-8 overflow-hidden rounded-xl border border-cyan-500/20">
+          <div className="relative w-full h-32 sm:h-40 mb-6 sm:mb-8 overflow-hidden rounded-xl border border-cyan-500/20">
             <div className="absolute inset-0 bg-gradient-to-b from-cyan-950/40 via-gray-950 to-black" />
             <div className="absolute inset-0" style={{
               backgroundImage: `
@@ -572,22 +576,22 @@ const AssetVibrationPage = () => {
               transformOrigin: 'center bottom'
             }} />
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="text-center space-y-2 relative z-10">
-                <div className="text-4xl font-bold">
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-blue-400 to-purple-500">
+              <div className="text-center space-y-1 sm:space-y-2 relative z-10 px-2">
+                <div className="text-2xl sm:text-4xl font-bold">
+                  <GradientText as="span" size="3xl" className="font-serif sm:size-4xl">
                     KarmAnk
-                  </span>
-                  <sup className="text-2xl -top-2 text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-blue-400 to-purple-500">
+                  </GradientText>
+                  <sup className={`text-lg sm:text-2xl -top-2 ${gradientUtils.text}`}>
                     ™
                   </sup>
                 </div>
-                <div className="text-sm text-cyan-400/60 tracking-widest">
+                <div className="text-xs sm:text-sm text-cyan-400/60 tracking-widest">
                   ASSET VIBRATION SYSTEM
                 </div>
-                <div className="flex items-center justify-center gap-2 mt-3">
-                  <div className="h-px w-16 bg-gradient-to-r from-transparent via-cyan-400/50 to-transparent"></div>
+                <div className="flex items-center justify-center gap-2 mt-2 sm:mt-3">
+                  <div className="h-px w-8 sm:w-16 bg-gradient-to-r from-transparent via-cyan-400/50 to-transparent"></div>
                   <div className="text-xs text-cyan-400/40">★</div>
-                  <div className="h-px w-16 bg-gradient-to-r from-transparent via-cyan-400/50 to-transparent"></div>
+                  <div className="h-px w-8 sm:w-16 bg-gradient-to-r from-transparent via-cyan-400/50 to-transparent"></div>
                 </div>
               </div>
             </div>
@@ -633,26 +637,26 @@ const AssetVibrationPage = () => {
 
                   {/* Asset Type Selection */}
                   <div>
-                    <label className="block text-sm font-medium text-cyan-200 mb-3">
+                    <label className="block text-xs sm:text-sm font-medium text-cyan-200 mb-3">
                       Select Asset Type
                     </label>
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 gap-2 sm:gap-3">
                       {Object.entries(assetIcons).map(([type, Icon]) => (
                         <button
                           key={type}
                           onClick={() => setSelectedAssetType(type)}
-                          className={`flex items-center gap-2 p-3 rounded-lg border-2 transition-all ${
+                          className={`flex items-center gap-1 sm:gap-2 p-2 sm:p-3 rounded-lg border-2 transition-all ${
                             selectedAssetType === type
                               ? 'bg-cyan-600/40 border-cyan-400'
                               : 'bg-gray-900/50 border-cyan-700/30 hover:bg-cyan-900/30'
                           }`}
                         >
-                          <Icon className={`w-5 h-5 ${
+                          <Icon className={`w-4 h-4 sm:w-5 sm:h-5 ${
                             selectedAssetType === type
                               ? 'text-cyan-200'
                               : 'text-cyan-400'
                           }`} />
-                          <span className={`text-sm font-medium capitalize ${
+                          <span className={`text-xs sm:text-sm font-medium capitalize ${
                             selectedAssetType === type
                               ? 'text-transparent bg-clip-text bg-gradient-to-r from-cyan-200 to-blue-300'
                               : 'text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-blue-400'
@@ -842,47 +846,47 @@ const AssetVibrationPage = () => {
                               transition={{ duration: 0.3 }}
                               className="mt-4 space-y-3"
                             >
-                              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3">
                                 {/* Auspicious */}
-                                <div className="bg-green-900/20 border border-green-400/30 rounded-lg p-3">
+                                <div className="bg-green-900/20 border border-green-400/30 rounded-lg p-2 sm:p-3">
                                   <div className="flex items-center gap-2 mb-2">
-                                    <CheckCircle className="w-4 h-4 text-green-400" />
-                                    <p className="text-xs font-semibold text-green-300">Auspicious</p>
+                                    <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 text-green-400" />
+                                    <p className="text-[10px] sm:text-xs font-semibold text-green-300">Auspicious</p>
                                   </div>
-                                  <p className="text-2xl font-bold text-green-200">
+                                  <p className="text-lg sm:text-2xl font-bold text-green-200">
                                     {compatibilityMatrix.auspicious.join(', ')}
                                   </p>
                                 </div>
 
                                 {/* Good */}
-                                <div className="bg-blue-900/20 border border-blue-400/30 rounded-lg p-3">
+                                <div className="bg-blue-900/20 border border-blue-400/30 rounded-lg p-2 sm:p-3">
                                   <div className="flex items-center gap-2 mb-2">
-                                    <CheckCircle className="w-4 h-4 text-blue-400" />
-                                    <p className="text-xs font-semibold text-blue-300">Good</p>
+                                    <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 text-blue-400" />
+                                    <p className="text-[10px] sm:text-xs font-semibold text-blue-300">Good</p>
                                   </div>
-                                  <p className="text-2xl font-bold text-blue-200">
+                                  <p className="text-lg sm:text-2xl font-bold text-blue-200">
                                     {compatibilityMatrix.good.join(', ')}
                                   </p>
                                 </div>
 
                                 {/* Neutral */}
-                                <div className="bg-yellow-900/20 border border-yellow-400/30 rounded-lg p-3">
+                                <div className="bg-yellow-900/20 border border-yellow-400/30 rounded-lg p-2 sm:p-3">
                                   <div className="flex items-center gap-2 mb-2">
-                                    <MinusCircle className="w-4 h-4 text-yellow-400" />
-                                    <p className="text-xs font-semibold text-yellow-300">Neutral</p>
+                                    <MinusCircle className="w-3 h-3 sm:w-4 sm:h-4 text-yellow-400" />
+                                    <p className="text-[10px] sm:text-xs font-semibold text-yellow-300">Neutral</p>
                                   </div>
-                                  <p className="text-2xl font-bold text-yellow-200">
+                                  <p className="text-lg sm:text-2xl font-bold text-yellow-200">
                                     {compatibilityMatrix.neutral.join(', ')}
                                   </p>
                                 </div>
 
                                 {/* Avoid */}
-                                <div className="bg-red-900/20 border border-red-400/30 rounded-lg p-3">
+                                <div className="bg-red-900/20 border border-red-400/30 rounded-lg p-2 sm:p-3">
                                   <div className="flex items-center gap-2 mb-2">
-                                    <XCircle className="w-4 h-4 text-red-400" />
-                                    <p className="text-xs font-semibold text-red-300">Avoid</p>
+                                    <XCircle className="w-3 h-3 sm:w-4 sm:h-4 text-red-400" />
+                                    <p className="text-[10px] sm:text-xs font-semibold text-red-300">Avoid</p>
                                   </div>
-                                  <p className="text-2xl font-bold text-red-200">
+                                  <p className="text-lg sm:text-2xl font-bold text-red-200">
                                     {compatibilityMatrix.avoid.join(', ')}
                                   </p>
                                 </div>

@@ -2,6 +2,7 @@ import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ArrowLeft, Shield, Lock } from "lucide-react";
 import CosmicBackground from "../components/CosmicBackground";
+import { GradientText, gradientUtils } from "../components/GradientText";
 
 export default function PrivacyPage() {
   const year = new Date().getFullYear();
@@ -43,8 +44,13 @@ export default function PrivacyPage() {
             />
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="text-center space-y-2 relative z-10">
-                <div className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-blue-400 to-purple-500">
-                  KarmAnk™
+                <div className="text-4xl font-bold">
+                  <GradientText as="span" size="4xl" className="font-serif">
+                    KarmAnk
+                  </GradientText>
+                  <sup className={`text-2xl -top-2 ${gradientUtils.text}`}>
+                    ™
+                  </sup>
                 </div>
                 <div className="text-sm text-cyan-400/60 tracking-widest">
                   PRIVACY POLICY
@@ -319,8 +325,8 @@ export default function PrivacyPage() {
                     chatbot's responses.
                   </li>
                   <li>
-                    <strong>Anonymization:</strong> All chatbot conversations are
-                    anonymized before being used for service improvement. We
+                    <strong>Anonymization:</strong> All chatbot conversations
+                    are anonymized before being used for service improvement. We
                     remove personally identifiable information such as names,
                     email addresses, and specific dates before analysis.
                   </li>
