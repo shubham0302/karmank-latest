@@ -107,18 +107,24 @@ const RudrakshaTab = ({ report, language = "en" }) => {
               Benefits
             </h3>
             <div className="space-y-2 text-sm">
-              <p>
-                <strong>General:</strong>{" "}
-                {getText(rudrakshaData.benefits.general, language)}
-              </p>
-              <p>
-                <strong>Spiritual:</strong>{" "}
-                {getText(rudrakshaData.benefits.spiritual, language)}
-              </p>
-              <p>
-                <strong>Health:</strong>{" "}
-                {getText(rudrakshaData.benefits.health, language)}
-              </p>
+              {rudrakshaData.benefits?.general && (
+                <p>
+                  <strong>General:</strong>{" "}
+                  {getText(rudrakshaData.benefits.general, language)}
+                </p>
+              )}
+              {rudrakshaData.benefits?.spiritual && (
+                <p>
+                  <strong>Spiritual:</strong>{" "}
+                  {getText(rudrakshaData.benefits.spiritual, language)}
+                </p>
+              )}
+              {rudrakshaData.benefits?.health && (
+                <p>
+                  <strong>Health:</strong>{" "}
+                  {getText(rudrakshaData.benefits.health, language)}
+                </p>
+              )}
             </div>
             <div className="mt-4 bg-gray-900/50 p-3 rounded-md">
               <h4 className="font-semibold text-yellow-300 mb-1">

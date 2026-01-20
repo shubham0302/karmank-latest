@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 
 // --- Core Data & Logic ---
 import { combinationInsights, DATA } from './data/data';
-import { calculateNumerology, dashaCalculator } from './api/numerology-api';
+import { calculateNumerology } from './api/numerologyClient';
 import { useAuth } from './contexts/AuthContext';
 import { useFamilyMembers } from './hooks/useFamilyMembers';
 
@@ -99,11 +99,14 @@ export default function KarmAnkApp() {
                 });
                 // Auto-generate report for first family member
                 try {
-                    const mainReport = await calculateNumerology(firstMember.date_of_birth);
-                    if (mainReport) {
-                        setReport({ ...mainReport, name: firstMember.name, dob: new Date(firstMember.date_of_birth + 'T00:00:00') });
-                        const dashaData = await dashaCalculator.calculateFromBackend(firstMember.date_of_birth);
-                        setDashaReport(dashaData);
+                    const result = await calculateNumerology({
+                        dob: firstMember.date_of_birth,
+                        name: firstMember.name,
+                        gender: firstMember.gender?.toLowerCase() || 'other'
+                    });
+                    if (result.success && result.report) {
+                        setReport(result.report);
+                        setDashaReport(result.dashaReport);
                         setActiveTab('Welcome');
                     }
                 } catch (error) {
@@ -162,7 +165,7 @@ export default function KarmAnkApp() {
             const result = await calculateNumerology({
                 dob: userData.dob,
                 name: userData.name,
-                gender: userData.gender,
+                gender: userData.gender?.toLowerCase() || 'other',
             });
 
             console.log("Main Report:", result.report);
@@ -260,11 +263,14 @@ export default function KarmAnkApp() {
         });
 
         try {
-            const mainReport = await calculateNumerology(member.date_of_birth);
-            if (mainReport) {
-                setReport({ ...mainReport, name: member.name, dob: new Date(member.date_of_birth + 'T00:00:00') });
-                const dashaData = await dashaCalculator.calculateFromBackend(member.date_of_birth);
-                setDashaReport(dashaData);
+            const result = await calculateNumerology({
+                dob: member.date_of_birth,
+                name: member.name,
+                gender: member.gender?.toLowerCase() || 'other'
+            });
+            if (result.success && result.report) {
+                setReport(result.report);
+                setDashaReport(result.dashaReport);
                 setActiveTab('Welcome');
             }
         } catch (error) {

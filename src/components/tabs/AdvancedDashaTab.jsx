@@ -16,13 +16,18 @@ const AdvancedDashaTab = ({
   baseKundliGrid,
   basicNumber,
   destinyNumber,
-  foundationalYogas,
+  foundationalYogas: foundationalYogasProp,
   language = "en",
 }) => {
   const [activeSubTab, setActiveSubTab] = useState("maha");
   const [selectedDate, setSelectedDate] = useState(
     new Date().toISOString().split("T")[0],
   );
+
+  // Ensure foundationalYogas is always an array
+  const foundationalYogas = Array.isArray(foundationalYogasProp)
+    ? foundationalYogasProp
+    : [];
 
   if (!dashaReport)
     return (

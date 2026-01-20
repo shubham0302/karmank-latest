@@ -36,7 +36,7 @@ interface NumerologyReport {
   specialInsights: any[];
   specialRemedies: any[];
   name: string;
-  dob: string;
+  dob: Date;
   relevantData: RelevantData;
 }
 
@@ -48,160 +48,222 @@ interface CalculationResponse {
 }
 
 /**
+ * Helper to get auth headers
+ */
+async function getAuthHeaders(): Promise<Record<string, string>> {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+
+  const {
+    data: { session },
+    error: sessionError,
+  } = await supabase.auth.getSession();
+
+  if (sessionError || !session) {
+    console.error("[CLIENT] Session error:", sessionError);
+    throw new Error("Not authenticated. Please log in.");
+  }
+
+  // Get fresh access token
+  const {
+    data: { session: freshSession },
+    error: refreshError,
+  } = await supabase.auth.refreshSession();
+
+  if (refreshError || !freshSession) {
+    console.error("[CLIENT] Refresh error:", refreshError);
+    throw new Error("Failed to refresh authentication session");
+  }
+
+  headers.Authorization = `Bearer ${freshSession.access_token}`;
+  return headers;
+}
+
+/**
+ * Parse dates in objects recursively
+ */
+function parseDateInObject(obj: any): any {
+  if (!obj) return obj;
+  if (obj instanceof Date) return obj;
+
+  if (Array.isArray(obj)) {
+    return obj.map((item) => parseDateInObject(item));
+  }
+
+  if (typeof obj === "object") {
+    const parsed: any = {};
+    for (const key in obj) {
+      if (obj.hasOwnProperty(key)) {
+        const value = obj[key];
+        if (
+          (key === "startDate" || key === "endDate") &&
+          typeof value === "string"
+        ) {
+          parsed[key] = new Date(value);
+        } else if (typeof value === "object") {
+          parsed[key] = parseDateInObject(value);
+        } else {
+          parsed[key] = value;
+        }
+      }
+    }
+    return parsed;
+  }
+
+  return obj;
+}
+
+/**
+ * Identify recurring numbers in kundli grid
+ */
+function identifyRecurringNumbers(kundliGrid: number[]): number[] {
+  const recurring: number[] = [];
+  kundliGrid.forEach((count, number) => {
+    if (number > 0 && count >= 2) {
+      recurring.push(number);
+    }
+  });
+  return recurring;
+}
+
+/**
  * Calls the backend API to calculate numerology
+ * This calls two endpoints:
+ * 1. /calculate/numerology - Gets basic calculations and dasha timelines
+ * 2. /api/data/enrichment - Gets relevantData (remedies, mantras, yogas, etc.)
+ *
  * @param userData - User data containing dob, name, gender
  * @returns Promise resolving to calculation response
  */
 export async function calculateNumerology(
-  userData: CalculationRequest
+  userData: CalculationRequest,
 ): Promise<CalculationResponse> {
   try {
     console.log("[CLIENT] ===== NUMEROLOGY CALCULATION START =====");
-    console.log("[CLIENT] Timestamp:", new Date().toISOString());
     console.log("[CLIENT] Input data:", userData);
 
-    // Determine API URL based on environment
-    const API_URL = import.meta.env.DEV
-      ? "http://localhost:3001/api/calculate" // Local dev server
-      : "/api/calculate"; // Production Vercel endpoint
+    const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "";
+    const headers = await getAuthHeaders();
 
-    console.log("[CLIENT] API_URL:", API_URL);
-    console.log("[CLIENT] Environment:", import.meta.env.DEV ? "development" : "production");
-
-    // In development mode, skip authentication
-    const isDevelopment = import.meta.env.DEV;
-    let headers: Record<string, string> = {
-      "Content-Type": "application/json",
-    };
-
-    console.log("[CLIENT] isDevelopment:", isDevelopment);
-
-    if (!isDevelopment) {
-      console.log("[CLIENT] Getting session for production...");
-      // Only get session in production
-      const {
-        data: { session },
-        error: sessionError,
-      } = await supabase.auth.getSession();
-
-      if (sessionError || !session) {
-        console.error("[CLIENT] Session error:", sessionError);
-        throw new Error("Not authenticated. Please log in.");
-      }
-
-      console.log("[CLIENT] Session obtained");
-
-      // Get fresh access token
-      const {
-        data: { session: freshSession },
-        error: refreshError,
-      } = await supabase.auth.refreshSession();
-
-      if (refreshError || !freshSession) {
-        console.error("[CLIENT] Refresh error:", refreshError);
-        throw new Error("Failed to refresh authentication session");
-      }
-
-      headers.Authorization = `Bearer ${freshSession.access_token}`;
-      console.log("[CLIENT] Auth headers set");
-    }
-
-    // Call the backend API
-    console.log("[CLIENT] Calling API...");
-    const response = await fetch(API_URL, {
+    // Step 1: Call /calculate/numerology to get basic calculations
+    console.log("[CLIENT] Step 1: Calling /calculate/numerology...");
+    const calcResponse = await fetch(`${BACKEND_URL}/calculate/numerology`, {
       method: "POST",
       headers,
-      body: JSON.stringify(userData),
+      body: JSON.stringify({ dob: userData.dob }),
     });
 
-    console.log("[CLIENT] API Response status:", response.status);
-    console.log("[CLIENT] API Response headers:", {
-      contentType: response.headers.get("content-type"),
-      contentLength: response.headers.get("content-length")
-    });
-
-    // Handle response
-    const data = await response.json();
-
-    console.log("[CLIENT] API Response data keys:", Object.keys(data));
-    console.log("[CLIENT] Response success:", data.success);
-
-    if (!response.ok) {
-      console.error("[CLIENT] API response not OK:", data.error);
-      throw new Error(data.error || "Failed to calculate numerology");
+    if (!calcResponse.ok) {
+      const error = await calcResponse.json().catch(() => ({}));
+      throw new Error(error.message || "Failed to calculate numerology");
     }
 
-    if (!data.success) {
-      console.error("[CLIENT] Calculation unsuccessful:", data.error);
-      throw new Error(data.error || "Calculation was unsuccessful");
+    const calcData = await calcResponse.json();
+    console.log("[CLIENT] Calculation response:", Object.keys(calcData));
+
+    if (!calcData.success || !calcData.data) {
+      throw new Error("Calculation failed");
     }
 
-    console.log("[CLIENT] API response structure:", {
-      hasReport: !!data.report,
-      hasDashaReport: !!data.dashaReport,
-      hasTimestamp: !!data.timestamp,
-      reportKeys: data.report ? Object.keys(data.report).slice(0, 5) : 'N/A',
-      dashaReportKeys: data.dashaReport ? Object.keys(data.dashaReport) : 'N/A'
+    const { basicNumber, destinyNumber, kundliGrid, dashaTimelines, specialRemedies } = calcData.data;
+    console.log("[CLIENT] Basic:", basicNumber, "Destiny:", destinyNumber);
+
+    // Identify recurring numbers for enrichment request
+    const recurringNumbers = identifyRecurringNumbers(kundliGrid);
+
+    // Find current dasha periods
+    const now = new Date();
+    const currentMahaDasha = dashaTimelines.maha.find((d: any) => {
+      const start = new Date(d.startDate);
+      const end = new Date(d.endDate);
+      return now >= start && now <= end;
+    })?.dashaNumber || null;
+
+    const currentYearlyDasha = dashaTimelines.yearly.find((d: any) => {
+      const start = new Date(d.startDate);
+      const end = new Date(d.endDate);
+      return now >= start && now <= end;
+    })?.dashaNumber || null;
+
+    // Step 2: Call /api/data/enrichment to get relevantData
+    console.log("[CLIENT] Step 2: Calling /api/data/enrichment...");
+    const enrichResponse = await fetch(`${BACKEND_URL}/api/data/enrichment`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({
+        basicNumber,
+        destinyNumber,
+        yogaIds: [], // Backend will detect yogas
+        kundliGrid,
+        recurringNumbers,
+        currentMahaDasha,
+        currentYearlyDasha,
+      }),
     });
 
-    // Parse dates if needed - convert all date strings in dashaReport to Date objects
-    const parseDateInObject = (obj: any): any => {
-      if (!obj) return obj;
-      if (obj instanceof Date) return obj;
+    if (!enrichResponse.ok) {
+      const error = await enrichResponse.json().catch(() => ({}));
+      throw new Error(error.message || "Failed to fetch enrichment data");
+    }
 
-      if (Array.isArray(obj)) {
-        return obj.map(item => parseDateInObject(item));
-      }
+    const enrichData = await enrichResponse.json();
+    console.log("[CLIENT] Enrichment response:", Object.keys(enrichData));
 
-      if (typeof obj === 'object') {
-        const parsed: any = {};
-        for (const key in obj) {
-          if (obj.hasOwnProperty(key)) {
-            const value = obj[key];
-            // Convert startDate and endDate strings to Date objects
-            if ((key === 'startDate' || key === 'endDate') && typeof value === 'string') {
-              parsed[key] = new Date(value);
-            } else if (typeof value === 'object') {
-              parsed[key] = parseDateInObject(value);
-            } else {
-              parsed[key] = value;
-            }
-          }
-        }
-        return parsed;
-      }
+    if (!enrichData.success || !enrichData.data) {
+      throw new Error("Enrichment data fetch failed");
+    }
 
-      return obj;
+    const relevantData = enrichData.data;
+    console.log("[CLIENT] RelevantData keys:", Object.keys(relevantData));
+
+    // Build dasha report
+    const dashaReport = {
+      mahaDashaTimeline: parseDateInObject(dashaTimelines.maha),
+      yearlyDashaTimeline: parseDateInObject(dashaTimelines.yearly),
+      monthlyDashaTimeline: parseDateInObject(dashaTimelines.monthly),
+      dailyDashaTimeline: parseDateInObject(dashaTimelines.daily),
     };
 
-    const result: CalculationResponse = {
-      success: data.success,
-      report: {
-        ...data.report,
-        dob: new Date(data.report.dob),
-      },
-      dashaReport: parseDateInObject(data.dashaReport),
-      timestamp: data.timestamp,
+    // Build complete report
+    const report = {
+      basicNumber,
+      destinyNumber,
+      baseKundliGrid: kundliGrid,
+      yogas: relevantData.yogas || [],
+      recurringAnalysis: recurringNumbers.map((num: number) => ({
+        number: num,
+        occurrences: kundliGrid[num],
+        isDestinyMatch: num === destinyNumber,
+      })),
+      recurringNumbersAnalysis: recurringNumbers.map((num: number) => ({
+        number: num,
+        occurrences: kundliGrid[num],
+        isDestinyMatch: num === destinyNumber,
+      })),
+      specialInsights: relevantData.specialInsights || [],
+      specialRemedies: specialRemedies || relevantData.specialRemedies || [],
+      // Extract destinyTraits and destinyProfessions from numberDetails
+      destinyTraits: relevantData.numberDetails?.traits || null,
+      destinyProfessions: relevantData.numberDetails?.professions || null,
+      combinationInsight: relevantData.combinationInsight || null,
+      name: userData.name,
+      dob: new Date(calcData.data.dob),
+      relevantData, // This is what components need!
     };
-
-    console.log("[CLIENT] Date parsing completed");
-    console.log("[CLIENT] Final result structure:", {
-      success: result.success,
-      hasReport: !!result.report,
-      hasDashaReport: !!result.dashaReport,
-      reportBasicNumber: result.report?.basicNumber,
-      reportDestinyNumber: result.report?.destinyNumber,
-      dashaReportKeys: result.dashaReport ? Object.keys(result.dashaReport) : 'N/A',
-      mahaDashaLength: result.dashaReport?.mahaDashaTimeline?.length || 0,
-      yearlyDashaLength: result.dashaReport?.yearlyDashaTimeline?.length || 0
-    });
 
     console.log("[CLIENT] ===== NUMEROLOGY CALCULATION SUCCESS =====");
-    return result;
+    console.log("[CLIENT] Report has relevantData:", !!report.relevantData);
+
+    return {
+      success: true,
+      report,
+      dashaReport,
+      timestamp: new Date().toISOString(),
+    };
   } catch (error: any) {
     console.error("[CLIENT] ===== NUMEROLOGY CALCULATION FAILED =====");
-    console.error("[CLIENT] Error message:", error.message);
-    console.error("[CLIENT] Error stack:", error.stack);
+    console.error("[CLIENT] Error:", error.message);
     throw error;
   }
 }

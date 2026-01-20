@@ -1708,8 +1708,19 @@ Provide a detailed, insightful analysis in 4-6 sentences. Focus on what the hand
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="bg-gray-900/60 p-6 rounded-xl border border-yellow-500/20 relative">
-        <div className="blur-xs opacity-70 pointer-events-none">
+      <div className="bg-gray-900/60 p-6 rounded-xl border border-yellow-500/20 relative overflow-hidden">
+        {/* Coming Soon Overlay */}
+        <div className="absolute inset-0 z-10 flex items-center justify-center bg-gray-900/20">
+          <div className="text-center bg-gray-900/80 px-8 py-6 rounded-2xl border border-yellow-500/40 shadow-lg">
+            <Sparkles className="w-12 h-12 text-yellow-400 mx-auto mb-3 animate-pulse" />
+            <h3 className="text-2xl font-bold text-yellow-400 mb-2">Coming Soon</h3>
+            <p className="text-gray-300 text-sm max-w-xs mx-auto">
+              Signature analysis feature is under development and will be available soon.
+            </p>
+          </div>
+        </div>
+
+        <div className="blur-[1px] opacity-60 pointer-events-none">
           <h3 className="text-xl font-bold text-yellow-400 mb-4 flex items-center gap-2">
             <PenTool className="w-5 h-5" />
             The Signature Alchemist
@@ -1766,7 +1777,6 @@ Provide a detailed, insightful analysis in 4-6 sentences. Focus on what the hand
           </button>
         </div>
         </div>
-        <ComingSoonOverlay />
       </div>
 
       {error && (
