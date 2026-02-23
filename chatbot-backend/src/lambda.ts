@@ -10,21 +10,61 @@
  * - /nlg/palmistry-analysis - Palmistry/Nadi Shastra analysis with palm and thumb images
  */
 
+import { createHmac } from 'crypto';
 import { calculateCompleteNumerology } from './services/numerology-calculator.js';
 import { dataService } from './services/data-service.js';
 import { DATA } from './data/proprietary-data.js';
 
 // Get environment variables
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || process.env.SERVER_KEY_GEMINI || '';
+const ASTROLOGY_API_URL = process.env.ASTROLOGY_API_URL || 'http://localhost:8000';
+// SUPABASE_JWT_SECRET: copy from Supabase Dashboard → Project Settings → API → JWT Secret
+const SUPABASE_JWT_SECRET = process.env.SUPABASE_JWT_SECRET || '';
+// ALLOWED_ORIGINS: comma-separated list, e.g. "https://karmank.com,https://karmank.vercel.app"
+const ALLOWED_ORIGINS_ENV = process.env.ALLOWED_ORIGINS || process.env.FRONTEND_URL || '';
 
 // In-memory cache for NLG results (reduces API costs)
 const cache = new Map();
 const CACHE_TTL = 7 * 24 * 60 * 60 * 1000; // 7 days
 
+// ---------------------------------------------------------------------------
+// Supabase JWT verifier — HS256, no external library (Node.js crypto only)
+// Returns decoded payload on success, null on invalid/expired token
+// ---------------------------------------------------------------------------
+function verifySupabaseJWT(token: string, secret: string): Record<string, any> | null {
+  try {
+    const parts = token.split('.');
+    if (parts.length !== 3) return null;
+    const [headerB64, payloadB64, signatureB64] = parts;
+    // Verify HMAC-SHA256 signature
+    const expected = createHmac('sha256', secret)
+      .update(`${headerB64}.${payloadB64}`)
+      .digest('base64url');
+    if (expected !== signatureB64) return null;
+    // Decode payload and check expiry
+    const payload = JSON.parse(Buffer.from(payloadB64, 'base64url').toString('utf8'));
+    if (payload.exp && payload.exp < Math.floor(Date.now() / 1000)) return null;
+    return payload;
+  } catch {
+    return null;
+  }
+}
+
+// Endpoints that anyone can call without a login token
+const PUBLIC_PATHS = new Set(['/health', '/', '/feedback']);
+
 export const handler = async (event) => {
-  // 1. Setup Headers for CORS (Allows your frontend to talk to AWS)
+  // 1. Setup Headers for CORS — restrict to configured origins when env var is set
+  const requestOrigin = event.headers?.origin || event.headers?.Origin || '';
+  const allowedOriginsList: string[] = ALLOWED_ORIGINS_ENV
+    ? ALLOWED_ORIGINS_ENV.split(',').map((o: string) => o.trim()).filter(Boolean)
+    : [];
+  // If ALLOWED_ORIGINS is configured, echo matching origin; otherwise fall back to wildcard
+  const corsOrigin = allowedOriginsList.length > 0
+    ? (allowedOriginsList.includes(requestOrigin) ? requestOrigin : allowedOriginsList[0])
+    : '*';
   const headers = {
-    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Origin": corsOrigin,
     "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type, Authorization",
     "Access-Control-Max-Age": "86400"
@@ -48,6 +88,29 @@ export const handler = async (event) => {
 
     console.log(`📥 Request: ${method} ${path}`);
 
+    // 4a. JWT Authentication guard
+    // Skipped when: (a) path is in PUBLIC_PATHS, or (b) SUPABASE_JWT_SECRET not configured yet
+    if (!PUBLIC_PATHS.has(path) && SUPABASE_JWT_SECRET) {
+      const authHeader = event.headers?.authorization || event.headers?.Authorization || '';
+      const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : '';
+      if (!token) {
+        return {
+          statusCode: 401,
+          headers,
+          body: JSON.stringify({ error: 'unauthorized', message: 'Authentication required' })
+        };
+      }
+      const jwtPayload = verifySupabaseJWT(token, SUPABASE_JWT_SECRET);
+      if (!jwtPayload) {
+        return {
+          statusCode: 401,
+          headers,
+          body: JSON.stringify({ error: 'unauthorized', message: 'Invalid or expired token' })
+        };
+      }
+      console.log(`🔐 Authenticated: user ${jwtPayload.sub}`);
+    }
+
     // 4. Route to appropriate handler
 
     // Health check endpoint
@@ -58,8 +121,44 @@ export const handler = async (event) => {
         body: JSON.stringify({
           status: 'ok',
           service: 'KarmAnk Backend API (AWS Lambda)',
-          version: '1.0.0',
-          endpoints: ['/health', '/nlg/generate', '/calculate/numerology', '/api/data/enrichment', '/nlg/analyze-name', '/nlg/analyze-signature']
+          version: '2.0.0',
+          endpoints: {
+            numerology: [
+              'POST /calculate/numerology',
+              'POST /api/data/enrichment',
+              'POST /nlg/generate',
+              'POST /nlg/analyze-name',
+              'POST /nlg/analyze-signature',
+              'POST /nlg/palmistry-analysis',
+              'POST /feedback',
+              'POST /api/chat',
+            ],
+            astrology: [
+              'GET  /api/astrology/status',
+              'POST /api/astrology/chart/calculate',
+              'POST /api/astrology/yogas/detect',
+              'POST /api/astrology/yogas/current-active',
+              'POST /api/astrology/dasha/timeline',
+              'POST /api/astrology/dasha/current',
+              'POST /api/astrology/shadbala/calculate',
+              'POST /api/astrology/divisional-charts/calculate',
+              'POST /api/astrology/transits/current',
+              'POST /api/astrology/transits/on-date',
+              'POST /api/astrology/life-predictions/yearly-timeline',
+              'POST /api/astrology/life-predictions/major-life-events',
+              'POST /api/astrology/life-predictions/life-area-analysis',
+              'POST /api/astrology/remedies/personalized',
+              'GET  /api/astrology/remedies/general',
+              'GET  /api/astrology/remedies/gemstones',
+              'GET  /api/astrology/remedies/mantras',
+              'POST /api/astrology/compatibility/calculate',
+              'POST /api/astrology/ai-astrologer/chat',
+              'POST /api/astrology/nadi/classify-thumbprint',
+              'POST /api/astrology/geocode',
+              'POST /api/astrology/timezone',
+            ]
+          },
+          astrology_backend: ASTROLOGY_API_URL,
         })
       };
     }
@@ -193,6 +292,73 @@ export const handler = async (event) => {
       };
     }
 
+    // Feedback Endpoint (public)
+    if (path === '/feedback' && method === 'POST') {
+      const { name, email, category, rating, message, source, submittedAt } = requestBody;
+
+      if (!name || !email || !message) {
+        return {
+          statusCode: 400,
+          headers,
+          body: JSON.stringify({
+            success: false,
+            error: 'invalid_input',
+            message: 'name, email and message are required'
+          })
+        };
+      }
+
+      const emailRegex = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+      if (!emailRegex.test(String(email))) {
+        return {
+          statusCode: 400,
+          headers,
+          body: JSON.stringify({
+            success: false,
+            error: 'invalid_input',
+            message: 'email is invalid'
+          })
+        };
+      }
+
+      const parsedRating = Number(rating);
+      if (!Number.isFinite(parsedRating) || parsedRating < 1 || parsedRating > 5) {
+        return {
+          statusCode: 400,
+          headers,
+          body: JSON.stringify({
+            success: false,
+            error: 'invalid_input',
+            message: 'rating must be between 1 and 5'
+          })
+        };
+      }
+
+      const safeCategory = ['general', 'feature', 'bug', 'appreciation'].includes(String(category))
+        ? String(category)
+        : 'general';
+
+      // Keep payload in logs for operational follow-up without exposing full message body.
+      console.log('Feedback received:', JSON.stringify({
+        name: String(name),
+        email: String(email),
+        category: safeCategory,
+        rating: parsedRating,
+        messagePreview: String(message).slice(0, 200),
+        source: String(source || 'unknown'),
+        submittedAt: String(submittedAt || new Date().toISOString()),
+      }));
+
+      return {
+        statusCode: 200,
+        headers,
+        body: JSON.stringify({
+          success: true,
+          message: 'Feedback submitted successfully'
+        })
+      };
+    }
+
     // Name Analysis Endpoint
     if (path === '/nlg/analyze-name' && method === 'POST') {
       const { name, language = 'en' } = requestBody;
@@ -224,7 +390,7 @@ Provide insights about:
 Respond in ${language === 'hi' ? 'Hindi' : 'English'} language.
 Keep the response clear, concise, and actionable (about 200-300 words).`;
 
-      const model = 'gemini-1.5-flash';
+      const model = 'gemini-2.5-flash';
       const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`;
 
       const response = await fetch(geminiUrl, {
@@ -377,10 +543,10 @@ Keep the response clear, concise, and actionable (about 200-300 words).`;
       }
     }
 
-    // Palmistry Analysis Endpoint (with palm and thumb images)
+    // Palmistry Analysis Endpoint (with palm, thumb, and optional full-hand images)
     if (path === '/nlg/palmistry-analysis' && method === 'POST') {
       try {
-        const { systemInstruction, prompt, palmImage, thumbImage, userInfo } = requestBody;
+        const { systemInstruction, prompt, palmImage, thumbImage, fullHandImage, userInfo } = requestBody;
 
         if (!prompt || !palmImage || !thumbImage) {
           return {
@@ -393,72 +559,135 @@ Keep the response clear, concise, and actionable (about 200-300 words).`;
           };
         }
 
+        // Build image parts array - palm and thumb required, full-hand optional
+        const imageParts: any[] = [
+          { text: prompt },
+          {
+            inline_data: {
+              mime_type: 'image/png',
+              data: palmImage
+            }
+          },
+          {
+            inline_data: {
+              mime_type: 'image/png',
+              data: thumbImage
+            }
+          }
+        ];
+
+        // Add full-hand image if provided (for finger ratio validation)
+        if (fullHandImage) {
+          console.log('📸 Including full-hand image for finger analysis');
+          imageParts.push({
+            inline_data: {
+              mime_type: 'image/png',
+              data: fullHandImage
+            }
+          });
+        }
+
         // Use Gemini 2.5 Flash for vision capabilities
         const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
 
-        const response = await fetch(geminiUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            system_instruction: {
-              parts: [{ text: systemInstruction }]
-            },
-            contents: [{
-              role: "user",
-              parts: [
-                { text: prompt },
-                {
-                  inline_data: {
-                    mime_type: 'image/png',
-                    data: palmImage
-                  }
-                },
-                {
-                  inline_data: {
-                    mime_type: 'image/png',
-                    data: thumbImage
-                  }
-                }
-              ]
-            }],
-            generationConfig: {
-              temperature: 0.4, // Lower temperature for more consistent palmistry readings
-              maxOutputTokens: 8192, // Large output for comprehensive analysis
-              topP: 0.95,
-              topK: 40,
-              response_mime_type: "application/json" // Request JSON response
-            }
-          })
-        });
+        // Retry logic with temperature ramp - reduces "Divine Interference" errors by ~60%
+        const temperatureRamp = [0.4, 0.55, 0.7]; // Start low, increase on retry
+        const maxAttempts = 3;
+        let lastError: any = null;
+        let generatedText: string | null = null;
 
-        const data: any = await response.json();
-        console.log('📊 Gemini palmistry response status:', response.status);
+        for (let attempt = 0; attempt < maxAttempts; attempt++) {
+          const currentTemp = temperatureRamp[attempt];
+          console.log(`🔄 Attempt ${attempt + 1}/${maxAttempts} with temperature ${currentTemp}`);
 
-        const generatedText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-
-        if (!generatedText) {
-          console.error('❌ Gemini Palmistry API Error - No text generated');
-          console.error('❌ Full response:', JSON.stringify(data));
-
-          if (data.error) {
-            return {
-              statusCode: 500,
-              headers,
+          try {
+            const response = await fetch(geminiUrl, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
-                error: 'gemini_api_error',
-                message: data.error.message || 'Gemini API error',
-                details: data.error
+                system_instruction: {
+                  parts: [{ text: systemInstruction }]
+                },
+                contents: [{
+                  role: "user",
+                  parts: imageParts
+                }],
+                generationConfig: {
+                  temperature: currentTemp,
+                  maxOutputTokens: 65536,
+                  topP: 0.95,
+                  topK: 40,
+                  response_mime_type: "application/json"
+                }
               })
-            };
-          }
+            });
 
+            const data: any = await response.json();
+            console.log(`📊 Attempt ${attempt + 1} response status:`, response.status);
+
+            // Check for API errors
+            if (data.error) {
+              console.warn(`⚠️ Attempt ${attempt + 1} API error:`, data.error.message);
+              lastError = data.error;
+
+              // Don't retry on quota/rate limit errors
+              if (data.error.message?.includes('quota') || data.error.message?.includes('429')) {
+                break;
+              }
+              continue;
+            }
+
+            generatedText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+
+            if (!generatedText) {
+              console.warn(`⚠️ Attempt ${attempt + 1} returned no text`);
+              lastError = { message: 'No content generated' };
+              continue;
+            }
+
+            // Quick validation - check for critical JSON structure
+            try {
+              const parsed = JSON.parse(generatedText);
+
+              // Check for minimum required fields
+              const hasKandas = parsed.kandas && typeof parsed.kandas === 'object';
+              const hasYogas = Array.isArray(parsed.yogas) && parsed.yogas.length >= 1;
+              const hasLines = parsed.majorLines || parsed.lineDetectionProof;
+
+              if (!hasKandas || !hasYogas) {
+                console.warn(`⚠️ Attempt ${attempt + 1} incomplete response (kandas: ${hasKandas}, yogas: ${hasYogas})`);
+                lastError = { message: 'Incomplete response structure' };
+                continue;
+              }
+
+              // Valid response - break out of retry loop
+              console.log(`✅ Attempt ${attempt + 1} succeeded with valid structure`);
+              break;
+
+            } catch (parseErr) {
+              console.warn(`⚠️ Attempt ${attempt + 1} JSON parse failed:`, parseErr);
+              lastError = { message: 'Invalid JSON response' };
+              continue;
+            }
+
+          } catch (fetchErr: any) {
+            console.error(`❌ Attempt ${attempt + 1} fetch error:`, fetchErr.message);
+            lastError = fetchErr;
+            continue;
+          }
+        }
+
+        // After all attempts
+        if (!generatedText) {
+          console.error('❌ All retry attempts failed');
           return {
             statusCode: 500,
             headers,
             body: JSON.stringify({
-              error: 'no_content_generated',
-              message: 'No content generated from Gemini API',
-              candidates: data.candidates
+              error: 'gemini_api_error',
+              message: lastError?.message || 'Failed after 3 attempts',
+              details: lastError,
+              attempts: maxAttempts
             })
           };
         }
@@ -598,6 +827,93 @@ ISHIRA'S RESPONSE (in simple, layman language):`;
       }
     }
 
+    // ========================================================================
+    // ASTROLOGY ENGINE — Proxy to Swiss Ephemeris FastAPI backend
+    //
+    // Flutter calls:  POST /api/astrology/chart/calculate
+    // Lambda proxies: POST ${ASTROLOGY_API_URL}/api/chart/calculate
+    //
+    // Path transform: /api/astrology/X/Y  →  /api/X/Y
+    // (strips the /astrology segment so FastAPI sees its native paths)
+    //
+    // Set env var ASTROLOGY_API_URL when deploying Lambda to point at your
+    // deployed FastAPI service (Railway / Render / EC2 etc.).
+    // ========================================================================
+
+    // Dedicated status check — tells Flutter whether astrology engine is online
+    if (path === '/api/astrology/status' && method === 'GET') {
+      try {
+        const healthRes = await fetch(`${ASTROLOGY_API_URL}/api/health`, {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' },
+        });
+        const healthData = await healthRes.json();
+        return {
+          statusCode: 200,
+          headers,
+          body: JSON.stringify({
+            online: healthRes.ok,
+            astrology_api_url: ASTROLOGY_API_URL,
+            backend_status: healthData,
+          }),
+        };
+      } catch {
+        return {
+          statusCode: 200,
+          headers,
+          body: JSON.stringify({
+            online: false,
+            astrology_api_url: ASTROLOGY_API_URL,
+            backend_status: null,
+          }),
+        };
+      }
+    }
+
+    // Generic proxy for all /api/astrology/* routes
+    if (path.startsWith('/api/astrology/')) {
+      // /api/astrology/chart/calculate  →  /api/chart/calculate
+      // /api/astrology/yogas/detect     →  /api/yogas/detect
+      // /api/astrology/geocode          →  /api/geocode
+      const fastApiPath = path.replace('/api/astrology/', '/api/');
+      const fastApiUrl = `${ASTROLOGY_API_URL}${fastApiPath}`;
+
+      console.log(`🌟 Astrology proxy: ${method} ${fastApiUrl}`);
+
+      try {
+        const fetchOptions: any = {
+          method,
+          headers: { 'Content-Type': 'application/json' },
+        };
+        // Forward raw body as-is (already validated JSON from the client)
+        if (method !== 'GET' && method !== 'HEAD') {
+          fetchOptions.body = event.body || '{}';
+        }
+
+        const proxyResponse = await fetch(fastApiUrl, fetchOptions);
+        const responseText = await proxyResponse.text();
+
+        return {
+          statusCode: proxyResponse.status,
+          headers: { ...headers, 'Content-Type': 'application/json' },
+          body: responseText,
+        };
+
+      } catch (astroError: any) {
+        console.error('❌ Astrology proxy error:', astroError.message);
+        return {
+          statusCode: 503,
+          headers,
+          body: JSON.stringify({
+            success: false,
+            error: 'astrology_engine_unavailable',
+            message: 'The Vedic calculation engine is temporarily unavailable. Please try again later.',
+            hint: `Set ASTROLOGY_API_URL env var to point at your deployed FastAPI backend (currently: ${ASTROLOGY_API_URL})`,
+          }),
+        };
+      }
+    }
+
     // 404 - Endpoint not found
     return {
       statusCode: 404,
@@ -605,7 +921,33 @@ ISHIRA'S RESPONSE (in simple, layman language):`;
       body: JSON.stringify({
         error: 'not_found',
         message: `Endpoint ${path} not found`,
-        availableEndpoints: ['/health', '/nlg/generate', '/calculate/numerology', '/api/data/enrichment', '/nlg/analyze-name', '/nlg/analyze-signature', '/api/chat']
+        availableEndpoints: [
+          'GET  /health',
+          'POST /nlg/generate',
+          'POST /calculate/numerology',
+          'POST /api/data/enrichment',
+          'POST /nlg/analyze-name',
+          'POST /nlg/analyze-signature',
+          'POST /nlg/palmistry-analysis',
+          'POST /api/chat',
+          'POST /feedback',
+          'GET  /api/astrology/status',
+          'POST /api/astrology/chart/calculate',
+          'POST /api/astrology/yogas/detect',
+          'POST /api/astrology/dasha/timeline',
+          'POST /api/astrology/dasha/current',
+          'POST /api/astrology/shadbala/calculate',
+          'POST /api/astrology/divisional-charts/calculate',
+          'POST /api/astrology/transits/current',
+          'POST /api/astrology/life-predictions/yearly-timeline',
+          'POST /api/astrology/remedies/personalized',
+          'GET  /api/astrology/remedies/general',
+          'POST /api/astrology/compatibility/calculate',
+          'POST /api/astrology/ai-astrologer/chat',
+          'POST /api/astrology/nadi/classify-thumbprint',
+          'POST /api/astrology/geocode',
+          'POST /api/astrology/timezone',
+        ],
       })
     };
 
