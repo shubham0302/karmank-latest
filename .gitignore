@@ -60,3 +60,4 @@ Thumbs.db
 *.md
 *.txt
 *.sql
+.vercel

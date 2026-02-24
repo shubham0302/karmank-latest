@@ -165,7 +165,10 @@ export const addFamilyMember = async (userId, memberData) => {
         birth_place: validated.birth_place,
         birth_time: validated.birth_time || null,
         relationship: validated.relationship || 'other',
-        display_order: validated.display_order
+        display_order: validated.display_order,
+        latitude: validated.latitude || null,
+        longitude: validated.longitude || null,
+        timezone: validated.timezone || null,
       })
       .select()
       .single()
@@ -216,7 +219,10 @@ export const addFamilyMembers = async (userId, membersData) => {
       birth_place: member.birth_place,
       birth_time: member.birth_time || null,
       relationship: member.relationship || 'other',
-      display_order: index + 1
+      display_order: index + 1,
+      latitude: member.latitude || null,
+      longitude: member.longitude || null,
+      timezone: member.timezone || null,
     }))
 
     const { data, error } = await supabase
@@ -293,6 +299,30 @@ export const updateFamilyMember = async (memberId, userId, updates) => {
     if (updates.relationship !== undefined) {
       try {
         validatedUpdates.relationship = FamilyMemberSchema.shape.relationship.parse(updates.relationship)
+      } catch (e) {
+        return { data: null, error: { message: formatValidationError(e) } }
+      }
+    }
+
+    if (updates.latitude !== undefined) {
+      try {
+        validatedUpdates.latitude = FamilyMemberSchema.shape.latitude.parse(updates.latitude)
+      } catch (e) {
+        return { data: null, error: { message: formatValidationError(e) } }
+      }
+    }
+
+    if (updates.longitude !== undefined) {
+      try {
+        validatedUpdates.longitude = FamilyMemberSchema.shape.longitude.parse(updates.longitude)
+      } catch (e) {
+        return { data: null, error: { message: formatValidationError(e) } }
+      }
+    }
+
+    if (updates.timezone !== undefined) {
+      try {
+        validatedUpdates.timezone = FamilyMemberSchema.shape.timezone.parse(updates.timezone)
       } catch (e) {
         return { data: null, error: { message: formatValidationError(e) } }
       }

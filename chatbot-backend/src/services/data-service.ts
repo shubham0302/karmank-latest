@@ -8,6 +8,77 @@ import { checkForSpecialRemedies } from './numerology-calculator.js';
  * Data Service class - handles all protected data access
  */
 export class DataService {
+  private checkAdvancedYoga(rules: any, kundliGrid: number[]): boolean {
+    if (!rules || !kundliGrid || kundliGrid.length === 0) return false;
+
+    if (rules.requires_counts) {
+      for (const [numStr, requiredCount] of Object.entries(rules.requires_counts)) {
+        const number = parseInt(numStr, 10);
+        if ((kundliGrid[number] || 0) < Number(requiredCount)) {
+          return false;
+        }
+      }
+    }
+
+    if (rules.requires_presence) {
+      if (!rules.requires_presence.every((num: number) => (kundliGrid[num] || 0) > 0)) {
+        return false;
+      }
+    }
+
+    if (rules.requires_absence) {
+      if (rules.requires_absence.some((num: number) => (kundliGrid[num] || 0) > 0)) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  private identifyYogaIds(kundliGrid: number[], basicNumber: number, destinyNumber: number): string[] {
+    if (!kundliGrid || kundliGrid.length === 0) return [];
+
+    const yogaIds: string[] = [];
+    const yogaDetails = DATA.yogaDetails || {};
+
+    Object.entries(yogaDetails).forEach(([yogaId, yoga]: [string, any]) => {
+      let isPresent = false;
+      if (yoga.activation_rules) {
+        isPresent = this.checkAdvancedYoga(yoga.activation_rules, kundliGrid);
+      } else if (Array.isArray(yoga.numbers)) {
+        isPresent = yoga.numbers.every((num: number) => (kundliGrid[num] || 0) > 0);
+        if (isPresent && Array.isArray(yoga.empty) && yoga.empty.length > 0) {
+          if (yoga.empty.some((num: number) => (kundliGrid[num] || 0) > 0)) {
+            isPresent = false;
+          }
+        }
+      }
+
+      if (isPresent) {
+        yogaIds.push(yogaId);
+      }
+    });
+
+    // Preserve special handling used in the web app.
+    if (basicNumber === 2 && destinyNumber === 1 && !yogaIds.includes('rajYoga')) {
+      yogaIds.push('rajYoga');
+    }
+
+    return yogaIds;
+  }
+
+  private identifyRecurringNumbers(kundliGrid: number[]): number[] {
+    if (!kundliGrid || kundliGrid.length === 0) return [];
+
+    const recurringNumbers: number[] = [];
+    kundliGrid.forEach((count, number) => {
+      if (number > 0 && count >= 2) {
+        recurringNumbers.push(number);
+      }
+    });
+    return recurringNumbers;
+  }
+
   /**
    * Get combination insight for a basic/destiny number pair
    */
@@ -133,15 +204,23 @@ export class DataService {
       currentYearlyDasha = null
     } = params;
 
+    const resolvedYogaIds = yogaIds.length > 0
+      ? yogaIds
+      : this.identifyYogaIds(kundliGrid, basicNumber, destinyNumber);
+
+    const resolvedRecurringNumbers = recurringNumbers.length > 0
+      ? recurringNumbers
+      : this.identifyRecurringNumbers(kundliGrid);
+
     // Get combination insight
     const combinationInsight = this.getCombinationInsight(basicNumber, destinyNumber);
 
     // Get yoga details
-    const yogas = this.getMultipleYogaDetails(yogaIds);
+    const yogas = this.getMultipleYogaDetails(resolvedYogaIds);
 
     // Get recurring number influences
     const recurringInfluences: Record<number, any> = {};
-    recurringNumbers.forEach(num => {
+    resolvedRecurringNumbers.forEach(num => {
       const influence = this.getRecurringNumberInfluence(num);
       if (influence) {
         recurringInfluences[num] = influence;
@@ -168,14 +247,36 @@ export class DataService {
       professions: this.getDestinyProfessions(destinyNumber) // NEW: Add professions data
     };
 
+    const uiData = {
+      numberDetails: DATA.numberDetails || {},
+      destinyNumberDetails: DATA.destinyNumberDetails || {},
+      destinyTraits: DATA.destinyTraits || {},
+      destinyProfessions: DATA.destinyProfessions || {},
+      destinyCompatibility: DATA.destinyCompatibility || {},
+      recurringNumberInfluence: DATA.recurringNumberInfluence || {},
+      combinedDashaInsights: DATA.combinedDashaInsights || {},
+      remedies: DATA.remedies || {},
+      multipleNumberRemedies: DATA.multipleNumberRemedies || {},
+      mantraRemedies: (DATA as any).mantraRemedies || {},
+      specialRudrakshaRemedies: (DATA as any).specialRudrakshaRemedies || {},
+      destinyBasedRemedies: DATA.destinyBasedRemedies || {},
+      rudrakshaRemedies: DATA.rudrakshaRemedies || {},
+      advancedRudrakshaRemedies: DATA.advancedRudrakshaRemedies || {},
+      chakraData: DATA.chakraData || {},
+      shaktiBeejMantras: (DATA as any).shaktiBeejMantras || {},
+    };
+
     return {
       combinationInsight,
+      yogaIds: resolvedYogaIds,
       yogas,
+      recurringNumbers: resolvedRecurringNumbers,
       recurringInfluences,
       remedies,
       specialRemedies,  // ✅ Added special remedies
       dashaInterpretations,
-      numberDetails
+      numberDetails,
+      uiData
     };
   }
 
