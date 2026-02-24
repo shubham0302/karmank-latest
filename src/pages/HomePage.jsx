@@ -57,11 +57,39 @@ export default function HomePage() {
       route: "/career-path",
     },
     {
-      title: "KARMANK • KARMIC BLUEPRINT",
+      title: "KARMANK • SACRED PALM ANALYSIS",
       blurb:
-        "Where sacred palm leaf prophecies meet modern pattern recognition. Your unchangeable destiny (Nadi) and adaptable nature (Palm) revealed through advanced analysis.",
-      cta: "Consult",
+        "Ancient Nadi Shastra meets AI precision. Your palm reveals 12 Kandas of destiny, geometric timeline analysis, and sacred remedies for life's journey.",
+      cta: "Reveal",
       route: "/palmistry",
+    },
+    {
+      title: "KARMANK • MANTRA JAAP",
+      blurb:
+        "Sacred chanting companion with digital mala, mic recognition & ambient Om drone. Track your sadhna streaks and deepen your spiritual practice.",
+      cta: "Chant",
+      route: "/mantra-jaap",
+    },
+    {
+      title: "KARMANK • VEDIC ASTROLOGY",
+      blurb:
+        "Professional Jyotish Shastra with Swiss Ephemeris precision. Birth chart, 100+ yogas, Vimshottari Dasha, divisional charts, Shadbala, transits & AI astrologer.",
+      cta: "Explore",
+      route: "/astrology",
+    },
+    {
+      title: "KARMANK • PANCHANG",
+      blurb:
+        "Daily Vedic almanac with all 5 Panchang limbs, Choghadia, Hora, Lagna, Chandrabalam & Tarabalam. Auspicious timings, Rahu Kaal, Abhijit Muhurta and more.",
+      cta: "View",
+      route: "/panchang",
+    },
+    {
+      title: "KARMANK • INDIAN FESTIVALS",
+      blurb:
+        "Explore sacred Hindu festivals, their Vedic significance, auspicious rituals, muhurtas and cosmic alignments — all in one spiritual calendar.",
+      cta: "Explore",
+      route: "/festivals",
     },
   ];
 
@@ -154,6 +182,7 @@ export default function HomePage() {
                   blurb={module.blurb}
                   ctaLabel={module.cta}
                   onPrimary={() => navigate(module.route)}
+                  badge={module.badge}
                 />
               </motion.div>
             ))}

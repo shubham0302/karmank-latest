@@ -59,7 +59,7 @@ app.post('/nlg/generate', async (req: Request, res: Response) => {
       return res.status(500).json({ success: false, message: 'API key not configured' });
     }
 
-    const model = 'gemini-1.5-flash';
+    const model = 'gemini-2.5-flash';
     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`;
 
     const response = await axios.post(apiUrl, {
@@ -161,7 +161,7 @@ Provide insights about:
 Respond in ${language === 'hi' ? 'Hindi' : 'English'} language.
 Keep the response clear, concise, and actionable (about 200-300 words).`;
 
-    const model = 'gemini-1.5-flash';
+    const model = 'gemini-2.5-flash';
     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`;
 
     const response = await axios.post(apiUrl, {

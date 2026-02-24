@@ -33,6 +33,7 @@ export default function FamilyMemberSelector({
   }, [])
 
   // Extract member details when a member is selected
+  // Note: onDetailsChange intentionally excluded from deps to prevent infinite re-render loop
   useEffect(() => {
     if (selectedMemberId && members.length > 0) {
       const selectedMember = members.find(m => m.id === selectedMemberId)
@@ -44,7 +45,10 @@ export default function FamilyMemberSelector({
           birthPlace: selectedMember.birth_place,
           birthTime: selectedMember.birth_time,
           relationship: selectedMember.relationship,
-          memberId: selectedMember.id
+          memberId: selectedMember.id,
+          latitude: selectedMember.latitude || null,
+          longitude: selectedMember.longitude || null,
+          timezone: selectedMember.timezone || null,
         })
       }
     }

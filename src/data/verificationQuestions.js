@@ -356,32 +356,13 @@ export function generateVerificationQuestions(palmImageHash, thumbImageHash, use
  * Generate bundle and leaf numbers deterministically
  */
 export function generateBundleAndLeaf(palmImageHash, thumbImageHash) {
-  const palmSeed = hashString(palmImageHash);
-  const thumbSeed = hashString(thumbImageHash);
-
-  // Bundle numbers: 1-648 (traditional Nadi library has 648 bundles)
-  const bundleNumber = (palmSeed % 648) + 1;
-
-  // Leaf numbers: 1-100 (each bundle has ~100 leaves)
-  const leafNumber = (thumbSeed % 100) + 1;
-
-  // Rishi names (rotate through 7 traditional Rishis)
-  const rishis = [
-    'Agastya',
-    'Koushika',
-    'Vasishta',
-    'Bhrigu',
-    'Suka',
-    'Kausika',
-    'Valmiki'
-  ];
-  const rishiIndex = bundleNumber % rishis.length;
-
+  // SIMPLIFIED: Return static bundle info to avoid confusion
+  // The detailed Nadi analysis is provided by the AI, not by bundle/leaf numbers
   return {
-    bundleNumber,
-    leafNumber,
-    rishi: rishis[rishiIndex],
-    totalLeaves: 18 // Show 18 potential leaves in bundle initially
+    bundleNumber: 1,
+    leafNumber: 1,
+    rishi: 'Traditional Nadi',
+    totalLeaves: 1
   };
 }
 

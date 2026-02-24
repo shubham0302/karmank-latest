@@ -16,6 +16,8 @@ import AssetVibrationPage from './pages/AssetVibrationPage';
 import CareerPathPage from './pages/CareerPathPage';
 import PalmistryPage from './pages/PalmistryPage';
 import MantraJaapPage from './pages/MantraJaapPage';
+import PanchangPage from './pages/PanchangPage';
+import FestivalsPage from './pages/FestivalsPage';
 
 // Lazy-loaded astrology pages (heavy bundle — split into separate chunk)
 const AstrologyPage = lazy(() => import('./astrology/pages/AstrologyPage'));
@@ -146,6 +148,22 @@ const App = () => (
                     element={
                         <ProtectedRoute>
                             <MantraJaapPage />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/panchang"
+                    element={
+                        <ProtectedRoute>
+                            <PanchangPage />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/festivals"
+                    element={
+                        <ProtectedRoute>
+                            <FestivalsPage />
                         </ProtectedRoute>
                     }
                 />

@@ -93,6 +93,56 @@
     -webkit-text-fill-color: transparent;
   }
 
+  /* Astrology cosmic classes */
+  .card-cosmic {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 1rem;
+    box-shadow: 0 0 20px rgba(56, 120, 248, 0.08);
+  }
+
+  .starfield {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    background: radial-gradient(circle at 50% 50%, hsl(240 20% 12%) 0%, hsl(240 30% 5%) 100%);
+    pointer-events: none;
+  }
+
+  .text-gradient-gold {
+    background: linear-gradient(90deg, #facc15 0%, #fbbf24 40%, #f9a8d4 70%, #c084fc 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .btn-cosmic {
+    background: linear-gradient(135deg, hsl(230 70% 50%) 0%, hsl(270 60% 55%) 100%);
+    border: none;
+    border-radius: 0.75rem;
+    color: white;
+    font-weight: 600;
+    transition: opacity 0.2s, transform 0.2s;
+  }
+  .btn-cosmic:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+  }
+  .btn-cosmic:disabled {
+    opacity: 0.5;
+    transform: none;
+  }
+
+  @keyframes fade-in {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .animate-fade-in {
+    animation: fade-in 0.5s ease-out forwards;
+  }
+
   /* Screen/Print View Controls */
   .screen-only-content {
     display: block;

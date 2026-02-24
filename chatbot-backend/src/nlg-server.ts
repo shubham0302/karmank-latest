@@ -16,6 +16,7 @@ const app = express();
 const PORT = Number(process.env.PORT || 8080);
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5178';
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
+const ASTROLOGY_API_URL = process.env.ASTROLOGY_API_URL || 'http://localhost:8000';
 
 // Middleware
 app.use(cors({
@@ -88,7 +89,7 @@ app.post('/nlg/generate', async (req: Request, res: Response) => {
     // Call Gemini API
     console.log(`🔄 Generating NLG for: ${nlgType}`);
 
-    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
 
     const payload = {
       contents: [{
@@ -320,7 +321,7 @@ Respond in ${language === 'hi' ? 'Hindi' : 'English'} language.
 Keep the response clear, concise, and actionable (about 200-300 words).`;
 
     // Call Gemini API (API key secure on backend)
-    const model = 'gemini-1.5-flash';
+    const model = 'gemini-2.5-flash';
     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`;
 
     const response = await axios.post(apiUrl, {
@@ -356,6 +357,48 @@ Keep the response clear, concise, and actionable (about 200-300 words).`;
     return res.status(500).json({
       error: 'name_analysis_error',
       message: err.response?.data?.error?.message || 'Failed to analyze name'
+    });
+  }
+});
+
+// ============================================================================
+// ASTROLOGY ENGINE PROXY — forwards /api/astrology/* to FastAPI backend
+// Path transform: /api/astrology/X  →  /api/X
+// ============================================================================
+
+// Status check — Flutter uses this to know if astrology engine is online
+app.get('/api/astrology/status', async (_req: Request, res: Response) => {
+  try {
+    const healthRes = await axios.get(`${ASTROLOGY_API_URL}/api/health`);
+    res.json({ online: true, astrology_api_url: ASTROLOGY_API_URL, backend_status: healthRes.data });
+  } catch {
+    res.json({ online: false, astrology_api_url: ASTROLOGY_API_URL, backend_status: null });
+  }
+});
+
+// Generic proxy for all remaining /api/astrology/* routes
+app.all('/api/astrology/*', async (req: Request, res: Response) => {
+  const fastApiPath = req.path.replace('/api/astrology/', '/api/');
+  const fastApiUrl = `${ASTROLOGY_API_URL}${fastApiPath}`;
+
+  console.log(`🌟 Astrology proxy: ${req.method} ${fastApiUrl}`);
+
+  try {
+    const response = await axios({
+      method: req.method as any,
+      url: fastApiUrl,
+      headers: { 'Content-Type': 'application/json' },
+      data: req.method !== 'GET' && req.method !== 'HEAD' ? req.body : undefined,
+      validateStatus: () => true, // pass all status codes through
+    });
+    res.status(response.status).json(response.data);
+  } catch (err: any) {
+    console.error('❌ Astrology proxy error:', err.message);
+    res.status(503).json({
+      success: false,
+      error: 'astrology_engine_unavailable',
+      message: 'The Vedic calculation engine is temporarily unavailable.',
+      hint: `Ensure FastAPI backend is running at ${ASTROLOGY_API_URL}`,
     });
   }
 });

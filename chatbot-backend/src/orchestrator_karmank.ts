@@ -13,12 +13,12 @@ import bodyParser from 'body-parser';
 import cors from 'cors';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
-import axios from 'axios';
 import pino from 'pino';
 import { createClient } from 'redis';
 import { Queue, Worker, Job, QueueEvents } from 'bullmq';
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import crypto from 'crypto';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 dotenv.config();
 
@@ -42,7 +42,7 @@ const supabase = createSupabaseClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 
 // LLM Config (Using Gemini as per KarmAnk project)
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
-const GEMINI_API_URL = process.env.GEMINI_API_URL || 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent';
+const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
 
 // Learning Config
 const LEARNING_ENABLED = process.env.LEARNING_ENABLED === 'true';
@@ -64,24 +64,15 @@ const worker = new Worker(
 
     try {
       // Call Gemini API
-      const resp = await axios.post(
-        `${GEMINI_API_URL}?key=${GEMINI_API_KEY}`,
-        {
-          contents: [{
-            parts: [{ text: prompt }]
-          }],
+      const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+      const result = await model.generateContent({
+          contents: [{role: 'user', parts: [{text: prompt}]}],
           generationConfig: {
             temperature: 0.3,
             maxOutputTokens: 500,
           }
-        },
-        {
-          headers: { 'Content-Type': 'application/json' },
-          timeout: 30000,
-        }
-      );
-
-      const aiResponse = resp.data?.candidates?.[0]?.content?.parts?.[0]?.text || 'I apologize, but I could not generate a response.';
+      });
+      const aiResponse = result.response.text() || 'I apologize, but I could not generate a response.';
 
       // Store interaction metadata if learning enabled and user consented
       if (LEARNING_ENABLED && job.data.userConsent) {
@@ -118,25 +109,11 @@ app.use((req, _res, next) => {
 // INFORMATION CLASSIFICATION & POLICY ENFORCEMENT
 // ============================================================================
 
-// Define what information is ALLOWED (user-specific numerology data only)
-const ALLOWED_TOPICS = [
-  'basic number', 'destiny number', 'life path', 'soul urge', 'expression number',
-  'personality number', 'kundli', 'grid', 'yoga', 'dasha', 'maha dasha',
-  'yearly dasha', 'monthly dasha', 'daily dasha', 'remedies', 'rudraksha',
-  'mantra', 'gemstone', 'chakra', 'forecast', 'marriage', 'child birth',
-  'compatibility', 'name analysis', 'asset vibration', 'career path',
-  'traits', 'strengths', 'weaknesses', 'challenges', 'opportunities',
-  'birth date', 'name meaning', 'number meaning', 'planetary influence',
-  'cosmic compatibility', 'psychometric profile', 'destiny traits'
-];
-
-// Define what information is FORBIDDEN (system internals, development details)
-const FORBIDDEN_KEYWORDS = [
-  // System implementation
+// Define what information is FORBIDDEN (system internals, development details, injection attacks)
+const FORBIDDEN_PATTERNS = new RegExp([
+  // System implementation & technical details
   'source code', 'code', 'implementation', 'algorithm', 'function', 'component',
   'git', 'github', 'repository', 'commit', 'branch', 'deploy', 'build',
-
-  // Technical details
   'api', 'endpoint', 'database', 'table', 'schema', 'query', 'sql',
   'server', 'backend', 'frontend', 'framework', 'library', 'dependency',
   'docker', 'container', 'orchestrator', 'redis', 'supabase', 'vercel',
@@ -145,47 +122,40 @@ const FORBIDDEN_KEYWORDS = [
   'api key', 'secret', 'token', 'password', 'credential', 'private key',
   'environment variable', 'env', 'config', 'authentication logic',
 
-  // Development process
-  'how do you work', 'how does this work', 'system architecture',
+  // Development process & meta-questions
+  'how (do|does) (you|this|the system|karmank) work', 'system architecture',
   'data structure', 'file structure', 'module', 'class', 'interface',
   'react', 'vite', 'typescript', 'javascript', 'npm', 'package',
+  'explain (how|why) (you|the system) (calculate|compute|work)',
+  'what (is|are) (your|the) (algorithm|code|implementation)',
+  'show me (the|your) (code|logic|formula)',
 
   // Business logic internals
   'calculation logic', 'formula', 'how do you calculate', 'computation',
-  'data mapping', 'transformation', 'processing pipeline'
-];
+  'data mapping', 'transformation', 'processing pipeline',
+
+  // Prompt Injection / Jailbreaking
+  'ignore all previous instructions', 'ignore your instructions',
+  'act as', 'roleplay as', 'you are now', 'system prompt',
+
+  // Code Injection (SQL & XSS)
+  'select\\s.+from', 'insert\\s+into', 'update\\s.+set', 'delete\\s+from',
+  '<script>', 'onerror='
+].join('|'), 'i');
+
 
 function detectForbiddenRequest(message: string): { forbidden: boolean; reason?: string } {
   if (!message) return { forbidden: false };
 
-  const lower = message.toLowerCase();
+  const match = message.match(FORBIDDEN_PATTERNS);
 
-  // Check for direct forbidden keywords
-  for (const keyword of FORBIDDEN_KEYWORDS) {
-    if (lower.includes(keyword)) {
-      return {
-        forbidden: true,
-        reason: `Questions about ${keyword} are not allowed. I can only help you understand your personal numerology insights.`
-      };
-    }
-  }
-
-  // Check for meta-questions about the system
-  const metaPatterns = [
-    /how (do|does) (you|this|the system|karmank)/i,
-    /what (is|are) (your|the) (algorithm|code|implementation)/i,
-    /show me (the|your) (code|logic|formula)/i,
-    /explain (how|why) (you|the system) (calculate|compute|work)/i,
-    /(source|technical|internal) (code|details|documentation)/i,
-  ];
-
-  for (const pattern of metaPatterns) {
-    if (pattern.test(message)) {
-      return {
-        forbidden: true,
-        reason: "I cannot share technical implementation details or system internals. I'm here to help you understand your personal numerology insights."
-      };
-    }
+  if (match) {
+    // Sanitize the matched keyword for the reason string to avoid echoing a payload
+    const matchedTerm = match[0].replace(/</g, '&lt;');
+    return {
+      forbidden: true,
+      reason: `I cannot discuss topics related to system internals, security, or meta-questions like "${matchedTerm}". My purpose is to provide personal numerology insights.`
+    };
   }
 
   return { forbidden: false };
@@ -566,6 +536,16 @@ async function authenticateUser(authHeader: string): Promise<{ userId: string; e
   }
 }
 
+const authMiddleware = async (req: Request, res: Response, next: Function) => {
+  const authHeader = String(req.headers.authorization || '');
+  const user = await authenticateUser(authHeader);
+  if (!user) {
+    return res.status(401).json({ error: 'unauthorized' });
+  }
+  (req as any).user = user;
+  next();
+};
+
 // ============================================================================
 // ENQUEUE LLM JOB
 // ============================================================================
@@ -595,18 +575,12 @@ app.get('/health', (_req: Request, res: Response) => {
 });
 
 // Main chat endpoint
-app.post('/chat', async (req: Request, res: Response) => {
+app.post('/chat', authMiddleware, async (req: Request, res: Response) => {
   const log = (req as any).log;
+  const user = (req as any).user;
 
   try {
     const { message, userContext, conversationId, userConsent = false } = req.body || {};
-    const authHeader = String(req.headers.authorization || '');
-
-    // Authenticate user
-    const user = await authenticateUser(authHeader);
-    if (!user) {
-      return res.status(401).json({ error: 'unauthorized', message: 'Please log in to use the chatbot.' });
-    }
 
     // Rate limiting
     const rateLimited = await isRateLimited(user.userId);
@@ -702,15 +676,9 @@ Provide a helpful, personal response based ONLY on their numerology data:`;
 });
 
 // Feedback endpoint (thumbs up/down)
-app.post('/chat/feedback', async (req: Request, res: Response) => {
+app.post('/chat/feedback', authMiddleware, async (req: Request, res: Response) => {
   try {
     const { conversationId, feedback } = req.body;
-    const authHeader = String(req.headers.authorization || '');
-
-    const user = await authenticateUser(authHeader);
-    if (!user) {
-      return res.status(401).json({ error: 'unauthorized' });
-    }
 
     if (!conversationId || !['thumbs_up', 'thumbs_down'].includes(feedback)) {
       return res.status(400).json({ error: 'invalid_input' });
@@ -735,15 +703,10 @@ app.post('/chat/feedback', async (req: Request, res: Response) => {
 });
 
 // Consent management endpoint
-app.post('/chat/consent', async (req: Request, res: Response) => {
+app.post('/chat/consent', authMiddleware, async (req: Request, res: Response) => {
+  const user = (req as any).user;
   try {
     const { consent } = req.body; // boolean
-    const authHeader = String(req.headers.authorization || '');
-
-    const user = await authenticateUser(authHeader);
-    if (!user) {
-      return res.status(401).json({ error: 'unauthorized' });
-    }
 
     // Store user's consent preference (create user_chat_preferences table)
     const { error } = await supabase
@@ -767,15 +730,9 @@ app.post('/chat/consent', async (req: Request, res: Response) => {
 });
 
 // Get user's consent status
-app.get('/chat/consent', async (req: Request, res: Response) => {
+app.get('/chat/consent', authMiddleware, async (req: Request, res: Response) => {
+  const user = (req as any).user;
   try {
-    const authHeader = String(req.headers.authorization || '');
-
-    const user = await authenticateUser(authHeader);
-    if (!user) {
-      return res.status(401).json({ error: 'unauthorized' });
-    }
-
     const { data, error } = await supabase
       .from('user_chat_preferences')
       .select('learning_consent')
@@ -836,28 +793,19 @@ app.post('/nlg/generate', async (req: Request, res: Response) => {
     // Call Gemini API
     logger.info({ nlgType }, 'Calling Gemini API for NLG generation');
 
-    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
-
-    const payload = {
-      contents: [{
-        role: "user",
-        parts: [{ text: prompt }]
-      }],
-      generationConfig: {
-        temperature: 0.7,
-        maxOutputTokens: 1000,
-      }
-    };
-
-    const response = await axios.post(geminiUrl, payload, {
-      headers: { 'Content-Type': 'application/json' },
-      timeout: 30000,
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+    const result = await model.generateContent({
+        contents: [{role: 'user', parts: [{text: prompt}]}],
+        generationConfig: {
+          temperature: 0.7,
+          maxOutputTokens: 1000,
+        }
     });
 
-    const generatedText = response.data?.candidates?.[0]?.content?.parts?.[0]?.text;
+    const generatedText = result.response.text();
 
     if (!generatedText) {
-      logger.warn({ response: response.data }, 'No text generated from Gemini');
+      logger.warn({ nlgType }, 'No text generated from Gemini');
       return res.status(500).json({
         error: 'generation_failed',
         message: 'Failed to generate content'
@@ -883,21 +831,6 @@ app.post('/nlg/generate', async (req: Request, res: Response) => {
 
   } catch (err: any) {
     logger.error({ err }, 'NLG generation error');
-
-    // Handle specific Gemini API errors
-    if (err.response?.status === 429) {
-      return res.status(429).json({
-        error: 'rate_limit_exceeded',
-        message: 'API rate limit exceeded. Please try again later.'
-      });
-    }
-
-    if (err.response?.status === 403) {
-      return res.status(403).json({
-        error: 'api_key_invalid',
-        message: 'API key is invalid or expired.'
-      });
-    }
 
     return res.status(500).json({
       error: 'internal_error',

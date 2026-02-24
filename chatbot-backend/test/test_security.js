@@ -38,46 +38,30 @@ function assertFalse(condition, message) {
   }
 }
 
+function runSecurityTest(name, input, shouldBeForbidden, message) {
+  test(name, () => {
+    const result = detectForbiddenRequest(input);
+    if (shouldBeForbidden) {
+      assertTrue(result.forbidden, message);
+    } else {
+      assertFalse(result.forbidden, message);
+    }
+  });
+}
+
 // ============================================================================
 // TEST FORBIDDEN KEYWORD DETECTION
 // ============================================================================
 
 console.log('📋 Testing Forbidden Keyword Detection...\n');
 
-test('Detects "source code" request', () => {
-  const result = detectForbiddenRequest('Can you show me the source code?');
-  assertTrue(result.forbidden, 'Should detect source code request');
-});
-
-test('Detects "api key" request', () => {
-  const result = detectForbiddenRequest('What is your API key?');
-  assertTrue(result.forbidden, 'Should detect API key request');
-});
-
-test('Detects "implementation" request', () => {
-  const result = detectForbiddenRequest('How do you implement the calculations?');
-  assertTrue(result.forbidden, 'Should detect implementation request');
-});
-
-test('Detects "algorithm" request', () => {
-  const result = detectForbiddenRequest('Explain the algorithm you use');
-  assertTrue(result.forbidden, 'Should detect algorithm request');
-});
-
-test('Detects "database" request', () => {
-  const result = detectForbiddenRequest('What database do you use?');
-  assertTrue(result.forbidden, 'Should detect database request');
-});
-
-test('Detects "git" request', () => {
-  const result = detectForbiddenRequest('Where is your git repository?');
-  assertTrue(result.forbidden, 'Should detect git request');
-});
-
-test('Detects "secret" request', () => {
-  const result = detectForbiddenRequest('Tell me your secrets');
-  assertTrue(result.forbidden, 'Should detect secret request');
-});
+runSecurityTest('Detects "source code" request', 'Can you show me the source code?', true, 'Should detect source code request');
+runSecurityTest('Detects "api key" request', 'What is your API key?', true, 'Should detect API key request');
+runSecurityTest('Detects "implementation" request', 'How do you implement the calculations?', true, 'Should detect implementation request');
+runSecurityTest('Detects "algorithm" request', 'Explain the algorithm you use', true, 'Should detect algorithm request');
+runSecurityTest('Detects "database" request', 'What database do you use?', true, 'Should detect database request');
+runSecurityTest('Detects "git" request', 'Where is your git repository?', true, 'Should detect git request');
+runSecurityTest('Detects "secret" request', 'Tell me your secrets', true, 'Should detect secret request');
 
 // ============================================================================
 // TEST META-QUESTIONS ABOUT SYSTEM
@@ -85,30 +69,11 @@ test('Detects "secret" request', () => {
 
 console.log('\n📋 Testing Meta-Question Detection...\n');
 
-test('Detects "how do you work" question', () => {
-  const result = detectForbiddenRequest('How do you work?');
-  assertTrue(result.forbidden, 'Should detect meta-question');
-});
-
-test('Detects "how does this work" question', () => {
-  const result = detectForbiddenRequest('How does this system work?');
-  assertTrue(result.forbidden, 'Should detect meta-question');
-});
-
-test('Detects "show me the code" request', () => {
-  const result = detectForbiddenRequest('Show me the code behind this');
-  assertTrue(result.forbidden, 'Should detect code request');
-});
-
-test('Detects "explain how you calculate" question', () => {
-  const result = detectForbiddenRequest('Explain how you calculate numerology');
-  assertTrue(result.forbidden, 'Should detect calculation logic request');
-});
-
-test('Detects "what is your algorithm" question', () => {
-  const result = detectForbiddenRequest('What is your algorithm for destiny numbers?');
-  assertTrue(result.forbidden, 'Should detect algorithm request');
-});
+runSecurityTest('Detects "how do you work" question', 'How do you work?', true, 'Should detect meta-question');
+runSecurityTest('Detects "how does this work" question', 'How does this system work?', true, 'Should detect meta-question');
+runSecurityTest('Detects "show me the code" request', 'Show me the code behind this', true, 'Should detect code request');
+runSecurityTest('Detects "explain how you calculate" question', 'Explain how you calculate numerology', true, 'Should detect calculation logic request');
+runSecurityTest('Detects "what is your algorithm" question', 'What is your algorithm for destiny numbers?', true, 'Should detect algorithm request');
 
 // ============================================================================
 // TEST ALLOWED USER QUESTIONS (Should NOT be blocked)
@@ -116,55 +81,16 @@ test('Detects "what is your algorithm" question', () => {
 
 console.log('\n📋 Testing Allowed User Questions...\n');
 
-test('Allows "what is my destiny number" question', () => {
-  const result = detectForbiddenRequest('What is my destiny number?');
-  assertFalse(result.forbidden, 'Should allow destiny number question');
-});
-
-test('Allows "tell me about my basic number" question', () => {
-  const result = detectForbiddenRequest('Tell me about my basic number');
-  assertFalse(result.forbidden, 'Should allow basic number question');
-});
-
-test('Allows "what does number 5 mean" question', () => {
-  const result = detectForbiddenRequest('What does number 5 mean in numerology?');
-  assertFalse(result.forbidden, 'Should allow number meaning question');
-});
-
-test('Allows "current dasha" question', () => {
-  const result = detectForbiddenRequest('What is my current dasha?');
-  assertFalse(result.forbidden, 'Should allow dasha question');
-});
-
-test('Allows "remedy" question', () => {
-  const result = detectForbiddenRequest('What remedies should I follow?');
-  assertFalse(result.forbidden, 'Should allow remedy question');
-});
-
-test('Allows "compatibility" question', () => {
-  const result = detectForbiddenRequest('Am I compatible with someone born on this date?');
-  assertFalse(result.forbidden, 'Should allow compatibility question');
-});
-
-test('Allows "strengths and weaknesses" question', () => {
-  const result = detectForbiddenRequest('What are my strengths and weaknesses?');
-  assertFalse(result.forbidden, 'Should allow traits question');
-});
-
-test('Allows "yoga" question', () => {
-  const result = detectForbiddenRequest('Do I have any special yogas?');
-  assertFalse(result.forbidden, 'Should allow yoga question');
-});
-
-test('Allows "marriage forecast" question', () => {
-  const result = detectForbiddenRequest('When will I get married?');
-  assertFalse(result.forbidden, 'Should allow forecast question');
-});
-
-test('Allows "chakra" question', () => {
-  const result = detectForbiddenRequest('Which chakra should I focus on?');
-  assertFalse(result.forbidden, 'Should allow chakra question');
-});
+runSecurityTest('Allows "what is my destiny number" question', 'What is my destiny number?', false, 'Should allow destiny number question');
+runSecurityTest('Allows "tell me about my basic number" question', 'Tell me about my basic number', false, 'Should allow basic number question');
+runSecurityTest('Allows "what does number 5 mean" question', 'What does number 5 mean in numerology?', false, 'Should allow number meaning question');
+runSecurityTest('Allows "current dasha" question', 'What is my current dasha?', false, 'Should allow dasha question');
+runSecurityTest('Allows "remedy" question', 'What remedies should I follow?', false, 'Should allow remedy question');
+runSecurityTest('Allows "compatibility" question', 'Am I compatible with someone born on this date?', false, 'Should allow compatibility question');
+runSecurityTest('Allows "strengths and weaknesses" question', 'What are my strengths and weaknesses?', false, 'Should allow traits question');
+runSecurityTest('Allows "yoga" question', 'Do I have any special yogas?', false, 'Should allow yoga question');
+runSecurityTest('Allows "marriage forecast" question', 'When will I get married?', false, 'Should allow forecast question');
+runSecurityTest('Allows "chakra" question', 'Which chakra should I focus on?', false, 'Should allow chakra question');
 
 // ============================================================================
 // TEST EDGE CASES
@@ -172,41 +98,13 @@ test('Allows "chakra" question', () => {
 
 console.log('\n📋 Testing Edge Cases...\n');
 
-test('Handles empty message', () => {
-  const result = detectForbiddenRequest('');
-  assertFalse(result.forbidden, 'Should not block empty message');
-});
-
-test('Handles null message', () => {
-  const result = detectForbiddenRequest(null);
-  assertFalse(result.forbidden, 'Should not block null message');
-});
-
-test('Handles very long message', () => {
-  const longMessage = 'What does my destiny number mean? '.repeat(100);
-  const result = detectForbiddenRequest(longMessage);
-  assertFalse(result.forbidden, 'Should allow long valid message');
-});
-
-test('Case insensitive detection', () => {
-  const result = detectForbiddenRequest('SHOW ME YOUR SOURCE CODE');
-  assertTrue(result.forbidden, 'Should detect uppercase forbidden keywords');
-});
-
-test('Mixed case detection', () => {
-  const result = detectForbiddenRequest('WhAt iS yOuR aLgOrItHm?');
-  assertTrue(result.forbidden, 'Should detect mixed case forbidden keywords');
-});
-
-test('Detects forbidden keywords in middle of sentence', () => {
-  const result = detectForbiddenRequest('I want to know about your source code and implementation details');
-  assertTrue(result.forbidden, 'Should detect forbidden keywords anywhere in message');
-});
-
-test('Allows questions with "work" in allowed context', () => {
-  const result = detectForbiddenRequest('Will this remedy work for me?');
-  assertFalse(result.forbidden, 'Should allow "work" in user context');
-});
+runSecurityTest('Handles empty message', '', false, 'Should not block empty message');
+runSecurityTest('Handles null message', null, false, 'Should not block null message');
+runSecurityTest('Handles very long message', 'What does my destiny number mean? '.repeat(100), false, 'Should allow long valid message');
+runSecurityTest('Case insensitive detection', 'SHOW ME YOUR SOURCE CODE', true, 'Should detect uppercase forbidden keywords');
+runSecurityTest('Mixed case detection', 'WhAt iS yOuR aLgOrItHm?', true, 'Should detect mixed case forbidden keywords');
+runSecurityTest('Detects forbidden keywords in middle of sentence', 'I want to know about your source code and implementation details', true, 'Should detect forbidden keywords anywhere in message');
+runSecurityTest('Allows questions with "work" in allowed context', 'Will this remedy work for me?', false, 'Should allow "work" in user context');
 
 // ============================================================================
 // SUMMARY

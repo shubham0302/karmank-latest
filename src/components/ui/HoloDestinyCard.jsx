@@ -7,6 +7,7 @@ export default function HoloDestinyCard({
   blurb,
   ctaLabel,
   onPrimary,
+  badge = null,
   className = "",
 }) {
   return (
@@ -67,6 +68,22 @@ export default function HoloDestinyCard({
               {title}
             </GradientText>
 
+            {/* Status badge */}
+            {badge && (
+              <div className="flex justify-center mt-1 mb-1">
+                <span
+                  className="
+                    inline-block px-3 py-0.5 rounded-full text-[11px] font-semibold tracking-widest uppercase
+                    bg-gradient-to-r from-amber-500/30 to-orange-500/30
+                    text-amber-300 border border-amber-400/40
+                    shadow-[0_0_8px_rgba(251,191,36,0.2)]
+                  "
+                >
+                  {badge}
+                </span>
+              </div>
+            )}
+
             {/* Blurb */}
             <p className="mt-3 text-center text-white/85 tracking-[0.01em] leading-7 md:leading-7">
               {blurb}
@@ -76,15 +93,17 @@ export default function HoloDestinyCard({
             <div className="mt-auto pt-2">
               <div className="flex justify-center">
                 <button
-                  onClick={onPrimary}
-                  className="
+                  onClick={badge === "Coming Soon" ? undefined : onPrimary}
+                  disabled={badge === "Coming Soon"}
+                  className={`
                     w-full max-w-[200px]
                     px-5 py-2 rounded-xl
-                    bg-gradient-to-r from-[#3b82f6] to-[#4f46e5]
-                    text-white font-semibold
-                    shadow-[0_8px_28px_rgba(59,130,246,0.25)]
-                    hover:opacity-95 transition
-                  "
+                    text-white font-semibold transition
+                    ${badge === "Coming Soon"
+                      ? "bg-white/10 text-white/40 cursor-not-allowed border border-white/10"
+                      : "bg-gradient-to-r from-[#3b82f6] to-[#4f46e5] shadow-[0_8px_28px_rgba(59,130,246,0.25)] hover:opacity-95"
+                    }
+                  `}
                 >
                   {ctaLabel}
                 </button>
