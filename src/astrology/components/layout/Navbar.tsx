@@ -4,13 +4,10 @@ import { useState } from 'react';
 
 const NAV_LINKS = [
   { to: '/', label: 'Home', icon: Home },
-  { to: '/astrology/birth-chart', label: 'Birth Chart' },
-  { to: '/astrology/yoga-lab', label: 'Yoga Lab' },
-  { to: '/astrology/divisional-charts', label: 'Divisional Charts' },
-  { to: '/astrology/remedies', label: 'Remedies', icon: Sparkles },
+  { to: '/astrology/yoga-lab', label: 'Yoga Lab', icon: Sparkles },
+  { to: '/astrology/remedies', label: 'Remedies' },
   { to: '/astrology/stotras', label: 'Stotras', icon: BookOpen },
   { to: '/astrology/astrologer', label: 'AI Astrologer' },
-  { to: '/astrology/nadi', label: 'Nadi Shastra' },
 ];
 
 const Navbar = () => {

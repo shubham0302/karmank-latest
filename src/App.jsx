@@ -21,14 +21,10 @@ import FestivalsPage from './pages/FestivalsPage';
 
 // Lazy-loaded astrology pages (heavy bundle — split into separate chunk)
 const AstrologyPage = lazy(() => import('./astrology/pages/AstrologyPage'));
-const AstrologyBirthChart = lazy(() => import('./astrology/pages/BirthChart'));
 const AstrologyYogaLab = lazy(() => import('./astrology/pages/YogaLabLive'));
 const AstrologyRemedies = lazy(() => import('./astrology/pages/Remedies'));
 const AstrologyStotras = lazy(() => import('./astrology/pages/StotrasLibrary'));
 const AstrologyAstrologer = lazy(() => import('./astrology/pages/Astrologer'));
-const AstrologyDivisional = lazy(() => import('./astrology/pages/DivisionalCharts'));
-const AstrologyValidation = lazy(() => import('./astrology/pages/ValidationDashboard'));
-const AstrologyNadi = lazy(() => import('./astrology/pages/NadiShastra'));
 
 // Fallback loader for lazy pages
 const PageLoader = () => (
@@ -50,6 +46,9 @@ const queryClient = new QueryClient({
         queries: {
             retry: 1,
             staleTime: 1000 * 60 * 5, // 5 minutes
+            // Prevent aggressive re-fetch storms (especially when backend is offline)
+            refetchOnWindowFocus: false,
+            refetchOnReconnect: false,
         },
     },
 });
@@ -179,16 +178,6 @@ const App = () => (
                     }
                 />
                 <Route
-                    path="/astrology/birth-chart"
-                    element={
-                        <ProtectedRoute>
-                            <Suspense fallback={<PageLoader />}>
-                                <AstrologyBirthChart />
-                            </Suspense>
-                        </ProtectedRoute>
-                    }
-                />
-                <Route
                     path="/astrology/yoga-lab"
                     element={
                         <ProtectedRoute>
@@ -224,36 +213,6 @@ const App = () => (
                         <ProtectedRoute>
                             <Suspense fallback={<PageLoader />}>
                                 <AstrologyAstrologer />
-                            </Suspense>
-                        </ProtectedRoute>
-                    }
-                />
-                <Route
-                    path="/astrology/divisional-charts"
-                    element={
-                        <ProtectedRoute>
-                            <Suspense fallback={<PageLoader />}>
-                                <AstrologyDivisional />
-                            </Suspense>
-                        </ProtectedRoute>
-                    }
-                />
-                <Route
-                    path="/astrology/validation"
-                    element={
-                        <ProtectedRoute>
-                            <Suspense fallback={<PageLoader />}>
-                                <AstrologyValidation />
-                            </Suspense>
-                        </ProtectedRoute>
-                    }
-                />
-                <Route
-                    path="/astrology/nadi"
-                    element={
-                        <ProtectedRoute>
-                            <Suspense fallback={<PageLoader />}>
-                                <AstrologyNadi />
                             </Suspense>
                         </ProtectedRoute>
                     }
