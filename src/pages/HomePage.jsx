@@ -4,7 +4,11 @@ import { motion } from "framer-motion";
 import CosmicBackground from "../components/CosmicBackground";
 import HoloDestinyCard from "../components/ui/HoloDestinyCard";
 import { GradientText, gradientUtils } from "../components/GradientText";
-import { Crown, Sparkles, User } from "lucide-react";
+import {
+  Crown, Sparkles, User,
+  Hash, AlignLeft, Heart, Building2, BookOpen, Briefcase,
+  Hand, Music2, Star, CalendarDays, PartyPopper,
+} from "lucide-react";
 
 export default function HomePage() {
   const navigate = useNavigate();
@@ -16,6 +20,8 @@ export default function HomePage() {
   const modules = [
     {
       title: "KARMANK • NUMEROLOGY",
+      subtitle: "Vedic 3×3 Grid & Dasha",
+      icon: Hash,
       blurb:
         "Decode your 3×3 Vedic grid, karmic patterns and the sacred mathematics shaping your life's rhythm.",
       cta: "Explore",
@@ -23,6 +29,8 @@ export default function HomePage() {
     },
     {
       title: "KARMANK • NAME ANALYSIS",
+      subtitle: "Name Vibration & Destiny Sync",
+      icon: AlignLeft,
       blurb:
         "Uncover name vibrations, auspicious spellings and alignment with your destiny grid.",
       cta: "Analyze",
@@ -30,6 +38,8 @@ export default function HomePage() {
     },
     {
       title: "KARMANK • COSMIC COMPATIBILITY",
+      subtitle: "Vedic Synergy & Guna Milan",
+      icon: Heart,
       blurb:
         "Measure synergy for partners, teams and relationships using authentic Vedic numerology.",
       cta: "Check",
@@ -37,6 +47,8 @@ export default function HomePage() {
     },
     {
       title: "KARMANK • ASSET VIBRATION",
+      subtitle: "Property & Investment Alignment",
+      icon: Building2,
       blurb:
         "Discover cosmic alignment of properties, businesses, vehicles & investments with your destiny numbers.",
       cta: "Analyze",
@@ -44,6 +56,8 @@ export default function HomePage() {
     },
     {
       title: "KARMANK • GITA GYAN",
+      subtitle: "Bhagavad Gita Wisdom",
+      icon: BookOpen,
       blurb:
         "Timeless wisdom of the Bhagavad Gita mapped to modern decisions and your numerological signatures.",
       cta: "Open",
@@ -51,6 +65,8 @@ export default function HomePage() {
     },
     {
       title: "KARMANK • CAREER PATH",
+      subtitle: "Psychometric & Vedic Profiling",
+      icon: Briefcase,
       blurb:
         "Psychometric profiling for students: Discover your personality, interests & aptitude aligned with Vedic numerology.",
       cta: "Begin",
@@ -58,6 +74,8 @@ export default function HomePage() {
     },
     {
       title: "KARMANK • SACRED PALM ANALYSIS",
+      subtitle: "Nadi Shastra & AI Vision",
+      icon: Hand,
       blurb:
         "Ancient Nadi Shastra meets AI precision. Your palm reveals 12 Kandas of destiny, geometric timeline analysis, and sacred remedies for life's journey.",
       cta: "Reveal",
@@ -65,6 +83,8 @@ export default function HomePage() {
     },
     {
       title: "KARMANK • MANTRA JAAP",
+      subtitle: "Digital Mala & Sadhna Tracker",
+      icon: Music2,
       blurb:
         "Sacred chanting companion with digital mala, mic recognition & ambient Om drone. Track your sadhna streaks and deepen your spiritual practice.",
       cta: "Chant",
@@ -72,6 +92,8 @@ export default function HomePage() {
     },
     {
       title: "KARMANK • VEDIC ASTROLOGY",
+      subtitle: "Swiss Ephemeris Jyotish Engine",
+      icon: Star,
       blurb:
         "Professional Jyotish Shastra with Swiss Ephemeris precision. Birth chart, 100+ yogas, Vimshottari Dasha, divisional charts, Shadbala, transits & AI astrologer.",
       cta: "Explore",
@@ -79,6 +101,8 @@ export default function HomePage() {
     },
     {
       title: "KARMANK • PANCHANG",
+      subtitle: "Daily Vedic Almanac",
+      icon: CalendarDays,
       blurb:
         "Daily Vedic almanac with all 5 Panchang limbs, Choghadia, Hora, Lagna, Chandrabalam & Tarabalam. Auspicious timings, Rahu Kaal, Abhijit Muhurta and more.",
       cta: "View",
@@ -86,6 +110,8 @@ export default function HomePage() {
     },
     {
       title: "KARMANK • INDIAN FESTIVALS",
+      subtitle: "Sacred Hindu Calendar",
+      icon: PartyPopper,
       blurb:
         "Explore sacred Hindu festivals, their Vedic significance, auspicious rituals, muhurtas and cosmic alignments — all in one spiritual calendar.",
       cta: "Explore",
@@ -179,7 +205,10 @@ export default function HomePage() {
               >
                 <HoloDestinyCard
                   title={module.title.split("•")[1].trim()}
+                  subtitle={module.subtitle}
+                  icon={module.icon}
                   blurb={module.blurb}
+                  blurbMaxLines={3}
                   ctaLabel={module.cta}
                   onPrimary={() => navigate(module.route)}
                   badge={module.badge}

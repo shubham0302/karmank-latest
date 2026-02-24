@@ -4,19 +4,45 @@ import GradientText from "../GradientText";
 
 export default function HoloDestinyCard({
   title,
+  subtitle = "",
   blurb,
   ctaLabel,
   onPrimary,
   badge = null,
+  icon: Icon = null,
+  blurbMaxLines = null,
   className = "",
 }) {
+  const isDisabled = badge === "Coming Soon" || !onPrimary;
+  const handleActivate = () => {
+    if (!isDisabled && onPrimary) onPrimary();
+  };
+  const blurbClampStyle = blurbMaxLines
+    ? {
+        display: "-webkit-box",
+        WebkitLineClamp: blurbMaxLines,
+        WebkitBoxOrient: "vertical",
+        overflow: "hidden",
+      }
+    : undefined;
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       whileHover={{ y: -3 }}
       transition={{ duration: 0.35, ease: "easeOut" }}
-      className={`relative w-full ${className}`}
+      className={`relative w-full ${isDisabled ? "" : "cursor-pointer"} ${className}`}
+      onClick={handleActivate}
+      role={isDisabled ? undefined : "button"}
+      tabIndex={isDisabled ? -1 : 0}
+      onKeyDown={(e) => {
+        if (isDisabled) return;
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          handleActivate();
+        }
+      }}
     >
       {/* Cosmic aura behind the card */}
       <div
@@ -40,7 +66,7 @@ export default function HoloDestinyCard({
         }}
       >
         {/* Glass core: fixed height + flex column so the CTA stays at the bottom */}
-        <div className="relative h-[240px] md:h-[260px] rounded-[22px] overflow-hidden backdrop-blur-xl bg-gradient-to-b from-white/5 to-white/[0.02] border border-white/10">
+        <div className="relative h-[270px] md:h-[290px] rounded-[22px] overflow-hidden backdrop-blur-xl bg-gradient-to-b from-white/5 to-white/[0.02] border border-white/10">
           {/* Subtle inner glow for depth */}
           <div
             className="absolute inset-0 pointer-events-none"
@@ -59,6 +85,13 @@ export default function HoloDestinyCard({
 
           {/* CONTENT */}
           <div className="relative z-10 h-full flex flex-col p-5 md:p-6">
+            {Icon && (
+              <div className="flex justify-center mb-2">
+                <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-cyan-300/30 bg-cyan-400/10 text-cyan-200">
+                  <Icon className="h-5 w-5" />
+                </span>
+              </div>
+            )}
             {/* Title */}
 
             <GradientText
@@ -67,6 +100,12 @@ export default function HoloDestinyCard({
             >
               {title}
             </GradientText>
+
+            {subtitle && (
+              <p className="mt-1 text-center text-[11px] md:text-xs uppercase tracking-widest text-cyan-100/65">
+                {subtitle}
+              </p>
+            )}
 
             {/* Status badge */}
             {badge && (
@@ -85,7 +124,10 @@ export default function HoloDestinyCard({
             )}
 
             {/* Blurb */}
-            <p className="mt-3 text-center text-white/85 tracking-[0.01em] leading-7 md:leading-7">
+            <p
+              className="mt-3 text-center text-white/85 tracking-[0.01em] leading-7 md:leading-7"
+              style={blurbClampStyle}
+            >
               {blurb}
             </p>
 
@@ -93,13 +135,16 @@ export default function HoloDestinyCard({
             <div className="mt-auto pt-2">
               <div className="flex justify-center">
                 <button
-                  onClick={badge === "Coming Soon" ? undefined : onPrimary}
-                  disabled={badge === "Coming Soon"}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleActivate();
+                  }}
+                  disabled={isDisabled}
                   className={`
                     w-full max-w-[200px]
                     px-5 py-2 rounded-xl
                     text-white font-semibold transition
-                    ${badge === "Coming Soon"
+                    ${isDisabled
                       ? "bg-white/10 text-white/40 cursor-not-allowed border border-white/10"
                       : "bg-gradient-to-r from-[#3b82f6] to-[#4f46e5] shadow-[0_8px_28px_rgba(59,130,246,0.25)] hover:opacity-95"
                     }
