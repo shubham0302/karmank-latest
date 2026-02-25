@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   ArrowLeft, Sun, AlertCircle, RefreshCw, TrendingUp, User,
-  MapPin, Clock, CheckCircle2, ExternalLink
+  MapPin, Clock, CheckCircle2, ExternalLink, ChevronDown, ChevronUp
 } from "lucide-react";
 import CosmicBackground from "../components/CosmicBackground";
 import { useProfileBirthData } from "../hooks/useProfileBirthData";
@@ -29,6 +29,69 @@ const QUALITY_CONFIG = {
   moderate:  { label: "Mixed Year",        bg: "bg-amber-500/10 border-amber-400/30",     text: "text-amber-300",  dot: "bg-amber-400" },
   mixed:     { label: "Complex Year",      bg: "bg-violet-500/10 border-violet-400/30",   text: "text-violet-300", dot: "bg-violet-400" },
 };
+
+const ASPECT_COLORS = {
+  emerald: { bg: "bg-emerald-500/10 border-emerald-400/25", badge: "bg-emerald-500/20 text-emerald-300 border-emerald-400/30", dot: "bg-emerald-400", label: "Favorable" },
+  cyan:    { bg: "bg-cyan-500/10 border-cyan-400/25",       badge: "bg-cyan-500/20 text-cyan-300 border-cyan-400/30",       dot: "bg-cyan-400",    label: "Positive" },
+  amber:   { bg: "bg-amber-500/10 border-amber-400/25",     badge: "bg-amber-500/20 text-amber-300 border-amber-400/30",     dot: "bg-amber-400",   label: "Mixed" },
+  orange:  { bg: "bg-orange-500/10 border-orange-400/25",   badge: "bg-orange-500/20 text-orange-300 border-orange-400/30",  dot: "bg-orange-400",  label: "Challenging" },
+  red:     { bg: "bg-red-500/10 border-red-400/25",         badge: "bg-red-500/20 text-red-300 border-red-400/30",           dot: "bg-red-400",     label: "Difficult" },
+};
+
+function AspectCard({ aspect }) {
+  const [open, setOpen] = React.useState(false);
+  const cfg = ASPECT_COLORS[aspect.rating_color] || ASPECT_COLORS.amber;
+  return (
+    <div className={`rounded-xl border p-4 ${cfg.bg} transition-all`}>
+      <div className="flex items-start justify-between gap-2">
+        <div className="flex items-center gap-2 min-w-0">
+          <span className="text-xl shrink-0">{aspect.emoji}</span>
+          <div className="min-w-0">
+            <div className="text-sm font-semibold text-white truncate">{aspect.title}</div>
+            <span className={`inline-flex items-center gap-1 mt-0.5 text-[10px] font-medium px-2 py-0.5 rounded-full border ${cfg.badge}`}>
+              <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`} />
+              {cfg.label}
+            </span>
+          </div>
+        </div>
+        <button
+          onClick={() => setOpen(o => !o)}
+          className="shrink-0 text-white/30 hover:text-white/60 transition mt-0.5"
+        >
+          {open ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+        </button>
+      </div>
+
+      {/* First insight always visible */}
+      {aspect.insights?.length > 0 && (
+        <p className="mt-3 text-xs text-white/60 leading-relaxed">
+          {aspect.insights[0]}
+        </p>
+      )}
+
+      {/* Expanded: remaining insights + planet chips */}
+      {open && (
+        <div className="mt-2 space-y-2">
+          {aspect.insights?.slice(1).map((ins, i) => (
+            <p key={i} className="text-xs text-white/50 leading-relaxed flex gap-2">
+              <span className="text-white/20 mt-0.5 shrink-0">›</span>
+              {ins}
+            </p>
+          ))}
+          {aspect.planets_in_houses?.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 pt-1">
+              {aspect.planets_in_houses.map(p => (
+                <span key={p} className="text-[10px] bg-white/5 border border-white/10 text-white/40 px-2 py-0.5 rounded-full">
+                  {p}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
 
 // ─── Profile Card ─────────────────────────────────────────────────────────────
 
@@ -448,6 +511,20 @@ export default function VarshaphalaPage() {
                   ))}
                 </div>
               </div>
+
+              {/* Life Aspects */}
+              {result.life_aspects?.length > 0 && (
+                <div>
+                  <h3 className="text-xs text-white/40 uppercase tracking-widest mb-3">
+                    Life Aspects — {targetYear}
+                  </h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {result.life_aspects.map(aspect => (
+                      <AspectCard key={aspect.key} aspect={aspect} />
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Recalculate for different year hint */}
               <div className="pt-2 border-t border-white/10 flex items-center justify-between text-xs text-white/25">
