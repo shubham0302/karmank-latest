@@ -12,6 +12,11 @@ import {
   AlertCircle,
   Pencil,
   X,
+  ChevronDown,
+  Calendar,
+  MapPin,
+  Clock,
+  User,
 } from "lucide-react";
 import CosmicBackground from "../components/CosmicBackground";
 import { useFamilyMembers } from "@/hooks/useFamilyMembers";
@@ -42,6 +47,9 @@ export default function ProfilePage() {
   } = useFamilyMembers();
 
   const [activeTab, setActiveTab] = useState(TABS.PROFILE);
+  const [selectedMemberId, setSelectedMemberId] = useState(null);
+  const [memberDropdownOpen, setMemberDropdownOpen] = useState(false);
+  const [editingProfileMember, setEditingProfileMember] = useState(null);
   const [showAddForm, setShowAddForm] = useState(false);
   const [addError, setAddError] = useState(null);
   const [addLoading, setAddLoading] = useState(false);
@@ -56,6 +64,13 @@ export default function ProfilePage() {
   useEffect(() => {
     getFamilyMembersData();
   }, []);
+
+  // Auto-select first member once loaded
+  useEffect(() => {
+    if (members.length > 0 && !selectedMemberId) {
+      setSelectedMemberId(members[0].id);
+    }
+  }, [members]);
 
   const handleAddMember = async (formData) => {
     setAddLoading(true);
@@ -88,12 +103,14 @@ export default function ProfilePage() {
   };
 
   const handleEditMember = async (formData) => {
-    if (!editingMember) return;
+    // Support edits from both the Family tab (editingMember) and the Profile dropdown (editingProfileMember)
+    const target = editingMember || editingProfileMember;
+    if (!target) return;
     setEditLoading(true);
     setEditError(null);
     setEditSuccess(false);
     try {
-      const { success, error } = await updateMember(editingMember.id, formData);
+      const { success, error } = await updateMember(target.id, formData);
       if (!success) {
         setEditError(error?.message || 'Failed to update member');
         setEditLoading(false);
@@ -221,6 +238,121 @@ export default function ProfilePage() {
                   </motion.button>
                 </div>
               </GlassCard>
+
+              {/* ── Active Member Dropdown ── */}
+              {members.length > 0 && (() => {
+                const activeMember = members.find(m => m.id === selectedMemberId) || members[0];
+                return (
+                  <GlassCard className="bg-gradient-to-br from-violet-500/10 to-purple-500/5 border-violet-400/20">
+                    <div className="space-y-3">
+                      <p className="text-white/50 text-xs font-semibold uppercase tracking-widest">Active Profile</p>
+
+                      {/* Dropdown trigger */}
+                      <div className="relative">
+                        <button
+                          onClick={() => setMemberDropdownOpen(o => !o)}
+                          className="w-full flex items-center justify-between gap-3 px-4 py-3 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-violet-400/40 rounded-xl transition"
+                        >
+                          <div className="flex items-center gap-3 min-w-0">
+                            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-violet-400 to-purple-600 flex items-center justify-center shrink-0">
+                              <span className="text-white font-bold text-sm">
+                                {activeMember.name?.charAt(0)?.toUpperCase()}
+                              </span>
+                            </div>
+                            <div className="min-w-0 text-left">
+                              <p className="text-white font-semibold text-sm truncate">{activeMember.name}</p>
+                              <p className="text-white/40 text-xs capitalize">{activeMember.relationship || "Member"}</p>
+                            </div>
+                          </div>
+                          <ChevronDown className={`h-4 w-4 text-white/40 shrink-0 transition-transform ${memberDropdownOpen ? "rotate-180" : ""}`} />
+                        </button>
+
+                        {/* Dropdown list */}
+                        {memberDropdownOpen && (
+                          <motion.div
+                            initial={{ opacity: 0, y: -6 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="absolute top-full left-0 right-0 mt-1 bg-[#0f0f1a] border border-violet-400/30 rounded-xl shadow-2xl z-20 overflow-hidden"
+                          >
+                            {members.map(m => (
+                              <button
+                                key={m.id}
+                                onClick={() => { setSelectedMemberId(m.id); setMemberDropdownOpen(false); setEditingProfileMember(null); }}
+                                className={`w-full flex items-center gap-3 px-4 py-3 text-left transition hover:bg-white/5 ${m.id === selectedMemberId ? "bg-violet-500/10" : ""}`}
+                              >
+                                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-400 to-purple-600 flex items-center justify-center shrink-0">
+                                  <span className="text-white font-bold text-xs">{m.name?.charAt(0)?.toUpperCase()}</span>
+                                </div>
+                                <div className="min-w-0">
+                                  <p className="text-white text-sm font-medium truncate">{m.name}</p>
+                                  <p className="text-white/40 text-xs capitalize">{m.relationship || "Member"}</p>
+                                </div>
+                                {m.id === selectedMemberId && <CheckCircle className="h-4 w-4 text-violet-400 ml-auto shrink-0" />}
+                              </button>
+                            ))}
+                          </motion.div>
+                        )}
+                      </div>
+
+                      {/* Selected member details */}
+                      {editingProfileMember?.id === activeMember.id ? (
+                        <div className="mt-1">
+                          <div className="flex items-center justify-between mb-3">
+                            <p className="text-white/60 text-xs font-semibold uppercase tracking-widest">Edit Details</p>
+                            <button onClick={() => setEditingProfileMember(null)} className="p-1 rounded text-white/30 hover:text-white/70 hover:bg-white/10 transition">
+                              <X className="h-3.5 w-3.5" />
+                            </button>
+                          </div>
+                          <FamilyMemberForm
+                            defaultValues={activeMember}
+                            onSubmit={async (formData) => {
+                              await handleEditMember(formData);
+                              setEditingProfileMember(null);
+                            }}
+                            submitLabel="Save Changes"
+                            loading={editLoading}
+                          />
+                          {editError && <p className="text-red-400 text-xs mt-2">{editError}</p>}
+                        </div>
+                      ) : (
+                        <div className="space-y-2 pt-1">
+                          {activeMember.date_of_birth && (
+                            <div className="flex items-center gap-2 text-sm text-white/70">
+                              <Calendar className="h-3.5 w-3.5 text-violet-400 shrink-0" />
+                              <span>{new Date(activeMember.date_of_birth).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })}</span>
+                            </div>
+                          )}
+                          {activeMember.birth_time && (
+                            <div className="flex items-center gap-2 text-sm text-white/70">
+                              <Clock className="h-3.5 w-3.5 text-violet-400 shrink-0" />
+                              <span>{activeMember.birth_time}</span>
+                            </div>
+                          )}
+                          {activeMember.birth_place && (
+                            <div className="flex items-center gap-2 text-sm text-white/70">
+                              <MapPin className="h-3.5 w-3.5 text-violet-400 shrink-0" />
+                              <span className="truncate">{activeMember.birth_place}</span>
+                            </div>
+                          )}
+                          {activeMember.gender && (
+                            <div className="flex items-center gap-2 text-sm text-white/70">
+                              <User className="h-3.5 w-3.5 text-violet-400 shrink-0" />
+                              <span className="capitalize">{activeMember.gender}</span>
+                            </div>
+                          )}
+                          <button
+                            onClick={() => setEditingProfileMember(activeMember)}
+                            className="mt-2 flex items-center gap-1.5 text-xs text-violet-400 hover:text-violet-300 transition"
+                          >
+                            <Pencil className="h-3 w-3" />
+                            Edit this profile
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </GlassCard>
+                );
+              })()}
 
               {/* Info Box */}
               <GlassCard className="bg-gradient-to-br from-purple-500/10 to-blue-500/5 border-purple-500/20 p-5">
