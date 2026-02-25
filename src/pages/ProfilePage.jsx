@@ -10,6 +10,8 @@ import {
   CheckCircle,
   Trash2,
   AlertCircle,
+  Pencil,
+  X,
 } from "lucide-react";
 import CosmicBackground from "../components/CosmicBackground";
 import { useFamilyMembers } from "@/hooks/useFamilyMembers";
