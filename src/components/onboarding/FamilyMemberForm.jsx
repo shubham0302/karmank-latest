@@ -1,10 +1,42 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { AlertCircle } from "lucide-react";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Button } from "../ui/button";
 import LocationSearchInput from "../LocationSearchInput";
+
+// ─── Time helpers ────────────────────────────────────────────────────────────
+
+/** Parse a 24-hour "HH:MM" string into { hour12, minute, period } */
+function parse24h(value) {
+  const m = (value || "").match(/^(\d{1,2}):(\d{2})$/);
+  if (!m) return { hour12: "12", minute: "00", period: "AM" };
+  let h = parseInt(m[1], 10);
+  const min = m[2];
+  const period = h < 12 ? "AM" : "PM";
+  if (h === 0) h = 12;
+  else if (h > 12) h -= 12;
+  return { hour12: String(h), minute: min, period };
+}
+
+/** Convert { hour12, minute, period } back to 24-hour "HH:MM" */
+function to24h({ hour12, minute, period }) {
+  let h = parseInt(hour12, 10);
+  if (period === "AM") {
+    if (h === 12) h = 0;
+  } else {
+    if (h !== 12) h += 12;
+  }
+  return `${String(h).padStart(2, "0")}:${minute}`;
+}
+
+const HOURS = Array.from({ length: 12 }, (_, i) => String(i + 1));
+const MINUTES = Array.from({ length: 60 }, (_, i) =>
+  String(i).padStart(2, "0")
+);
+
+// ─── Component ───────────────────────────────────────────────────────────────
 
 export default function FamilyMemberForm({
   onSubmit,
@@ -26,6 +58,13 @@ export default function FamilyMemberForm({
       defaultValues.relationship ||
       (currentMemberCount === 0 ? "self" : "other"),
   });
+
+  // Separate AM/PM picker state (derived from birth_time on init)
+  const [timePicker, setTimePicker] = useState(() =>
+    parse24h(defaultValues.birth_time || "")
+  );
+  // Whether the user has touched the time picker at all
+  const [timeSet, setTimeSet] = useState(!!(defaultValues.birth_time));
 
   const [errors, setErrors] = useState({});
 
@@ -67,13 +106,6 @@ export default function FamilyMemberForm({
       newErrors.birth_place = "Birth place must not exceed 200 characters";
     }
 
-    if (formData.birth_time) {
-      const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
-      if (!timeRegex.test(formData.birth_time)) {
-        newErrors.birth_time = "Please enter time in HH:MM format";
-      }
-    }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -99,12 +131,28 @@ export default function FamilyMemberForm({
     }
   };
 
+  const handleTimeChange = (field, value) => {
+    const next = { ...timePicker, [field]: value };
+    setTimePicker(next);
+    setTimeSet(true);
+    setFormData((prev) => ({ ...prev, birth_time: to24h(next) }));
+  };
+
+  const handleClearTime = () => {
+    setTimeSet(false);
+    setTimePicker({ hour12: "12", minute: "00", period: "AM" });
+    setFormData((prev) => ({ ...prev, birth_time: "" }));
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     if (validateForm()) {
       onSubmit(formData);
     }
   };
+
+  const selectClass =
+    "bg-white/5 border border-white/10 text-white rounded-md px-2 py-2 text-sm focus:outline-none focus:border-cyan-400/50 disabled:opacity-50 cursor-pointer appearance-none text-center";
 
   return (
     <motion.form
@@ -249,36 +297,86 @@ export default function FamilyMemberForm({
         )}
       </div>
 
-      {/* Birth Time */}
+      {/* Birth Time — AM/PM picker */}
       <div className="space-y-2">
-        <Label htmlFor="birth_time" className="text-white font-medium">
-          Birth Time
-          <span className="text-white/50 font-normal ml-2">(Optional)</span>
-        </Label>
-        <Input
-          id="birth_time"
-          name="birth_time"
-          type="time"
-          value={formData.birth_time}
-          onChange={handleChange}
-          disabled={loading}
-          className={`bg-white/5 border ${
-            errors.birth_time ? "border-red-500/50" : "border-white/10"
-          } text-white focus:border-cyan-400/50`}
-        />
-        <p className="text-xs text-white/50">
-          Optional but recommended for accuracy
-        </p>
-        {errors.birth_time && (
-          <motion.div
-            initial={{ opacity: 0, y: -5 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex items-center gap-2 text-sm text-red-400"
+        <div className="flex items-center justify-between">
+          <Label className="text-white font-medium">
+            Birth Time
+            <span className="text-white/50 font-normal ml-2">(Optional)</span>
+          </Label>
+          {timeSet && (
+            <button
+              type="button"
+              onClick={handleClearTime}
+              disabled={loading}
+              className="text-xs text-white/40 hover:text-white/70 transition-colors"
+            >
+              Clear
+            </button>
+          )}
+        </div>
+
+        <div className="flex items-center gap-2">
+          {/* Hour */}
+          <select
+            value={timePicker.hour12}
+            onChange={(e) => handleTimeChange("hour12", e.target.value)}
+            disabled={loading}
+            className={`${selectClass} w-16`}
           >
-            <AlertCircle className="h-4 w-4" />
-            {errors.birth_time}
-          </motion.div>
-        )}
+            {HOURS.map((h) => (
+              <option key={h} value={h} className="bg-gray-900">
+                {h.padStart(2, "0")}
+              </option>
+            ))}
+          </select>
+
+          <span className="text-white/60 font-semibold text-lg">:</span>
+
+          {/* Minute */}
+          <select
+            value={timePicker.minute}
+            onChange={(e) => handleTimeChange("minute", e.target.value)}
+            disabled={loading}
+            className={`${selectClass} w-16`}
+          >
+            {MINUTES.map((m) => (
+              <option key={m} value={m} className="bg-gray-900">
+                {m}
+              </option>
+            ))}
+          </select>
+
+          {/* AM / PM toggle */}
+          <div className="flex rounded-md overflow-hidden border border-white/10 ml-1">
+            {["AM", "PM"].map((p) => (
+              <button
+                key={p}
+                type="button"
+                disabled={loading}
+                onClick={() => handleTimeChange("period", p)}
+                className={`px-3 py-2 text-sm font-medium transition-colors ${
+                  timePicker.period === p
+                    ? "bg-cyan-500 text-white"
+                    : "bg-white/5 text-white/50 hover:bg-white/10"
+                }`}
+              >
+                {p}
+              </button>
+            ))}
+          </div>
+
+          {/* Preview in 24h for clarity */}
+          {timeSet && (
+            <span className="text-xs text-white/30 ml-1">
+              ({formData.birth_time})
+            </span>
+          )}
+        </div>
+
+        <p className="text-xs text-white/50">
+          Optional but recommended for accurate chart calculations
+        </p>
       </div>
 
       {/* Info Text */}
