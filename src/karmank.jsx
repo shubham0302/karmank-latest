@@ -6,6 +6,7 @@ import { combinationInsights, DATA } from './data/data';
 import { calculateNumerology } from './api/numerologyClient';
 import { useAuth } from './contexts/AuthContext';
 import { useFamilyMembers } from './hooks/useFamilyMembers';
+import { localCache } from './hooks/useLocalCache';
 
 // --- UI Components ---
 import Card from './components/Card';
@@ -85,33 +86,45 @@ export default function KarmAnkApp() {
     // Tab list
     const tabs = ['Welcome', 'Numerology Traits', 'Advanced Dasha', 'Forecast', 'Remedies & Guidance', 'Life Cycle'];
 
-    // Fetch family members and auto-select first one
+    // ── Helper: load report for a member (cache-first) ───────────────────────
+    const loadReportForMember = async (member) => {
+        const cacheKey = localCache.reportKey(member.name, member.date_of_birth, member.gender);
+        const cached = localCache.get(cacheKey);
+        if (cached) {
+            setReport(cached.report);
+            setDashaReport(cached.dashaReport);
+            return;
+        }
+        try {
+            const result = await calculateNumerology({
+                dob: member.date_of_birth,
+                name: member.name,
+                gender: member.gender?.toLowerCase() || 'other',
+            });
+            if (result.success && result.report) {
+                localCache.set(cacheKey, { report: result.report, dashaReport: result.dashaReport });
+                setReport(result.report);
+                setDashaReport(result.dashaReport);
+            }
+        } catch (err) {
+            console.error('Error generating report:', err);
+        }
+    };
+
+    // Fetch family members and auto-select first one (or last-used)
     useEffect(() => {
         const loadMembers = async () => {
             const result = await getFamilyMembersData();
             if (result.members && result.members.length > 0) {
-                const firstMember = result.members[0];
-                setSelectedFamilyMemberId(firstMember.id);
-                setUserData({
-                    name: firstMember.name,
-                    dob: firstMember.date_of_birth,
-                    gender: firstMember.gender
-                });
-                // Auto-generate report for first family member
-                try {
-                    const result = await calculateNumerology({
-                        dob: firstMember.date_of_birth,
-                        name: firstMember.name,
-                        gender: firstMember.gender?.toLowerCase() || 'other'
-                    });
-                    if (result.success && result.report) {
-                        setReport(result.report);
-                        setDashaReport(result.dashaReport);
-                        setActiveTab('Welcome');
-                    }
-                } catch (error) {
-                    console.error('Error generating report for first member:', error);
-                }
+                // Restore last-used member if still present, otherwise use first
+                const lastId = user?.id ? localCache.get(localCache.lastMemberKey(user.id)) : null;
+                const member = (lastId && result.members.find(m => m.id === lastId))
+                    || result.members[0];
+
+                setSelectedFamilyMemberId(member.id);
+                setUserData({ name: member.name, dob: member.date_of_birth, gender: member.gender });
+                setActiveTab('Welcome');
+                await loadReportForMember(member);
             }
         };
         loadMembers();
@@ -143,6 +156,7 @@ export default function KarmAnkApp() {
 
     const handleFamilyMemberSelect = (memberId) => {
         setSelectedFamilyMemberId(memberId);
+        if (user?.id) localCache.set(localCache.lastMemberKey(user.id), memberId);
     };
 
     const handleFamilyMemberDetailsChange = (details) => {
@@ -151,6 +165,11 @@ export default function KarmAnkApp() {
             dob: details.dob,
             gender: details.gender,
         });
+        // Load cached report as soon as member details arrive (no button press needed)
+        if (details.name && details.dob) {
+            const memberLike = { name: details.name, date_of_birth: details.dob, gender: details.gender };
+            loadReportForMember(memberLike);
+        }
     };
 
     const handleGenerate = async (e) => {
@@ -161,6 +180,16 @@ export default function KarmAnkApp() {
         }
         setFormError("");
 
+        // Check cache first — same inputs always produce same report
+        const cacheKey = localCache.reportKey(userData.name, userData.dob, userData.gender);
+        const cached = localCache.get(cacheKey);
+        if (cached) {
+            setReport(cached.report);
+            setDashaReport(cached.dashaReport);
+            setActiveTab("Welcome");
+            return;
+        }
+
         try {
             const result = await calculateNumerology({
                 dob: userData.dob,
@@ -168,14 +197,12 @@ export default function KarmAnkApp() {
                 gender: userData.gender?.toLowerCase() || 'other',
             });
 
-            console.log("Main Report:", result.report);
-
             if (result.success) {
+                localCache.set(cacheKey, { report: result.report, dashaReport: result.dashaReport });
                 setReport(result.report);
                 setDashaReport(result.dashaReport);
                 setActiveTab("Welcome");
             } else {
-                console.error("Calculation failed");
                 setFormError("Failed to generate report. Please try again.");
             }
         } catch (error) {

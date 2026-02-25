@@ -8,6 +8,11 @@ import {
   updateFamilyMember,
   deleteFamilyMember
 } from '@/lib/database'
+import { localCache } from './useLocalCache'
+
+// Members list is cached for 1 hour — stale-while-revalidate pattern:
+// serve cached data instantly, then refresh from Supabase in the background.
+const MEMBERS_TTL = 60 * 60 * 1000; // 1 hour
 
 /**
  * Hook to manage family members
@@ -21,7 +26,9 @@ export const useFamilyMembers = () => {
   const [error, setError] = useState(null)
 
   /**
-   * Fetch family members for current user
+   * Fetch family members — stale-while-revalidate:
+   * 1. Return cached data immediately (no loading flash)
+   * 2. Fetch from Supabase in the background to refresh
    */
   const getFamilyMembersData = useCallback(async () => {
     if (!user?.id) {
@@ -30,6 +37,28 @@ export const useFamilyMembers = () => {
       return { members: [], count: 0, error: null }
     }
 
+    const cacheKey = localCache.membersKey(user.id)
+
+    // ── Step 1: Serve cache instantly ─────────────────────────────────────────
+    const cached = localCache.get(cacheKey)
+    if (cached) {
+      setMembers(cached)
+      setCount(cached.length)
+      // Still revalidate in background (no await — fire-and-forget)
+      ;(async () => {
+        try {
+          const { data } = await getFamilyMembers(user.id)
+          if (data) {
+            localCache.set(cacheKey, data, MEMBERS_TTL)
+            setMembers(data)
+            setCount(data.length)
+          }
+        } catch { /* silent background refresh failure */ }
+      })()
+      return { members: cached, count: cached.length, error: null }
+    }
+
+    // ── Step 2: No cache — fetch normally ─────────────────────────────────────
     setLoading(true)
     setError(null)
 
@@ -41,9 +70,11 @@ export const useFamilyMembers = () => {
         return { members: [], count: 0, error: fetchError }
       }
 
-      setMembers(data || [])
-      setCount(data?.length || 0)
-      return { members: data || [], count: data?.length || 0, error: null }
+      const result = data || []
+      localCache.set(cacheKey, result, MEMBERS_TTL)
+      setMembers(result)
+      setCount(result.length)
+      return { members: result, count: result.length, error: null }
     } catch (err) {
       console.error('Error fetching family members:', err)
       setError(err.message)
@@ -80,8 +111,10 @@ export const useFamilyMembers = () => {
           return { success: false, data: null, error: addError }
         }
 
-        setMembers([...members, data])
-        setCount(members.length + 1)
+        const updated = [...members, data]
+        localCache.set(localCache.membersKey(user.id), updated, MEMBERS_TTL)
+        setMembers(updated)
+        setCount(updated.length)
         return { success: true, data, error: null }
       } catch (err) {
         console.error('Error adding family member:', err)
@@ -121,9 +154,11 @@ export const useFamilyMembers = () => {
           return { success: false, data: [], error: addError }
         }
 
-        setMembers(data || [])
-        setCount(data?.length || 0)
-        return { success: true, data: data || [], error: null }
+        const result = data || []
+        localCache.set(localCache.membersKey(user.id), result, MEMBERS_TTL)
+        setMembers(result)
+        setCount(result.length)
+        return { success: true, data: result, error: null }
       } catch (err) {
         console.error('Error adding family members:', err)
         setError(err.message)
@@ -167,6 +202,10 @@ export const useFamilyMembers = () => {
         const updatedMembers = members.map((m) =>
           m.id === memberId ? data : m
         )
+        localCache.set(localCache.membersKey(user.id), updatedMembers, MEMBERS_TTL)
+        // Also invalidate any cached numerology report for this member
+        // (name/dob/gender may have changed)
+        localCache.clear('report:')
         setMembers(updatedMembers)
         return { success: true, data, error: null }
       } catch (err) {
@@ -205,6 +244,7 @@ export const useFamilyMembers = () => {
         }
 
         const filteredMembers = members.filter((m) => m.id !== memberId)
+        localCache.set(localCache.membersKey(user.id), filteredMembers, MEMBERS_TTL)
         setMembers(filteredMembers)
         setCount(filteredMembers.length)
         return { success: true, error: null }
