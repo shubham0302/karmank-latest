@@ -3,10 +3,11 @@ import { validateAnalysisOutput, getQualityGrade, isAcceptableQuality } from "./
 import { generateBiometricHash } from "./nadiReadingService";
 import { localCache } from "../hooks/useLocalCache";
 
-// Persistent localStorage cache for palmistry analysis (24-hour TTL)
+// Persistent localStorage cache for palmistry analysis (30-day TTL)
 // Replaces previous in-memory Map — survives page refresh, tab close, re-open.
 // Cache key: karmank:palm:{sha256(palmBase64 + thumbBase64 + fullHandBase64)}
-const CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
+// Storage: user's own browser localStorage (~30-80 KB per reading JSON, NOT the image)
+const CACHE_TTL = 30 * 24 * 60 * 60 * 1000; // 30 days
 
 function palmCacheKey(fingerprint: string): string {
   return `palm:${fingerprint}`;
@@ -1365,7 +1366,7 @@ REQUIRED OUTPUT FORMAT (JSON) - Include ALL sections:
 
       // Persist to localStorage — same image file will load instantly for 24 hours
       localCache.set(palmCacheKey(biometricFingerprint), analysisData, CACHE_TTL);
-      console.log('💾 Analysis saved to localStorage (24h cache — survives refresh)');
+      console.log('💾 Analysis saved to localStorage (30-day cache — same image loads instantly for a month)');
 
       return analysisData as AnalysisOutput;
 
