@@ -304,7 +304,10 @@ export const updateFamilyMember = async (memberId, userId, updates) => {
       }
     }
 
-    if (updates.latitude !== undefined) {
+    // Only include geo fields when they carry real values — skipping nulls
+    // prevents a 400 from Supabase if the schema cache hasn't refreshed yet
+    // after the geocoding migration.
+    if (updates.latitude != null) {
       try {
         validatedUpdates.latitude = FamilyMemberSchema.shape.latitude.parse(updates.latitude)
       } catch (e) {
@@ -312,7 +315,7 @@ export const updateFamilyMember = async (memberId, userId, updates) => {
       }
     }
 
-    if (updates.longitude !== undefined) {
+    if (updates.longitude != null) {
       try {
         validatedUpdates.longitude = FamilyMemberSchema.shape.longitude.parse(updates.longitude)
       } catch (e) {
@@ -320,7 +323,7 @@ export const updateFamilyMember = async (memberId, userId, updates) => {
       }
     }
 
-    if (updates.timezone !== undefined) {
+    if (updates.timezone != null && updates.timezone !== '') {
       try {
         validatedUpdates.timezone = FamilyMemberSchema.shape.timezone.parse(updates.timezone)
       } catch (e) {
