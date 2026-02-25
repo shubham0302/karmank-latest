@@ -43,6 +43,11 @@ export default function ProfilePage() {
   const [addLoading, setAddLoading] = useState(false);
   const [addSuccess, setAddSuccess] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
+  const [editingMember, setEditingMember] = useState(null); // member row being edited
+  const [editError, setEditError] = useState(null);
+  const [editLoading, setEditLoading] = useState(false);
+  const [editSuccess, setEditSuccess] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   useEffect(() => {
     getFamilyMembersData();
@@ -75,6 +80,39 @@ export default function ProfilePage() {
       console.error("Error adding member:", err);
       setAddError(err.message);
       setAddLoading(false);
+    }
+  };
+
+  const handleEditMember = async (formData) => {
+    if (!editingMember) return;
+    setEditLoading(true);
+    setEditError(null);
+    setEditSuccess(false);
+    try {
+      const { success, error } = await updateMember(editingMember.id, formData);
+      if (!success) {
+        setEditError(error?.message || 'Failed to update member');
+        setEditLoading(false);
+        return;
+      }
+      await getFamilyMembersData();
+      setEditingMember(null);
+      setEditLoading(false);
+      setEditSuccess(true);
+      setTimeout(() => setEditSuccess(false), 5000);
+    } catch (err) {
+      setEditError(err.message);
+      setEditLoading(false);
+    }
+  };
+
+  const handleDeleteMember = async (memberId) => {
+    setDeleteLoading(true);
+    try {
+      await deleteMember(memberId);
+      await getFamilyMembersData();
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
@@ -296,6 +334,18 @@ export default function ProfilePage() {
                 </motion.div>
               )}
 
+              {/* Edit success */}
+              {editSuccess && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="p-4 bg-cyan-500/10 border border-cyan-500/30 rounded-lg flex items-center gap-3"
+                >
+                  <CheckCircle className="h-5 w-5 text-cyan-400 flex-shrink-0" />
+                  <p className="text-cyan-300 font-semibold">Member updated successfully!</p>
+                </motion.div>
+              )}
+
               {/* Family Members Count */}
               {members.length > 0 && (
                 <div className="flex items-center justify-between">
@@ -338,8 +388,46 @@ export default function ProfilePage() {
                   className="space-y-3"
                 >
                   {members.map((member, index) => (
-                    <MemberCard key={member.id} member={member} index={index} />
+                    <MemberCard key={member.id} member={member} index={index} onEdit={(m) => { setEditingMember(m); setEditError(null); }} onDelete={handleDeleteMember} />
                   ))}
+                </motion.div>
+              )}
+
+              {/* Inline Edit Form */}
+              {editingMember && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="p-5 bg-gradient-to-br from-cyan-500/5 to-blue-500/5 border border-cyan-400/20 rounded-xl"
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-white font-semibold flex items-center gap-2">
+                      <Pencil className="h-4 w-4 text-cyan-400" />
+                      Edit — {editingMember.name}
+                    </h3>
+                    <button
+                      onClick={() => { setEditingMember(null); setEditError(null); }}
+                      className="p-1.5 rounded-lg text-white/40 hover:text-white/80 hover:bg-white/10 transition"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                  {editError && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-lg text-red-300 text-sm"
+                    >
+                      {editError}
+                    </motion.div>
+                  )}
+                  <FamilyMemberForm
+                    onSubmit={handleEditMember}
+                    loading={editLoading}
+                    defaultValues={editingMember}
+                    submitButtonText="Save Changes"
+                  />
                 </motion.div>
               )}
 
