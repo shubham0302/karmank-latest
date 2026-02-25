@@ -41,6 +41,7 @@ const ASPECT_COLORS = {
 function AspectCard({ aspect }) {
   const [open, setOpen] = React.useState(false);
   const cfg = ASPECT_COLORS[aspect.rating_color] || ASPECT_COLORS.amber;
+  const pct = aspect.score_pct ?? null;
   return (
     <div className={`rounded-xl border p-4 ${cfg.bg} transition-all`}>
       <div className="flex items-start justify-between gap-2">
@@ -48,10 +49,17 @@ function AspectCard({ aspect }) {
           <span className="text-xl shrink-0">{aspect.emoji}</span>
           <div className="min-w-0">
             <div className="text-sm font-semibold text-white truncate">{aspect.title}</div>
-            <span className={`inline-flex items-center gap-1 mt-0.5 text-[10px] font-medium px-2 py-0.5 rounded-full border ${cfg.badge}`}>
-              <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`} />
-              {cfg.label}
-            </span>
+            <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+              <span className={`inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full border ${cfg.badge}`}>
+                <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`} />
+                {cfg.label}
+              </span>
+              {pct != null && (
+                <span className={`text-[11px] font-bold tabular-nums ${cfg.badge.includes('emerald') ? 'text-emerald-300' : cfg.badge.includes('cyan') ? 'text-cyan-300' : cfg.badge.includes('amber') ? 'text-amber-300' : 'text-orange-300'}`}>
+                  {pct}%
+                </span>
+              )}
+            </div>
           </div>
         </div>
         <button
@@ -62,9 +70,19 @@ function AspectCard({ aspect }) {
         </button>
       </div>
 
+      {/* Mini score bar */}
+      {pct != null && (
+        <div className="mt-3 h-1 rounded-full bg-white/10 overflow-hidden">
+          <div
+            className={`h-full rounded-full ${cfg.dot}`}
+            style={{ width: `${pct}%` }}
+          />
+        </div>
+      )}
+
       {/* First insight always visible */}
       {aspect.insights?.length > 0 && (
-        <p className="mt-3 text-xs text-white/60 leading-relaxed">
+        <p className="mt-2.5 text-xs text-white/60 leading-relaxed">
           {aspect.insights[0]}
         </p>
       )}
