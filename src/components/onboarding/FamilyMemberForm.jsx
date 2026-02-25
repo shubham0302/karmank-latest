@@ -4,6 +4,7 @@ import { AlertCircle } from "lucide-react";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Button } from "../ui/button";
+import LocationSearchInput from "../LocationSearchInput";
 
 export default function FamilyMemberForm({
   onSubmit,
@@ -17,6 +18,9 @@ export default function FamilyMemberForm({
     gender: defaultValues.gender || "",
     date_of_birth: defaultValues.date_of_birth || "",
     birth_place: defaultValues.birth_place || "",
+    latitude: defaultValues.latitude || null,
+    longitude: defaultValues.longitude || null,
+    timezone: defaultValues.timezone || "",
     birth_time: defaultValues.birth_time || "",
     relationship:
       defaultValues.relationship ||
@@ -28,7 +32,6 @@ export default function FamilyMemberForm({
   const validateForm = () => {
     const newErrors = {};
 
-    // Name validation
     if (!formData.name.trim()) {
       newErrors.name = "Name is required";
     } else if (formData.name.length < 2) {
@@ -37,12 +40,10 @@ export default function FamilyMemberForm({
       newErrors.name = "Name must not exceed 100 characters";
     }
 
-    // Gender validation
     if (!formData.gender) {
       newErrors.gender = "Gender is required";
     }
 
-    // DOB validation
     if (!formData.date_of_birth) {
       newErrors.date_of_birth = "Date of birth is required";
     } else {
@@ -58,16 +59,14 @@ export default function FamilyMemberForm({
       }
     }
 
-    // Birth place validation
     if (!formData.birth_place.trim()) {
       newErrors.birth_place = "Birth place is required";
     } else if (formData.birth_place.length < 2) {
       newErrors.birth_place = "Birth place must be at least 2 characters";
-    } else if (formData.birth_place.length > 100) {
-      newErrors.birth_place = "Birth place must not exceed 100 characters";
+    } else if (formData.birth_place.length > 200) {
+      newErrors.birth_place = "Birth place must not exceed 200 characters";
     }
 
-    // Birth time validation (optional, but validate if provided)
     if (formData.birth_time) {
       const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
       if (!timeRegex.test(formData.birth_time)) {
@@ -81,16 +80,22 @@ export default function FamilyMemberForm({
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    if (errors[name]) {
+      setErrors((prev) => ({ ...prev, [name]: "" }));
+    }
+  };
+
+  const handleLocationChange = (displayName, lat, lng, tz) => {
     setFormData((prev) => ({
       ...prev,
-      [name]: value,
+      birth_place: displayName || "",
+      latitude: lat,
+      longitude: lng,
+      timezone: tz || prev.timezone,
     }));
-    // Clear error for this field when user starts typing
-    if (errors[name]) {
-      setErrors((prev) => ({
-        ...prev,
-        [name]: "",
-      }));
+    if (errors.birth_place) {
+      setErrors((prev) => ({ ...prev, birth_place: "" }));
     }
   };
 
@@ -211,18 +216,27 @@ export default function FamilyMemberForm({
         <Label htmlFor="birth_place" className="text-white font-medium">
           Birth Place <span className="text-red-400">*</span>
         </Label>
-        <Input
-          id="birth_place"
-          name="birth_place"
-          type="text"
-          placeholder="City, region, or location"
+        <LocationSearchInput
           value={formData.birth_place}
-          onChange={handleChange}
+          onChange={handleLocationChange}
           disabled={loading}
-          className={`bg-white/5 border ${
+          error={errors.birth_place}
+          placeholder="Search city or location..."
+          inputClassName={`bg-white/5 border ${
             errors.birth_place ? "border-red-500/50" : "border-white/10"
           } text-white placeholder:text-white/40 focus:border-cyan-400/50`}
+          dropdownClassName="bg-gray-900/95 border-white/10 backdrop-blur-sm"
         />
+        {formData.latitude && formData.longitude && (
+          <p className="text-xs text-cyan-400/60 flex items-center gap-1">
+            <span>Coordinates saved:</span>
+            <span>{Number(formData.latitude).toFixed(4)}°,</span>
+            <span>{Number(formData.longitude).toFixed(4)}°</span>
+            {formData.timezone && (
+              <span className="text-white/30 ml-1">· {formData.timezone}</span>
+            )}
+          </p>
+        )}
         {errors.birth_place && (
           <motion.div
             initial={{ opacity: 0, y: -5 }}
