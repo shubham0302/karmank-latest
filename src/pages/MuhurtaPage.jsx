@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import CosmicBackground from "../components/CosmicBackground";
 import { useProfileBirthData } from "../hooks/useProfileBirthData";
+import { localCache } from "../hooks/useLocalCache";
 
 const API_BASE = import.meta.env.VITE_ASTROLOGY_API_URL || "http://localhost:8000";
 
@@ -212,6 +213,20 @@ export default function MuhurtaPage() {
       setError("Please complete your birth profile first (Profile → Edit).");
       return;
     }
+
+    const birthDt = birthDataFormValue.birthDate.toISOString().split("T")[0]
+      + "T" + (birthDataFormValue.birthTime || "12:00") + ":00";
+    const lat = birthDataFormValue.latitude  || 28.6139;
+    const lng = birthDataFormValue.longitude || 77.209;
+
+    // Check cache — muhurta windows for a date range never change
+    const cacheKey = localCache.muhurtaKey(birthDt, lat, lng, eventType, startDate, endDate);
+    const cached = localCache.get(cacheKey);
+    if (cached) {
+      setResults(cached);
+      return;
+    }
+
     setLoading(true);
     setError(null);
     setResults(null);
@@ -220,9 +235,9 @@ export default function MuhurtaPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          birth_datetime: birthDataFormValue.birthDate.toISOString().split("T")[0] + "T" + (birthDataFormValue.birthTime || "12:00") + ":00",
-          latitude:   birthDataFormValue.latitude  || 28.6139,
-          longitude:  birthDataFormValue.longitude || 77.209,
+          birth_datetime: birthDt,
+          latitude:   lat,
+          longitude:  lng,
           event_type: eventType,
           start_date: startDate,
           end_date:   endDate,
@@ -235,6 +250,8 @@ export default function MuhurtaPage() {
         throw new Error(err.detail || `HTTP ${res.status}`);
       }
       const data = await res.json();
+      // Save with no TTL — planetary positions for past dates are immutable
+      localCache.set(cacheKey, data);
       setResults(data);
     } catch (e) {
       setError(e.message || "Failed to calculate muhurta. Check backend connection.");

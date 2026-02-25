@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import CosmicBackground from "../components/CosmicBackground";
 import { useProfileBirthData } from "../hooks/useProfileBirthData";
+import { localCache } from "../hooks/useLocalCache";
 
 const API_BASE = import.meta.env.VITE_ASTROLOGY_API_URL || "http://localhost:8000";
 
@@ -278,27 +279,38 @@ export default function VarshaphalaPage() {
   }, [isAstrologyReady]);
 
   async function handleCalculate() {
+    const birthDt = birthDataFormValue?.birthDate
+      ? birthDataFormValue.birthDate.toISOString().split("T")[0]
+          + "T" + (birthDataFormValue.birthTime || "12:00") + ":00"
+      : null;
+
+    if (!birthDt) {
+      setError("No birth date found. Please complete your profile.");
+      return;
+    }
+
+    const lat = birthDataFormValue?.latitude  || 28.6139;
+    const lng = birthDataFormValue?.longitude || 77.209;
+
+    // Check cache first — solar return for a given birth + year never changes
+    const cacheKey = localCache.varshaphalaKey(birthDt, lat, lng, targetYear);
+    const cached = localCache.get(cacheKey);
+    if (cached) {
+      setResult(cached);
+      return;
+    }
+
     setLoading(true);
     setError(null);
     setResult(null);
     try {
-      const birthDt = birthDataFormValue?.birthDate
-        ? birthDataFormValue.birthDate.toISOString().split("T")[0]
-            + "T" + (birthDataFormValue.birthTime || "12:00") + ":00"
-        : null;
-
-      if (!birthDt) {
-        setError("No birth date found. Please complete your profile.");
-        return;
-      }
-
       const res = await fetch(`${API_BASE}/api/varshaphala/calculate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           birth_datetime:  birthDt,
-          birth_latitude:  birthDataFormValue?.latitude  || 28.6139,
-          birth_longitude: birthDataFormValue?.longitude || 77.209,
+          birth_latitude:  lat,
+          birth_longitude: lng,
           target_year:     targetYear,
           ayanamsa:        "LAHIRI",
           node_type:       "MEAN",
@@ -309,6 +321,8 @@ export default function VarshaphalaPage() {
         throw new Error(err.detail || `HTTP ${res.status}`);
       }
       const data = await res.json();
+      // Save with no TTL — solar return for year X is fixed forever
+      localCache.set(cacheKey, data);
       setResult(data);
     } catch (e) {
       setError(e.message || "Backend offline. Start the astrology backend and try again.");

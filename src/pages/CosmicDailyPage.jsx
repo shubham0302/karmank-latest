@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, Zap, RefreshCw, ExternalLink, Music, Calendar } from "lucide-react";
 import CosmicBackground from "../components/CosmicBackground";
 import { useProfileBirthData } from "../hooks/useProfileBirthData";
+import { localCache } from "../hooks/useLocalCache";
 import {
   calculateCosmicReport,
   getMoonPhaseFraction,
@@ -173,9 +174,20 @@ export default function CosmicDailyPage() {
     const apiUrl = import.meta.env.VITE_ASTROLOGY_API_URL;
     if (!apiUrl || !isAstrologyReady || !birthDataFormValue) return;
 
+    const dob = birthDataFormValue.birthDate?.toISOString?.()?.split("T")[0];
+    const todayStr = today.toISOString().split("T")[0];
+
+    // Check cache — transit scores for a given person+date are fixed for the day
+    const cacheKey = localCache.cosmicDailyKey(dob, todayStr);
+    const cachedTransit = localCache.get(cacheKey);
+    if (cachedTransit) {
+      setReport(calculateCosmicReport(today, cachedTransit));
+      return;
+    }
+
     setBackendTried(true);
     const payload = {
-      birth_date:     birthDataFormValue.birthDate?.toISOString?.()?.split("T")[0],
+      birth_date:     dob,
       birth_time:     birthDataFormValue.birthTime,
       birth_location: birthDataFormValue.birthLocation,
       latitude:       birthDataFormValue.latitude,
@@ -191,8 +203,9 @@ export default function CosmicDailyPage() {
       .then(r => r.ok ? r.json() : null)
       .then(data => {
         if (data) {
-          const enhanced = calculateCosmicReport(today, data);
-          setReport(enhanced);
+          // Cache for 1 day — transits are specific to today's date
+          localCache.set(cacheKey, data, 24 * 60 * 60 * 1000);
+          setReport(calculateCosmicReport(today, data));
         }
       })
       .catch(() => {});
