@@ -1,9 +1,10 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Menu, X, Sparkles, BookOpen, Crown } from 'lucide-react';
+import { Home, Menu, X, Sparkles, BookOpen, Crown, BarChart3 } from 'lucide-react';
 import { useState } from 'react';
 
 const NAV_LINKS = [
   { to: '/', label: 'Home', icon: Home },
+  { to: '/cosmic-daily', label: 'Daily Score', icon: BarChart3 },
   { to: '/astrology/yoga-lab', label: 'Yoga Lab', icon: Sparkles },
   { to: '/astrology/remedies', label: 'Remedies' },
   { to: '/astrology/stotras', label: 'Stotras', icon: BookOpen },

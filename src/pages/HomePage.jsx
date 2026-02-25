@@ -7,7 +7,7 @@ import { GradientText, gradientUtils } from "../components/GradientText";
 import {
   Crown, Sparkles, User,
   Hash, AlignLeft, Heart, Building2, BookOpen, Briefcase,
-  Hand, Music2, Star, CalendarDays, PartyPopper,
+  Hand, Music2, Star, CalendarDays, PartyPopper, BarChart3,
 } from "lucide-react";
 
 export default function HomePage() {
@@ -18,6 +18,16 @@ export default function HomePage() {
   };
 
   const modules = [
+    {
+      title: "KARMANK • COSMIC DAILY SCORE",
+      subtitle: "Your Planetary Weather Today",
+      icon: BarChart3,
+      blurb:
+        "Live 6-domain cosmic score for Career, Love, Health, Finance, Spiritual & Mind — personalised from your natal chart and today's transits.",
+      cta: "View Today",
+      route: "/cosmic-daily",
+      badge: "New",
+    },
     {
       title: "KARMANK • NUMEROLOGY",
       subtitle: "Vedic 3×3 Grid & Dasha",

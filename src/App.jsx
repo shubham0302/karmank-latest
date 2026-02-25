@@ -18,6 +18,7 @@ import PalmistryPage from './pages/PalmistryPage';
 import MantraJaapPage from './pages/MantraJaapPage';
 import PanchangPage from './pages/PanchangPage';
 import FestivalsPage from './pages/FestivalsPage';
+import CosmicDailyPage from './pages/CosmicDailyPage';
 
 // Lazy-loaded astrology pages (heavy bundle — split into separate chunk)
 const AstrologyPage = lazy(() => import('./astrology/pages/AstrologyPage'));
@@ -163,6 +164,14 @@ const App = () => (
                     element={
                         <ProtectedRoute>
                             <FestivalsPage />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/cosmic-daily"
+                    element={
+                        <ProtectedRoute>
+                            <CosmicDailyPage />
                         </ProtectedRoute>
                     }
                 />
