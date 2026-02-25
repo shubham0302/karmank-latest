@@ -37,6 +37,8 @@ export default function ProfilePage() {
     error: hookError,
     getFamilyMembersData,
     addMember,
+    updateMember,
+    deleteMember,
   } = useFamilyMembers();
 
   const [activeTab, setActiveTab] = useState(TABS.PROFILE);
