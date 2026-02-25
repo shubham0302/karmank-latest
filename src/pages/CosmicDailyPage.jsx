@@ -175,7 +175,9 @@ export default function CosmicDailyPage() {
     if (!apiUrl || !isAstrologyReady || !birthDataFormValue) return;
 
     const dob = birthDataFormValue.birthDate?.toISOString?.()?.split("T")[0];
-    const todayStr = today.toISOString().split("T")[0];
+    // Use LOCAL date (not UTC) so the score refreshes at midnight in the user's timezone,
+    // not at midnight UTC (which would be 5:30 AM IST for Indian users)
+    const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
 
     // Check cache — transit scores for a given person+date are fixed for the day
     const cacheKey = localCache.cosmicDailyKey(dob, todayStr);
