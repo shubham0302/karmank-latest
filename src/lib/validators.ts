@@ -57,7 +57,11 @@ export const FamilyMemberSchema = z.object({
     message: 'Invalid relationship type'
   }).default('other'),
 
-  display_order: z.number().int().min(1).optional()
+  display_order: z.number().int().min(1).optional(),
+
+  latitude: z.number().min(-90).max(90).nullable().optional(),
+  longitude: z.number().min(-180).max(180).nullable().optional(),
+  timezone: z.string().max(100).nullable().optional()
 })
 
 export type FamilyMember = z.infer<typeof FamilyMemberSchema>
