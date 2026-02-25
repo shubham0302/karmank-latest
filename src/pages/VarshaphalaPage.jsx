@@ -518,6 +518,61 @@ export default function VarshaphalaPage() {
                   <h3 className="text-xs text-white/40 uppercase tracking-widest mb-3">
                     Life Aspects — {targetYear}
                   </h3>
+
+                  {/* ── Summary card with % score ── */}
+                  {result.overall_score_pct != null && (
+                    <div className="rounded-2xl border border-white/10 bg-white/5 p-5 mb-4">
+                      <div className="flex items-center gap-4 mb-4">
+                        {/* Big % number */}
+                        <div className="shrink-0 text-center w-20">
+                          <div className={`text-4xl font-bold tabular-nums ${
+                            result.overall_score_pct >= 70 ? "text-emerald-400"
+                            : result.overall_score_pct >= 50 ? "text-cyan-400"
+                            : result.overall_score_pct >= 35 ? "text-amber-400"
+                            : "text-orange-400"
+                          }`}>
+                            {result.overall_score_pct}<span className="text-xl">%</span>
+                          </div>
+                          <div className="text-[10px] text-white/30 uppercase tracking-widest mt-0.5">Year Score</div>
+                        </div>
+
+                        {/* Bar + domain dots */}
+                        <div className="flex-1 space-y-2.5">
+                          <div className="h-2.5 rounded-full bg-white/10 overflow-hidden">
+                            <div
+                              className={`h-full rounded-full transition-all duration-700 ${
+                                result.overall_score_pct >= 70 ? "bg-gradient-to-r from-emerald-500 to-cyan-400"
+                                : result.overall_score_pct >= 50 ? "bg-gradient-to-r from-cyan-500 to-blue-400"
+                                : result.overall_score_pct >= 35 ? "bg-gradient-to-r from-amber-500 to-orange-400"
+                                : "bg-gradient-to-r from-orange-500 to-red-400"
+                              }`}
+                              style={{ width: `${result.overall_score_pct}%` }}
+                            />
+                          </div>
+                          {/* Domain emoji + rating dot quick-view */}
+                          <div className="flex gap-2 flex-wrap">
+                            {result.life_aspects.map(a => (
+                              <div key={a.key} className="flex items-center gap-1" title={`${a.title}: ${a.rating}`}>
+                                <span className="text-base leading-none">{a.emoji}</span>
+                                <span className={`w-1.5 h-1.5 rounded-full ${
+                                  ASPECT_COLORS[a.rating_color]?.dot || "bg-white/30"
+                                }`} />
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Narrative */}
+                      {result.year_summary && (
+                        <p className="text-sm text-white/65 leading-relaxed border-t border-white/10 pt-4">
+                          {result.year_summary}
+                        </p>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Domain cards */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {result.life_aspects.map(aspect => (
                       <AspectCard key={aspect.key} aspect={aspect} />
