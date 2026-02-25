@@ -3,6 +3,7 @@
  * Shows personalized Vedic astrology remedies based on planetary strengths
  */
 
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -23,7 +24,8 @@ import {
   Clock,
   Compass,
   Copy,
-  Volume2
+  Volume2,
+  ExternalLink
 } from 'lucide-react';
 import type { PlanetRemedies, GeneralRemedies } from '@/astrology/lib/api/astrology-api';
 
@@ -166,6 +168,12 @@ function MantraCard({ title, mantra, description, color, isPrimary }: MantraCard
 }
 
 export function RemediesCard({ personalizedRemedies, generalRemedies, importantNote }: RemediesCardProps) {
+  const navigate = useNavigate();
+
+  const openMantraJaap = (planet: string) => {
+    navigate('/mantra-jaap', { state: { planet } });
+  };
+
   // Sort remedies by priority (weak planets first)
   const sortedRemedies = [...personalizedRemedies].sort((a, b) => {
     const priorityOrder: { [key: string]: number } = {
@@ -398,6 +406,19 @@ export function RemediesCard({ personalizedRemedies, generalRemedies, importantN
                         </li>
                       </ul>
                     </div>
+
+                    {/* ── Start Mantra Jaap CTA ── */}
+                    <Button
+                      onClick={() => openMantraJaap(remedy.planet)}
+                      className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-semibold gap-2"
+                    >
+                      <Music className="h-4 w-4" />
+                      Start {remedy.planet} Mantra Jaap
+                      <ExternalLink className="h-3 w-3 ml-auto opacity-70" />
+                    </Button>
+                    <p className="text-[11px] text-muted-foreground text-center -mt-1">
+                      Opens Mantra Jaap with the {remedy.planet} mantra pre-loaded and ready to chant
+                    </p>
                   </TabsContent>
 
                   {/* Charity Tab */}
