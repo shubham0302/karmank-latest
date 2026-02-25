@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Sparkles, BookOpen, Gem, MessageSquare, BarChart3 } from "lucide-react";
+import { ArrowLeft, Sparkles, BookOpen, Gem, MessageSquare, BarChart3, Clock, Sun } from "lucide-react";
 import CosmicBackground from "@/components/CosmicBackground";
 import HoloDestinyCard from "@/components/ui/HoloDestinyCard";
 
@@ -47,6 +47,26 @@ const features = [
     badge: "Updated",
   },
   {
+    id: "muhurta",
+    title: "Muhurta Engine",
+    subtitle: "Best Timing for Every Event",
+    description:
+      "Find auspicious dates for marriage, business, property, surgery & travel using classical Tithi-Nakshatra-Vara analysis.",
+    icon: Clock,
+    cta: "Find Muhurta",
+    badge: "New",
+  },
+  {
+    id: "varshaphala",
+    title: "Varshaphala",
+    subtitle: "Annual Solar Return Chart",
+    description:
+      "Your personal new year begins when the Sun returns to its natal longitude. Discover the themes and quality of the year ahead.",
+    icon: Sun,
+    cta: "View Year",
+    badge: "New",
+  },
+  {
     id: "astrologer",
     title: "Astrologer AI",
     subtitle: "Guided Jyotish Dialogue",
@@ -66,6 +86,8 @@ export default function AstrologyPage() {
     "yoga-lab": "/astrology/yoga-lab",
     remedies: "/astrology/remedies",
     stotras: "/astrology/stotras",
+    muhurta: "/astrology/muhurta",
+    varshaphala: "/astrology/varshaphala",
     astrologer: "/astrology/astrologer",
   };
 

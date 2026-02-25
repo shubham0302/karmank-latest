@@ -7,7 +7,7 @@ import { GradientText, gradientUtils } from "../components/GradientText";
 import {
   Crown, Sparkles, User,
   Hash, AlignLeft, Heart, Building2, BookOpen, Briefcase,
-  Hand, Music2, Star, CalendarDays, PartyPopper, BarChart3,
+  Hand, Music2, Star, CalendarDays, PartyPopper, BarChart3, Clock, Sun,
 } from "lucide-react";
 
 export default function HomePage() {
@@ -108,6 +108,26 @@ export default function HomePage() {
         "Professional Jyotish Shastra with Swiss Ephemeris precision. Birth chart, 100+ yogas, Vimshottari Dasha, divisional charts, Shadbala, transits & AI astrologer.",
       cta: "Explore",
       route: "/astrology",
+    },
+    {
+      title: "KARMANK • MUHURTA ENGINE",
+      subtitle: "Best Timing for Every Event",
+      icon: Clock,
+      blurb:
+        "Find auspicious days for marriage, business, property, surgery & travel. Classical Tithi-Nakshatra-Vara scoring with Swiss Ephemeris precision.",
+      cta: "Find Timing",
+      route: "/astrology/muhurta",
+      badge: "New",
+    },
+    {
+      title: "KARMANK • VARSHAPHALA",
+      subtitle: "Annual Solar Return Chart",
+      icon: Sun,
+      blurb:
+        "Your personal new year begins the moment the Sun returns to its natal degree. Discover the themes, year lord and quality of the year ahead.",
+      cta: "View Year",
+      route: "/astrology/varshaphala",
+      badge: "New",
     },
     {
       title: "KARMANK • PANCHANG",
