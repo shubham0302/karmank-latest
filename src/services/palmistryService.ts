@@ -1,15 +1,16 @@
 import { AnalysisOutput, UserInfo, PredictionConfidence } from "../types/palmistry";
 import { validateAnalysisOutput, getQualityGrade, isAcceptableQuality } from "./palmistryValidator";
 import { generateBiometricHash } from "./nadiReadingService";
+import { localCache } from "../hooks/useLocalCache";
 
-// In-memory cache for analysis results (24-hour TTL)
-interface CacheEntry {
-  data: AnalysisOutput;
-  timestamp: number;
+// Persistent localStorage cache for palmistry analysis (24-hour TTL)
+// Replaces previous in-memory Map — survives page refresh, tab close, re-open.
+// Cache key: karmank:palm:{sha256(palmBase64 + thumbBase64 + fullHandBase64)}
+const CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
+
+function palmCacheKey(fingerprint: string): string {
+  return `palm:${fingerprint}`;
 }
-
-const analysisCache = new Map<string, CacheEntry>();
-const CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
 
 /**
  * Validate that AI response has all critical fields populated
@@ -484,12 +485,11 @@ export const analyzeNadiPatterns = async (
   // Generate unique fingerprint for this palm (for caching)
   const biometricFingerprint = await generateBiometricHash(palmBase64 + thumbBase64 + (fullHandBase64 || ''));
 
-  // Check cache first
-  const cached = analysisCache.get(biometricFingerprint);
-  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
-    console.log('✅ Using cached analysis (99% consistency - same hand detected)');
-    console.log(`🔄 Cache hit: Analysis from ${new Date(cached.timestamp).toLocaleTimeString()}`);
-    return cached.data;
+  // Check persistent cache first (survives refresh + tab close)
+  const cached = localCache.get(palmCacheKey(biometricFingerprint));
+  if (cached) {
+    console.log('✅ Using cached analysis (same hand detected — loaded from localStorage)');
+    return cached as AnalysisOutput;
   }
 
   const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080';
@@ -1363,12 +1363,9 @@ REQUIRED OUTPUT FORMAT (JSON) - Include ALL sections:
         console.log(`✅ Kanda Consistency: ${kandaConsistency.score}/100 - All Kandas are coherent`);
       }
 
-      // Save to cache for future consistency
-      analysisCache.set(biometricFingerprint, {
-        data: analysisData as AnalysisOutput,
-        timestamp: Date.now()
-      });
-      console.log('💾 Analysis cached for 24 hours (consistent results guaranteed)');
+      // Persist to localStorage — same image file will load instantly for 24 hours
+      localCache.set(palmCacheKey(biometricFingerprint), analysisData, CACHE_TTL);
+      console.log('💾 Analysis saved to localStorage (24h cache — survives refresh)');
 
       return analysisData as AnalysisOutput;
 
