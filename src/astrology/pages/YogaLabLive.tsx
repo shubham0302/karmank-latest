@@ -21,7 +21,8 @@ import { BirthData, formatBirthDataForAPI, shadbalaToChartData, dashaToChartData
 import { getYogaInterpretation, getCategoryDescription } from '@/astrology/lib/yoga-interpretations';
 import { getPlanetInSignMeaning, getPlanetInHouseMeaning, getPlanetStrengthDescription } from '@/astrology/lib/kundli-interpretations';
 import { calculatePlanetHouse, calculateHousesData, getSignLord } from '@/astrology/lib/house-calculator';
-
+import FamilyMemberSelector from '@/components/FamilyMemberSelector';
+import { CITIES, getTimezoneFromCoordinates } from '@/components/LocationSearchInput';
 // Helper function to get Western zodiac sun sign based on birth date
 const getWesternSunSign = (birthDate: string): string => {
   // Parse date string properly - extract YYYY-MM-DD regardless of time/timezone
@@ -167,215 +168,77 @@ const YogaLabLive = () => {
   const [userBirthTime, setUserBirthTime] = useState('');
   const [userLocation, setUserLocation] = useState('');
 
-  // Match Making State
-  const [partnerName, setPartnerName] = useState('');
-  const [partnerGender, setPartnerGender] = useState('');
-  const [partnerDate, setPartnerDate] = useState('');
-  const [partnerTime, setPartnerTime] = useState('');
-  const [partnerPlace, setPartnerPlace] = useState('');
-  const [partnerLatitude, setPartnerLatitude] = useState(0);
-  const [partnerLongitude, setPartnerLongitude] = useState(0);
-  const [partnerTimezone, setPartnerTimezone] = useState('');
-  const [showCompatibility, setShowCompatibility] = useState(false);
-  const [showLocationSuggestions, setShowLocationSuggestions] = useState(false);
-  const [locationSearchResults, setLocationSearchResults] = useState<any[]>([]);
-  const [isSearchingLocation, setIsSearchingLocation] = useState(false);
-  const [compatibilityData, setCompatibilityData] = useState<any>(null);
-  const [isCalculatingCompatibility, setIsCalculatingCompatibility] = useState(false);
+  // User Selection State
+  const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
 
-  // Location search function for matchmaking
-  const searchPartnerLocation = async (query: string) => {
-    if (query.length < 3) {
-      setLocationSearchResults([]);
-      return;
-    }
+  const handleMemberSelect = (memberId: string) => {
+    setSelectedMemberId(memberId);
+  };
 
-    setIsSearchingLocation(true);
-    try {
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5`
+  const handleMemberDetailsChange = (details: any) => {
+    if (!details.dob) return;
+
+    let lat = details.latitude;
+    let lng = details.longitude;
+    let tz = details.timezone || '';
+
+    if (!lat && !lng && details.birthPlace) {
+      const city = CITIES.find(c =>
+        c.name.toLowerCase().includes(details.birthPlace.toLowerCase()) ||
+        details.birthPlace.toLowerCase().includes(c.name.split(',')[0].toLowerCase())
       );
-      const data = await response.json();
-      setLocationSearchResults(data);
-    } catch (error) {
-      console.error('Location search error:', error);
-      setLocationSearchResults([]);
-    } finally {
-      setIsSearchingLocation(false);
-    }
-  };
-
-  // Popular cities for quick selection
-  const POPULAR_CITIES = [
-    { name: 'New Delhi, India', lat: 28.6139, lng: 77.2090, tz: 'Asia/Kolkata' },
-    { name: 'Mumbai, India', lat: 19.0760, lng: 72.8777, tz: 'Asia/Kolkata' },
-    { name: 'Chennai, India', lat: 13.0827, lng: 80.2707, tz: 'Asia/Kolkata' },
-    { name: 'Bangalore, India', lat: 12.9716, lng: 77.5946, tz: 'Asia/Kolkata' },
-    { name: 'Kolkata, India', lat: 22.5726, lng: 88.3639, tz: 'Asia/Kolkata' },
-    { name: 'London, UK', lat: 51.5074, lng: -0.1278, tz: 'Europe/London' },
-    { name: 'New York, USA', lat: 40.7128, lng: -74.0060, tz: 'America/New_York' },
-  ];
-
-  const filteredCities = POPULAR_CITIES.filter(city =>
-    city.name.toLowerCase().includes(partnerPlace.toLowerCase())
-  );
-
-  const handleCitySelect = (city: typeof POPULAR_CITIES[0]) => {
-    setPartnerPlace(city.name);
-    setPartnerLatitude(city.lat);
-    setPartnerLongitude(city.lng);
-    setPartnerTimezone(city.tz);
-    setShowLocationSuggestions(false);
-  };
-
-  const handleSearchResultSelect = (result: any) => {
-    setPartnerPlace(result.display_name);
-    setPartnerLatitude(parseFloat(result.lat));
-    setPartnerLongitude(parseFloat(result.lon));
-
-    // Estimate timezone based on longitude
-    const offset = Math.round(parseFloat(result.lon) / 15);
-    let estimatedTz = 'UTC';
-    if (offset >= 5 && offset <= 6) estimatedTz = 'Asia/Kolkata';
-    else if (offset >= 0 && offset <= 1) estimatedTz = 'Europe/London';
-    else if (offset >= -5 && offset <= -4) estimatedTz = 'America/New_York';
-
-    setPartnerTimezone(estimatedTz);
-    setShowLocationSuggestions(false);
-    setLocationSearchResults([]);
-  };
-
-  // Debounced location search
-  useEffect(() => {
-    let timeoutId: NodeJS.Timeout;
-
-    if (partnerPlace.length >= 3) {
-      timeoutId = setTimeout(() => {
-        searchPartnerLocation(partnerPlace);
-      }, 500);
-    } else {
-      setLocationSearchResults([]);
+      if (city) {
+        lat = city.lat;
+        lng = city.lng;
+        tz = city.timezone;
+      }
     }
 
-    return () => {
-      if (timeoutId) clearTimeout(timeoutId);
+    if (lat && lng && !tz) {
+      tz = getTimezoneFromCoordinates(lat, lng);
+    }
+
+    const memberData = {
+      name: details.name || '',
+      birthDate: new Date(details.dob),
+      birthTime: details.birthTime || '12:00',
+      birthLocation: details.birthPlace || '',
+      latitude: lat || 0,
+      longitude: lng || 0,
+      timezone: tz || 'Asia/Kolkata',
     };
-  }, [partnerPlace]);
 
-  // API Queries
-  const { data: birthChartData, isLoading: chartLoading } = useBirthChart(birthData, !!birthData);
-  const { data: yogaData, isLoading: yogasLoading, error: yogasError } = useYogaDetection(birthData, !!birthData);
-  const { data: shadbalaData, isLoading: shadbalaLoading } = useShadbala(birthData, !!birthData);
-  const { data: dashaData, isLoading: dashaLoading } = useDashaTimeline(birthData, !!birthData);
-  const { data: lifePredictions, isLoading: lifePredictionsLoading } = useLifePredictions(birthData, undefined, undefined, undefined, !!birthData);
-  const { data: majorLifeEvents, isLoading: majorEventsLoading } = useMajorLifeEvents(birthData, undefined, undefined, !!birthData);
-  const { data: divisionalCharts, isLoading: divisionalLoading } = useDivisionalCharts(birthData, !!birthData);
-  const { data: transitsData, isLoading: transitsLoading } = useCurrentTransits(birthData, !!birthData);
-  const { data: lifeOverviewData, isLoading: lifeOverviewLoading, error: lifeOverviewError } = useLifeOverview(birthData, undefined, !!birthData);
+    handleBirthDataSubmit(memberData);
+  };
 
-  // Handle form submission
-  const handleBirthDataSubmit = (formData: {
-    name: string;
-    birthDate: Date;
-    birthTime: string;
-    birthLocation: string;
-    latitude: number;
-    longitude: number;
-    timezone: string;
-  }) => {
-    const apiData = formatBirthDataForAPI(formData);
-    setBirthData(apiData);
-
-    // Store user details for compatibility calculation
-    setUserName(formData.name);
-    setUserBirthDate(formData.birthDate.toISOString().split('T')[0]); // YYYY-MM-DD
-    setUserBirthTime(formData.birthTime); // HH:MM
-    setUserLocation(formData.birthLocation);
-
+  const handleBirthDataSubmit = (data: any) => {
+    // Make sure we format the data so the backend doesn't return 422
+    if (!data.birth_datetime && data.birthDate && data.birthTime) {
+      setBirthData(formatBirthDataForAPI(data));
+    } else {
+      setBirthData(data);
+    }
     setShowBirthForm(false);
   };
 
-  // Auto-submit profile data when available
+  // Auto-generate on load if profile data exists
   useEffect(() => {
-    if (isAstrologyReady && profileData && !birthData && !autoSubmittedRef.current) {
-      autoSubmittedRef.current = true;
+    if (isAstrologyReady && profileData && !autoSubmittedRef.current && showBirthForm) {
       handleBirthDataSubmit(profileData);
+      autoSubmittedRef.current = true;
     }
-  }, [isAstrologyReady, profileData, birthData]);
+  }, [isAstrologyReady, profileData, showBirthForm]);
 
-  // Calculate Compatibility
-  const calculateCompatibility = async () => {
-    if (!birthData) {
-      alert('Please enter your birth data first before calculating compatibility');
-      return;
-    }
-
-    if (!partnerName || !partnerDate || !partnerTime || !partnerPlace || partnerLatitude === 0) {
-      alert('Please fill in all partner details and select a location from the dropdown');
-      return;
-    }
-
-    setIsCalculatingCompatibility(true);
-    setShowLocationSuggestions(false);
-
-    try {
-      // birthData.birth_datetime is in ISO format like "1987-04-22T08:40:00"
-      // We need to split it into date and time
-      const [birth_date, birth_time_full] = birthData.birth_datetime.split('T');
-      const birth_time = birth_time_full.substring(0, 5); // Get HH:MM from HH:MM:SS
-
-      // Prepare the API request
-      const requestBody = {
-        person1: {
-          name: userName || 'Person 1',
-          birth_date: birth_date, // YYYY-MM-DD
-          birth_time: birth_time, // HH:MM
-          latitude: birthData.latitude,
-          longitude: birthData.longitude,
-          timezone: birthData.timezone || 'UTC',
-          location_name: userLocation || 'Location 1'
-        },
-        person2: {
-          name: partnerName,
-          birth_date: partnerDate,
-          birth_time: partnerTime,
-          latitude: partnerLatitude,
-          longitude: partnerLongitude,
-          timezone: partnerTimezone,
-          location_name: partnerPlace
-        },
-        ayanamsa: 'LAHIRI'
-      };
-
-      console.log('Compatibility request:', requestBody);
-
-      // Call the compatibility API
-      const response = await fetch(`${import.meta.env.VITE_ASTROLOGY_API_URL || 'http://localhost:8000'}/api/compatibility/calculate`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestBody)
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error('API error:', errorData);
-        throw new Error(JSON.stringify(errorData.detail || 'Failed to calculate compatibility'));
-      }
-
-      const data = await response.json();
-      console.log('Compatibility response:', data);
-      setCompatibilityData(data);
-      setShowCompatibility(true);
-    } catch (error) {
-      console.error('Compatibility calculation error:', error);
-      alert(`Error calculating compatibility: ${error instanceof Error ? error.message : 'Unknown error'}`);
-      setShowCompatibility(false);
-    } finally {
-      setIsCalculatingCompatibility(false);
-    }
-  };
+  // API Hooks
+  const { data: yogaData, isLoading: yogasLoading, error: yogasError } = useYogaDetection(birthData);
+  const { data: shadbalaData, isLoading: shadbalaLoading, error: shadbalaError } = useShadbala(birthData);
+  const { data: dashaData, isLoading: dashaLoading, error: dashaError } = useDashaTimeline(birthData);
+  const { data: birthChartData, isLoading: chartLoading, error: chartError } = useBirthChart(birthData);
+  const { data: lifePredictions, isLoading: lifePredictionsLoading, error: lifePredictionsError } = useLifePredictions(birthData);
+  const { data: majorLifeEvents, isLoading: majorLifeEventsLoading, error: majorLifeEventsError } = useMajorLifeEvents(birthData);
+  const { data: divisionalCharts, isLoading: divisionalLoading, error: divisionalError } = useDivisionalCharts(birthData);
+  const { data: transitsData, isLoading: transitsLoading, error: transitsError } = useCurrentTransits(birthData);
+  const { data: lifeOverviewData, isLoading: lifeOverviewLoading, error: lifeOverviewError } = useLifeOverview(birthData);
 
   // Filter yogas
   const displayedYogas = yogaData?.all_yogas
@@ -384,10 +247,12 @@ const YogaLabLive = () => {
       : yogaData.all_yogas.filter(y => y.category.toLowerCase() === yogaFilter.toLowerCase())
     : [];
 
-  // Set first yoga as selected when data loads
-  if (!selectedYoga && displayedYogas.length > 0) {
-    setSelectedYoga(displayedYogas[0]);
-  }
+  // Set first yoga as selected when data loads (must be in useEffect, not render body)
+  useEffect(() => {
+    if (!selectedYoga && displayedYogas.length > 0) {
+      setSelectedYoga(displayedYogas[0]);
+    }
+  }, [displayedYogas.length, selectedYoga]);
 
   // Prepare chart data
   const shadbalaChartData = shadbalaData ? shadbalaToChartData(shadbalaData) : [];
@@ -400,7 +265,7 @@ const YogaLabLive = () => {
       {/* Hero Header */}
       <div className="bg-gradient-to-br from-cyan-500/5 via-transparent to-purple-500/5 border-b border-white/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-12 relative z-10">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
             <div>
               <div className="flex items-center gap-3 mb-4">
                 <span className="text-4xl">ॐ</span>
@@ -411,11 +276,18 @@ const YogaLabLive = () => {
                 from our advanced Vedic astrology calculation engine.
               </p>
             </div>
-            {birthData && (
-              <Button variant="outline" className="border-white/20 text-white/80 hover:bg-white/10" onClick={() => setShowBirthForm(true)}>
-                Change Birth Data
-              </Button>
-            )}
+            <div className="flex flex-col sm:flex-row items-center gap-4">
+              <FamilyMemberSelector
+                selectedMemberId={selectedMemberId}
+                onMemberSelect={handleMemberSelect}
+                onDetailsChange={handleMemberDetailsChange}
+              />
+              {birthData && !selectedMemberId && (
+                <Button variant="outline" className="border-white/20 text-white/80 hover:bg-white/10" onClick={() => setShowBirthForm(true)}>
+                  Change Birth Data
+                </Button>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -594,7 +466,7 @@ const YogaLabLive = () => {
         {/* Main Content - Only show when data is loaded */}
         {birthData && !showBirthForm && yogaData && !yogasLoading && (
           <Tabs defaultValue="ai-chat" className="space-y-6">
-            <TabsList className="grid w-full max-w-7xl grid-cols-10">
+            <TabsList className="grid w-full max-w-7xl grid-cols-9">
               <TabsTrigger value="ai-chat" className="bg-gradient-to-r from-purple-500/10 to-purple-500/5">
                 🤖 AI Chat
               </TabsTrigger>
@@ -612,7 +484,6 @@ const YogaLabLive = () => {
               <TabsTrigger value="transits">Current Transits</TabsTrigger>
               <TabsTrigger value="divisional">Divisional Charts</TabsTrigger>
               <TabsTrigger value="lifecycle">Life Journey</TabsTrigger>
-              <TabsTrigger value="matchmaking">Match Making</TabsTrigger>
               <TabsTrigger value="analysis">Analysis</TabsTrigger>
             </TabsList>
 
@@ -740,12 +611,12 @@ const YogaLabLive = () => {
                                       const percent = planetShadbala.strength_percentage || 0;
                                       const isStrong = planetShadbala.is_strong;
                                       const displayGrade = isStrong ? 'Excellent' :
-                                                          percent >= 90 ? 'Good' :
-                                                          percent >= 70 ? 'Average' : 'Weak';
+                                        percent >= 90 ? 'Good' :
+                                          percent >= 70 ? 'Average' : 'Weak';
                                       const color = isStrong ? 'bg-green-500 hover:bg-green-600' :
-                                                   percent >= 90 ? 'bg-blue-500 hover:bg-blue-600' :
-                                                   percent >= 70 ? 'bg-yellow-500 hover:bg-yellow-600' :
-                                                   'bg-red-500 hover:bg-red-600';
+                                        percent >= 90 ? 'bg-blue-500 hover:bg-blue-600' :
+                                          percent >= 70 ? 'bg-yellow-500 hover:bg-yellow-600' :
+                                            'bg-red-500 hover:bg-red-600';
                                       return (
                                         <Badge className={`text-xs ${color}`} title={`${planetShadbala.total_shadbala.toFixed(2)}R / ${planetShadbala.required_minimum.toFixed(1)}R`}>
                                           {displayGrade} ({percent.toFixed(0)}%)
@@ -786,12 +657,11 @@ const YogaLabLive = () => {
 
                               {/* Strength Description */}
                               {strengthInfo && (
-                                <div className={`${
-                                  strengthInfo.strength === 'Exalted' ? 'bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800' :
+                                <div className={`${strengthInfo.strength === 'Exalted' ? 'bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800' :
                                   strengthInfo.strength === 'Debilitated' ? 'bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-800' :
-                                  strengthInfo.strength.includes('Own') ? 'bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800' :
-                                  'bg-gray-50 dark:bg-gray-950/30 border-gray-200 dark:border-gray-800'
-                                } p-3 rounded-lg border`}>
+                                    strengthInfo.strength.includes('Own') ? 'bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800' :
+                                      'bg-gray-50 dark:bg-gray-950/30 border-gray-200 dark:border-gray-800'
+                                  } p-3 rounded-lg border`}>
                                   <div className="flex items-start gap-2">
                                     <span className={`${strengthInfo.color} font-bold text-xs uppercase mt-0.5`}>
                                       Strength:
@@ -885,9 +755,8 @@ const YogaLabLive = () => {
                     {displayedYogas.map((yoga, index) => (
                       <Card
                         key={index}
-                        className={`cursor-pointer transition-colors ${
-                          selectedYoga?.name === yoga.name ? 'border-primary bg-primary/5' : 'hover:bg-muted/50'
-                        }`}
+                        className={`cursor-pointer transition-colors ${selectedYoga?.name === yoga.name ? 'border-primary bg-primary/5' : 'hover:bg-muted/50'
+                          }`}
                         onClick={() => setSelectedYoga(yoga)}
                       >
                         <CardContent className="p-3">
@@ -988,8 +857,8 @@ const YogaLabLive = () => {
                                     {selectedYoga.strength === 'Strong'
                                       ? 'This yoga will have a significant impact on your life'
                                       : selectedYoga.strength === 'Moderate'
-                                      ? 'This yoga will have noticeable effects'
-                                      : 'This yoga has subtle influences'}
+                                        ? 'This yoga will have noticeable effects'
+                                        : 'This yoga has subtle influences'}
                                   </p>
                                 </div>
                               )}
@@ -1057,48 +926,48 @@ const YogaLabLive = () => {
                               </div>
                             )}
 
-                        {/* Detailed Breakdown */}
-                        <div className="space-y-4">
-                          <h4 className="text-sm font-bold text-gray-900 dark:text-gray-100 uppercase tracking-wide">Your Chart Configuration</h4>
+                            {/* Detailed Breakdown */}
+                            <div className="space-y-4">
+                              <h4 className="text-sm font-bold text-gray-900 dark:text-gray-100 uppercase tracking-wide">Your Chart Configuration</h4>
 
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {selectedYoga.planets_involved && selectedYoga.planets_involved.length > 0 && (
-                              <div className="bg-orange-50 dark:bg-orange-950 p-4 rounded-lg border-2 border-orange-300 dark:border-orange-700">
-                                <h5 className="text-xs font-bold text-orange-800 dark:text-orange-100 uppercase tracking-wide mb-3">
-                                  Planets Creating This Yoga
-                                </h5>
-                                <div className="flex gap-2 flex-wrap">
-                                  {selectedYoga.planets_involved.map((planet: string, idx: number) => (
-                                    <Badge key={idx} className="text-sm px-3 py-1 bg-orange-200 dark:bg-orange-800 text-orange-900 dark:text-orange-100">
-                                      {planet}
-                                    </Badge>
-                                  ))}
-                                </div>
-                                <p className="text-xs text-gray-700 dark:text-gray-300 mt-3">
-                                  These planets are positioned in your chart in a way that creates this special combination.
-                                </p>
-                              </div>
-                            )}
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {selectedYoga.planets_involved && selectedYoga.planets_involved.length > 0 && (
+                                  <div className="bg-orange-50 dark:bg-orange-950 p-4 rounded-lg border-2 border-orange-300 dark:border-orange-700">
+                                    <h5 className="text-xs font-bold text-orange-800 dark:text-orange-100 uppercase tracking-wide mb-3">
+                                      Planets Creating This Yoga
+                                    </h5>
+                                    <div className="flex gap-2 flex-wrap">
+                                      {selectedYoga.planets_involved.map((planet: string, idx: number) => (
+                                        <Badge key={idx} className="text-sm px-3 py-1 bg-orange-200 dark:bg-orange-800 text-orange-900 dark:text-orange-100">
+                                          {planet}
+                                        </Badge>
+                                      ))}
+                                    </div>
+                                    <p className="text-xs text-gray-700 dark:text-gray-300 mt-3">
+                                      These planets are positioned in your chart in a way that creates this special combination.
+                                    </p>
+                                  </div>
+                                )}
 
-                            {selectedYoga.houses_involved && selectedYoga.houses_involved.length > 0 && (
-                              <div className="bg-purple-50 dark:bg-purple-950 p-4 rounded-lg border-2 border-purple-300 dark:border-purple-700">
-                                <h5 className="text-xs font-bold text-purple-800 dark:text-purple-100 uppercase tracking-wide mb-3">
-                                  Houses (Life Areas) Affected
-                                </h5>
-                                <div className="flex gap-2 flex-wrap">
-                                  {selectedYoga.houses_involved.map((house: number, idx: number) => (
-                                    <Badge key={idx} className="text-sm px-3 py-1 bg-purple-200 dark:bg-purple-800 text-purple-900 dark:text-purple-100">
-                                      House {house}
-                                    </Badge>
-                                  ))}
-                                </div>
-                                <p className="text-xs text-gray-700 dark:text-gray-300 mt-3">
-                                  This yoga influences these specific areas of your life.
-                                </p>
+                                {selectedYoga.houses_involved && selectedYoga.houses_involved.length > 0 && (
+                                  <div className="bg-purple-50 dark:bg-purple-950 p-4 rounded-lg border-2 border-purple-300 dark:border-purple-700">
+                                    <h5 className="text-xs font-bold text-purple-800 dark:text-purple-100 uppercase tracking-wide mb-3">
+                                      Houses (Life Areas) Affected
+                                    </h5>
+                                    <div className="flex gap-2 flex-wrap">
+                                      {selectedYoga.houses_involved.map((house: number, idx: number) => (
+                                        <Badge key={idx} className="text-sm px-3 py-1 bg-purple-200 dark:bg-purple-800 text-purple-900 dark:text-purple-100">
+                                          House {house}
+                                        </Badge>
+                                      ))}
+                                    </div>
+                                    <p className="text-xs text-gray-700 dark:text-gray-300 mt-3">
+                                      This yoga influences these specific areas of your life.
+                                    </p>
+                                  </div>
+                                )}
                               </div>
-                            )}
-                          </div>
-                        </div>
+                            </div>
 
                             {/* Practical Guidance */}
                             <div className="bg-emerald-50 dark:bg-emerald-950 p-6 rounded-lg border-2 border-emerald-300 dark:border-emerald-700">
@@ -1230,16 +1099,15 @@ const YogaLabLive = () => {
                                       <p className="text-xs text-muted-foreground mb-1">Mahadasha (Main Period)</p>
                                       <div className="flex items-center gap-2 mb-1">
                                         <span className="text-xl font-bold text-primary">{currentMahadasha.planet}</span>
-                                        <Badge className={`text-xs ${
-                                          isAuspicious ? 'bg-green-500' :
+                                        <Badge className={`text-xs ${isAuspicious ? 'bg-green-500' :
                                           strengthPercent >= 90 ? 'bg-blue-500' :
-                                          strengthPercent >= 70 ? 'bg-yellow-500' :
-                                          'bg-red-500'
-                                        }`}>
+                                            strengthPercent >= 70 ? 'bg-yellow-500' :
+                                              'bg-red-500'
+                                          }`}>
                                           {isAuspicious ? '✓' :
-                                           strengthPercent >= 90 ? 'Good' :
-                                           strengthPercent >= 70 ? 'Avg' :
-                                           'Weak'} {strengthPercent.toFixed(0)}%
+                                            strengthPercent >= 90 ? 'Good' :
+                                              strengthPercent >= 70 ? 'Avg' :
+                                                'Weak'} {strengthPercent.toFixed(0)}%
                                         </Badge>
                                       </div>
                                       <p className="text-xs text-muted-foreground">
@@ -1253,16 +1121,15 @@ const YogaLabLive = () => {
                                         <p className="text-xs text-muted-foreground mb-1">Antardasha (Sub-period)</p>
                                         <div className="flex items-center gap-2 mb-1">
                                           <span className="text-lg font-semibold text-primary">{currentAntardasha.planet}</span>
-                                          <Badge className={`text-xs ${
-                                            antarIsStrong ? 'bg-green-500' :
+                                          <Badge className={`text-xs ${antarIsStrong ? 'bg-green-500' :
                                             antarStrength >= 90 ? 'bg-blue-500' :
-                                            antarStrength >= 70 ? 'bg-yellow-500' :
-                                            'bg-red-500'
-                                          }`}>
+                                              antarStrength >= 70 ? 'bg-yellow-500' :
+                                                'bg-red-500'
+                                            }`}>
                                             {antarIsStrong ? '✓' :
-                                             antarStrength >= 90 ? 'Good' :
-                                             antarStrength >= 70 ? 'Avg' :
-                                             'Weak'} {antarStrength.toFixed(0)}%
+                                              antarStrength >= 90 ? 'Good' :
+                                                antarStrength >= 70 ? 'Avg' :
+                                                  'Weak'} {antarStrength.toFixed(0)}%
                                           </Badge>
                                         </div>
                                         <p className="text-xs text-muted-foreground">
@@ -1277,16 +1144,15 @@ const YogaLabLive = () => {
                                         <p className="text-xs text-muted-foreground mb-1">Pratyantardasha (Sub-sub-period)</p>
                                         <div className="flex items-center gap-2 mb-1">
                                           <span className="text-lg font-semibold text-primary">{currentPratyantardasha.planet}</span>
-                                          <Badge className={`text-xs ${
-                                            pratyIsStrong ? 'bg-green-500' :
+                                          <Badge className={`text-xs ${pratyIsStrong ? 'bg-green-500' :
                                             pratyStrength >= 90 ? 'bg-blue-500' :
-                                            pratyStrength >= 70 ? 'bg-yellow-500' :
-                                            'bg-red-500'
-                                          }`}>
+                                              pratyStrength >= 70 ? 'bg-yellow-500' :
+                                                'bg-red-500'
+                                            }`}>
                                             {pratyIsStrong ? '✓' :
-                                             pratyStrength >= 90 ? 'Good' :
-                                             pratyStrength >= 70 ? 'Avg' :
-                                             'Weak'} {pratyStrength.toFixed(0)}%
+                                              pratyStrength >= 90 ? 'Good' :
+                                                pratyStrength >= 70 ? 'Avg' :
+                                                  'Weak'} {pratyStrength.toFixed(0)}%
                                           </Badge>
                                         </div>
                                         <p className="text-xs text-muted-foreground">
@@ -1302,19 +1168,19 @@ const YogaLabLive = () => {
                                     <p className="text-sm text-gray-900 dark:text-gray-100">
                                       {isAuspicious ?
                                         `${currentMahadasha.planet} Mahadasha is strong and can deliver promised results with ease. This is an auspicious period for ${currentMahadasha.planet}'s significations.` :
-                                       strengthPercent >= 90 ?
-                                        `${currentMahadasha.planet} Mahadasha is nearly at full strength. Results will come with moderate effort.` :
-                                       strengthPercent >= 70 ?
-                                        `${currentMahadasha.planet} Mahadasha has moderate strength. Results require consistent effort and remedies are recommended.` :
-                                        `${currentMahadasha.planet} Mahadasha is weak. This period requires high personal effort (Purushartha) and remedial measures for best results.`
+                                        strengthPercent >= 90 ?
+                                          `${currentMahadasha.planet} Mahadasha is nearly at full strength. Results will come with moderate effort.` :
+                                          strengthPercent >= 70 ?
+                                            `${currentMahadasha.planet} Mahadasha has moderate strength. Results require consistent effort and remedies are recommended.` :
+                                            `${currentMahadasha.planet} Mahadasha is weak. This period requires high personal effort (Purushartha) and remedial measures for best results.`
                                       }
                                       {currentAntardasha && (
                                         <span className="block mt-1">
                                           Current {currentAntardasha.planet} Antardasha: {
                                             antarIsStrong ? 'Strong - favorable for results' :
-                                            antarStrength >= 90 ? 'Good - mostly favorable' :
-                                            antarStrength >= 70 ? 'Average - needs effort' :
-                                            'Weak - requires remedies'
+                                              antarStrength >= 90 ? 'Good - mostly favorable' :
+                                                antarStrength >= 70 ? 'Average - needs effort' :
+                                                  'Weak - requires remedies'
                                           }
                                         </span>
                                       )}
@@ -1351,11 +1217,10 @@ const YogaLabLive = () => {
                                 const strengthPercent = planetShadbala?.strength_percentage || 0;
 
                                 return (
-                                  <div key={index} className={`p-4 rounded-lg border-2 ${
-                                    isCurrent ? 'bg-amber-50 dark:bg-amber-950/30 border-amber-400 dark:border-amber-700' :
+                                  <div key={index} className={`p-4 rounded-lg border-2 ${isCurrent ? 'bg-amber-50 dark:bg-amber-950/30 border-amber-400 dark:border-amber-700' :
                                     isPast ? 'bg-gray-50 dark:bg-gray-900/30 border-gray-300 dark:border-gray-700 opacity-60' :
-                                    'bg-blue-50 dark:bg-blue-950/30 border-blue-300 dark:border-blue-700'
-                                  }`}>
+                                      'bg-blue-50 dark:bg-blue-950/30 border-blue-300 dark:border-blue-700'
+                                    }`}>
                                     <div className="flex items-start justify-between mb-2">
                                       <div>
                                         <div className="flex items-center gap-2 mb-1">
@@ -1368,12 +1233,11 @@ const YogaLabLive = () => {
                                           {startDate.toLocaleDateString()} - {endDate.toLocaleDateString()} ({mahadasha.duration_years.toFixed(1)} years)
                                         </p>
                                       </div>
-                                      <Badge className={`${
-                                        isStrong ? 'bg-green-500' :
+                                      <Badge className={`${isStrong ? 'bg-green-500' :
                                         strengthPercent >= 90 ? 'bg-blue-500' :
-                                        strengthPercent >= 70 ? 'bg-yellow-500' :
-                                        'bg-red-500'
-                                      }`}>
+                                          strengthPercent >= 70 ? 'bg-yellow-500' :
+                                            'bg-red-500'
+                                        }`}>
                                         {strengthPercent.toFixed(0)}% Strength
                                       </Badge>
                                     </div>
@@ -1446,10 +1310,9 @@ const YogaLabLive = () => {
                                             const antarKey = `${mahadasha.planet}-${antardasha.planet}`;
 
                                             return (
-                                              <div key={aIndex} className={`rounded border ${
-                                                isAntarCurrent ? 'bg-amber-100 dark:bg-amber-900/40 border-amber-400 dark:border-amber-600' :
+                                              <div key={aIndex} className={`rounded border ${isAntarCurrent ? 'bg-amber-100 dark:bg-amber-900/40 border-amber-400 dark:border-amber-600' :
                                                 'bg-white/50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700'
-                                              }`}>
+                                                }`}>
                                                 <div className="p-2">
                                                   <div className="flex items-center justify-between mb-1">
                                                     <span className="font-semibold text-xs">{mahadasha.planet}-{antardasha.planet}</span>
@@ -1459,12 +1322,11 @@ const YogaLabLive = () => {
                                                     {antarStart.toLocaleDateString()} - {antarEnd.toLocaleDateString()}
                                                   </div>
                                                   <div className="flex items-center gap-1 mt-1">
-                                                    <div className={`h-1.5 flex-1 rounded-full ${
-                                                      antarPlanetShadbala?.is_strong ? 'bg-green-500' :
+                                                    <div className={`h-1.5 flex-1 rounded-full ${antarPlanetShadbala?.is_strong ? 'bg-green-500' :
                                                       antarStrength >= 90 ? 'bg-blue-500' :
-                                                      antarStrength >= 70 ? 'bg-yellow-500' :
-                                                      'bg-red-500'
-                                                    }`}></div>
+                                                        antarStrength >= 70 ? 'bg-yellow-500' :
+                                                          'bg-red-500'
+                                                      }`}></div>
                                                     <span className="text-xs">{antarStrength.toFixed(0)}%</span>
                                                   </div>
 
@@ -1505,10 +1367,9 @@ const YogaLabLive = () => {
                                                         const pratyStrength = pratyPlanetShadbala?.strength_percentage || 0;
 
                                                         return (
-                                                          <div key={pIndex} className={`p-1.5 rounded text-xs border ${
-                                                            isPratyCurrent ? 'bg-amber-200 dark:bg-amber-800/60 border-amber-500' :
+                                                          <div key={pIndex} className={`p-1.5 rounded text-xs border ${isPratyCurrent ? 'bg-amber-200 dark:bg-amber-800/60 border-amber-500' :
                                                             'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600'
-                                                          }`}>
+                                                            }`}>
                                                             <div className="flex items-center justify-between">
                                                               <span className="font-medium text-xs">
                                                                 {mahadasha.planet}-{antardasha.planet}-{pratyantardasha.planet}
@@ -1520,12 +1381,11 @@ const YogaLabLive = () => {
                                                               {pratyEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' })}
                                                             </div>
                                                             <div className="flex items-center gap-1 mt-1">
-                                                              <div className={`h-1 flex-1 rounded-full ${
-                                                                pratyPlanetShadbala?.is_strong ? 'bg-green-500' :
+                                                              <div className={`h-1 flex-1 rounded-full ${pratyPlanetShadbala?.is_strong ? 'bg-green-500' :
                                                                 pratyStrength >= 90 ? 'bg-blue-500' :
-                                                                pratyStrength >= 70 ? 'bg-yellow-500' :
-                                                                'bg-red-500'
-                                                              }`}></div>
+                                                                  pratyStrength >= 70 ? 'bg-yellow-500' :
+                                                                    'bg-red-500'
+                                                                }`}></div>
                                                               <span className="text-xs">{pratyStrength.toFixed(0)}%</span>
                                                             </div>
                                                           </div>
@@ -1821,115 +1681,115 @@ const YogaLabLive = () => {
                       ) : (
                         <div className="space-y-4">
                           {(() => {
-                          // Categorize by planet-specific minimum requirements (Classical BPHS)
-                          const excellent = Object.entries(shadbalaData)
-                            .filter(([_, data]: [string, any]) => data.is_strong === true)
-                            .map(([planet, data]: [string, any]) => ({
-                              planet,
-                              rupas: data.total_shadbala,
-                              percent: data.strength_percentage
-                            }));
+                            // Categorize by planet-specific minimum requirements (Classical BPHS)
+                            const excellent = Object.entries(shadbalaData)
+                              .filter(([_, data]: [string, any]) => data.is_strong === true)
+                              .map(([planet, data]: [string, any]) => ({
+                                planet,
+                                rupas: data.total_shadbala,
+                                percent: data.strength_percentage
+                              }));
 
-                          const good = Object.entries(shadbalaData)
-                            .filter(([_, data]: [string, any]) => {
-                              const percent = data.strength_percentage;
-                              return !data.is_strong && percent >= 90;
-                            })
-                            .map(([planet, data]: [string, any]) => ({
-                              planet,
-                              rupas: data.total_shadbala,
-                              percent: data.strength_percentage
-                            }));
+                            const good = Object.entries(shadbalaData)
+                              .filter(([_, data]: [string, any]) => {
+                                const percent = data.strength_percentage;
+                                return !data.is_strong && percent >= 90;
+                              })
+                              .map(([planet, data]: [string, any]) => ({
+                                planet,
+                                rupas: data.total_shadbala,
+                                percent: data.strength_percentage
+                              }));
 
-                          const average = Object.entries(shadbalaData)
-                            .filter(([_, data]: [string, any]) => {
-                              const percent = data.strength_percentage;
-                              return percent >= 70 && percent < 90;
-                            })
-                            .map(([planet, data]: [string, any]) => ({
-                              planet,
-                              rupas: data.total_shadbala,
-                              percent: data.strength_percentage
-                            }));
+                            const average = Object.entries(shadbalaData)
+                              .filter(([_, data]: [string, any]) => {
+                                const percent = data.strength_percentage;
+                                return percent >= 70 && percent < 90;
+                              })
+                              .map(([planet, data]: [string, any]) => ({
+                                planet,
+                                rupas: data.total_shadbala,
+                                percent: data.strength_percentage
+                              }));
 
-                          const weak = Object.entries(shadbalaData)
-                            .filter(([_, data]: [string, any]) => data.strength_percentage < 70)
-                            .map(([planet, data]: [string, any]) => ({
-                              planet,
-                              rupas: data.total_shadbala,
-                              percent: data.strength_percentage,
-                              required: data.required_minimum
-                            }));
+                            const weak = Object.entries(shadbalaData)
+                              .filter(([_, data]: [string, any]) => data.strength_percentage < 70)
+                              .map(([planet, data]: [string, any]) => ({
+                                planet,
+                                rupas: data.total_shadbala,
+                                percent: data.strength_percentage,
+                                required: data.required_minimum
+                              }));
 
-                          return (
-                            <>
-                              <div className="bg-green-50 dark:bg-green-950/30 p-3 rounded-lg border border-green-200 dark:border-green-800">
-                                <p className="font-medium text-green-700 dark:text-green-300 mb-1">★ Excellent (Meets Planet-Specific Requirement):</p>
-                                <p className="text-xs text-gray-700 dark:text-gray-300 mb-2">Planet is strong (Purna Bala) - can deliver full promised results</p>
-                                {excellent.length > 0 ? (
-                                  <div className="flex flex-wrap gap-2">
-                                    {excellent.map(item => (
-                                      <div key={item.planet} className="bg-green-600 text-white px-2 py-1 rounded text-xs font-medium">
-                                        <div>{item.planet}</div>
-                                        <div className="text-green-200">{item.rupas.toFixed(2)}R ({item.percent.toFixed(0)}%)</div>
-                                      </div>
-                                    ))}
-                                  </div>
-                                ) : (
-                                  <p className="text-xs text-gray-500 italic">No planets meet their minimum requirement</p>
-                                )}
-                              </div>
-                              <div className="bg-blue-50 dark:bg-blue-950/30 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
-                                <p className="font-medium text-blue-700 dark:text-blue-300 mb-1">✓ Good (90-99% of Requirement):</p>
-                                <p className="text-xs text-gray-700 dark:text-gray-300 mb-2">Nearly sufficient - can give mostly positive results with minor effort</p>
-                                {good.length > 0 ? (
-                                  <div className="flex flex-wrap gap-2">
-                                    {good.map(item => (
-                                      <div key={item.planet} className="bg-blue-600 text-white px-2 py-1 rounded text-xs font-medium">
-                                        <div>{item.planet}</div>
-                                        <div className="text-blue-200">{item.rupas.toFixed(2)}R ({item.percent.toFixed(0)}%)</div>
-                                      </div>
-                                    ))}
-                                  </div>
-                                ) : (
-                                  <p className="text-xs text-gray-500 italic">No planets in this range</p>
-                                )}
-                              </div>
-                              <div className="bg-yellow-50 dark:bg-yellow-950/30 p-3 rounded-lg border border-yellow-200 dark:border-yellow-800">
-                                <p className="font-medium text-yellow-700 dark:text-yellow-300 mb-1">○ Average (70-89% of Requirement):</p>
-                                <p className="text-xs text-gray-700 dark:text-gray-300 mb-2">Moderate deficit - mixed results, remedies recommended</p>
-                                {average.length > 0 ? (
-                                  <div className="flex flex-wrap gap-2">
-                                    {average.map(item => (
-                                      <div key={item.planet} className="bg-yellow-600 text-white px-2 py-1 rounded text-xs font-medium">
-                                        <div>{item.planet}</div>
-                                        <div className="text-yellow-200">{item.rupas.toFixed(2)}R ({item.percent.toFixed(0)}%)</div>
-                                      </div>
-                                    ))}
-                                  </div>
-                                ) : (
-                                  <p className="text-xs text-gray-500 italic">No planets in this range</p>
-                                )}
-                              </div>
-                              <div className="bg-red-50 dark:bg-red-950/30 p-3 rounded-lg border border-red-200 dark:border-red-800">
-                                <p className="font-medium text-red-700 dark:text-red-300 mb-1">⚠ Weak (&lt;70% of Requirement):</p>
-                                <p className="text-xs text-gray-700 dark:text-gray-300 mb-2">Significant deficit - remedies urgently needed, results require high effort (Purushartha)</p>
-                                {weak.length > 0 ? (
-                                  <div className="flex flex-wrap gap-2">
-                                    {weak.map(item => (
-                                      <div key={item.planet} className="bg-red-600 text-white px-2 py-1 rounded text-xs font-medium">
-                                        <div>{item.planet}</div>
-                                        <div className="text-red-200">{item.rupas.toFixed(2)}R / {item.required.toFixed(1)}R ({item.percent.toFixed(0)}%)</div>
-                                      </div>
-                                    ))}
-                                  </div>
-                                ) : (
-                                  <p className="text-xs text-gray-500 italic">No planets in this range</p>
-                                )}
-                              </div>
-                            </>
-                          );
-                        })()}
+                            return (
+                              <>
+                                <div className="bg-green-50 dark:bg-green-950/30 p-3 rounded-lg border border-green-200 dark:border-green-800">
+                                  <p className="font-medium text-green-700 dark:text-green-300 mb-1">★ Excellent (Meets Planet-Specific Requirement):</p>
+                                  <p className="text-xs text-gray-700 dark:text-gray-300 mb-2">Planet is strong (Purna Bala) - can deliver full promised results</p>
+                                  {excellent.length > 0 ? (
+                                    <div className="flex flex-wrap gap-2">
+                                      {excellent.map(item => (
+                                        <div key={item.planet} className="bg-green-600 text-white px-2 py-1 rounded text-xs font-medium">
+                                          <div>{item.planet}</div>
+                                          <div className="text-green-200">{item.rupas.toFixed(2)}R ({item.percent.toFixed(0)}%)</div>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  ) : (
+                                    <p className="text-xs text-gray-500 italic">No planets meet their minimum requirement</p>
+                                  )}
+                                </div>
+                                <div className="bg-blue-50 dark:bg-blue-950/30 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
+                                  <p className="font-medium text-blue-700 dark:text-blue-300 mb-1">✓ Good (90-99% of Requirement):</p>
+                                  <p className="text-xs text-gray-700 dark:text-gray-300 mb-2">Nearly sufficient - can give mostly positive results with minor effort</p>
+                                  {good.length > 0 ? (
+                                    <div className="flex flex-wrap gap-2">
+                                      {good.map(item => (
+                                        <div key={item.planet} className="bg-blue-600 text-white px-2 py-1 rounded text-xs font-medium">
+                                          <div>{item.planet}</div>
+                                          <div className="text-blue-200">{item.rupas.toFixed(2)}R ({item.percent.toFixed(0)}%)</div>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  ) : (
+                                    <p className="text-xs text-gray-500 italic">No planets in this range</p>
+                                  )}
+                                </div>
+                                <div className="bg-yellow-50 dark:bg-yellow-950/30 p-3 rounded-lg border border-yellow-200 dark:border-yellow-800">
+                                  <p className="font-medium text-yellow-700 dark:text-yellow-300 mb-1">○ Average (70-89% of Requirement):</p>
+                                  <p className="text-xs text-gray-700 dark:text-gray-300 mb-2">Moderate deficit - mixed results, remedies recommended</p>
+                                  {average.length > 0 ? (
+                                    <div className="flex flex-wrap gap-2">
+                                      {average.map(item => (
+                                        <div key={item.planet} className="bg-yellow-600 text-white px-2 py-1 rounded text-xs font-medium">
+                                          <div>{item.planet}</div>
+                                          <div className="text-yellow-200">{item.rupas.toFixed(2)}R ({item.percent.toFixed(0)}%)</div>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  ) : (
+                                    <p className="text-xs text-gray-500 italic">No planets in this range</p>
+                                  )}
+                                </div>
+                                <div className="bg-red-50 dark:bg-red-950/30 p-3 rounded-lg border border-red-200 dark:border-red-800">
+                                  <p className="font-medium text-red-700 dark:text-red-300 mb-1">⚠ Weak (&lt;70% of Requirement):</p>
+                                  <p className="text-xs text-gray-700 dark:text-gray-300 mb-2">Significant deficit - remedies urgently needed, results require high effort (Purushartha)</p>
+                                  {weak.length > 0 ? (
+                                    <div className="flex flex-wrap gap-2">
+                                      {weak.map(item => (
+                                        <div key={item.planet} className="bg-red-600 text-white px-2 py-1 rounded text-xs font-medium">
+                                          <div>{item.planet}</div>
+                                          <div className="text-red-200">{item.rupas.toFixed(2)}R / {item.required.toFixed(1)}R ({item.percent.toFixed(0)}%)</div>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  ) : (
+                                    <p className="text-xs text-gray-500 italic">No planets in this range</p>
+                                  )}
+                                </div>
+                              </>
+                            );
+                          })()}
                         </div>
                       )}
                     </div>
@@ -1988,7 +1848,7 @@ const YogaLabLive = () => {
                 </CardHeader>
                 <CardContent>
                   {/* Loading State */}
-                  {majorEventsLoading && (
+                  {majorLifeEventsLoading && (
                     <div className="flex items-center justify-center py-12">
                       <Loader2 className="w-8 h-8 animate-spin text-primary mr-3" />
                       <span>Analyzing major life events...</span>
@@ -1996,7 +1856,7 @@ const YogaLabLive = () => {
                   )}
 
                   {/* Major Life Events Timeline */}
-                  {majorLifeEvents && !majorEventsLoading && (
+                  {majorLifeEvents && !majorLifeEventsLoading && (
                     <div className="space-y-4">
                       {/* Summary Info */}
                       <div className="bg-gradient-to-r from-primary/10 via-purple/10 to-primary/10 p-6 rounded-lg border border-primary/30 mb-6">
@@ -2017,9 +1877,9 @@ const YogaLabLive = () => {
                             <span className="font-semibold text-muted-foreground block mb-1">Life Phase</span>
                             <span className="text-xl font-bold text-purple-600 dark:text-purple-400">
                               {(majorLifeEvents.current_year - majorLifeEvents.birth_year) < 12 ? 'Childhood' :
-                               (majorLifeEvents.current_year - majorLifeEvents.birth_year) < 30 ? 'Youth' :
-                               (majorLifeEvents.current_year - majorLifeEvents.birth_year) < 60 ? 'Maturity' :
-                               'Wisdom'}
+                                (majorLifeEvents.current_year - majorLifeEvents.birth_year) < 30 ? 'Youth' :
+                                  (majorLifeEvents.current_year - majorLifeEvents.birth_year) < 60 ? 'Maturity' :
+                                    'Wisdom'}
                             </span>
                           </div>
                           <div>
@@ -2473,453 +2333,6 @@ const YogaLabLive = () => {
               </div>
             </TabsContent>
 
-            {/* MATCH MAKING TAB */}
-            <TabsContent value="matchmaking" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-foreground">Vedic Matchmaking & Compatibility Analysis</CardTitle>
-                  <CardDescription className="text-muted-foreground">
-                    Analyze marriage compatibility based on Ashtakoot Guna Milan, planetary positions, and Vedic astrology principles. Enter your partner's birth details below for a comprehensive compatibility report.
-                  </CardDescription>
-                </CardHeader>
-              </Card>
-
-              {/* Partner Birth Data Form */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-foreground">Partner's Birth Information</CardTitle>
-                  <CardDescription className="text-muted-foreground">
-                    Enter the birth details of your potential partner for compatibility analysis
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium text-foreground">Full Name</label>
-                      <input
-                        type="text"
-                        placeholder="Partner's name"
-                        value={partnerName}
-                        onChange={(e) => setPartnerName(e.target.value)}
-                        className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium text-foreground">Gender</label>
-                      <select
-                        value={partnerGender}
-                        onChange={(e) => setPartnerGender(e.target.value)}
-                        className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-                      >
-                        <option value="">Select Gender</option>
-                        <option value="male">Male</option>
-                        <option value="female">Female</option>
-                      </select>
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium text-foreground">Date of Birth</label>
-                      <input
-                        type="date"
-                        value={partnerDate}
-                        onChange={(e) => setPartnerDate(e.target.value)}
-                        className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium text-foreground">Time of Birth</label>
-                      <input
-                        type="time"
-                        value={partnerTime}
-                        onChange={(e) => setPartnerTime(e.target.value)}
-                        className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-                      />
-                    </div>
-                    <div className="space-y-2 md:col-span-2 relative">
-                      <label className="text-sm font-medium text-foreground">Place of Birth</label>
-                      <div className="relative">
-                        <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground z-10" />
-                        <input
-                          type="text"
-                          placeholder="Search city... (e.g., Mumbai, Delhi, New York)"
-                          value={partnerPlace}
-                          onChange={(e) => {
-                            setPartnerPlace(e.target.value);
-                            setShowLocationSuggestions(true);
-                          }}
-                          onFocus={() => setShowLocationSuggestions(true)}
-                          className="w-full pl-10 px-3 py-2 border border-input bg-background text-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-                        />
-                      </div>
-
-                      {/* Location Suggestions Dropdown */}
-                      {showLocationSuggestions && partnerPlace.length > 0 && (
-                        <div className="absolute z-50 w-full mt-1 bg-popover border border-border rounded-lg shadow-lg max-h-64 overflow-auto">
-                          {isSearchingLocation && (
-                            <div className="px-4 py-3 flex items-center gap-2 text-muted-foreground text-sm">
-                              <Loader2 className="w-4 h-4 animate-spin" />
-                              Searching locations...
-                            </div>
-                          )}
-
-                          {/* Popular cities first */}
-                          {filteredCities.length > 0 && (
-                            <>
-                              <div className="px-4 py-2 text-xs font-semibold text-muted-foreground border-b border-border">
-                                POPULAR CITIES
-                              </div>
-                              {filteredCities.map((city) => (
-                                <button
-                                  key={city.name}
-                                  type="button"
-                                  onClick={() => handleCitySelect(city)}
-                                  className="w-full px-4 py-2 text-left hover:bg-muted transition-colors text-sm text-foreground flex items-start gap-2"
-                                >
-                                  <MapPin className="w-4 h-4 mt-0.5 text-primary flex-shrink-0" />
-                                  <span>{city.name}</span>
-                                </button>
-                              ))}
-                            </>
-                          )}
-
-                          {/* Search results */}
-                          {!isSearchingLocation && locationSearchResults.length > 0 && (
-                            <>
-                              {filteredCities.length > 0 && (
-                                <div className="px-4 py-2 text-xs font-semibold text-muted-foreground border-b border-t border-border">
-                                  SEARCH RESULTS
-                                </div>
-                              )}
-                              {locationSearchResults.map((result, index) => (
-                                <button
-                                  key={index}
-                                  type="button"
-                                  onClick={() => handleSearchResultSelect(result)}
-                                  className="w-full px-4 py-2 text-left hover:bg-muted transition-colors text-sm text-foreground flex items-start gap-2"
-                                >
-                                  <MapPin className="w-4 h-4 mt-0.5 text-muted-foreground flex-shrink-0" />
-                                  <span className="line-clamp-2">{result.display_name}</span>
-                                </button>
-                              ))}
-                            </>
-                          )}
-
-                          {!isSearchingLocation && locationSearchResults.length === 0 && filteredCities.length === 0 && partnerPlace.length >= 3 && (
-                            <div className="px-4 py-3 text-sm text-muted-foreground">
-                              No locations found. Try a different search.
-                            </div>
-                          )}
-                        </div>
-                      )}
-
-                      {partnerLatitude !== 0 && partnerLongitude !== 0 && (
-                        <p className="text-xs text-muted-foreground mt-1">
-                          📍 {partnerLatitude.toFixed(4)}°, {partnerLongitude.toFixed(4)}° • {partnerTimezone}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                  <div className="mt-6 flex justify-end gap-3">
-                    <Button
-                      variant="outline"
-                      onClick={() => {
-                        setPartnerName('');
-                        setPartnerGender('');
-                        setPartnerDate('');
-                        setPartnerTime('');
-                        setPartnerPlace('');
-                        setPartnerLatitude(0);
-                        setPartnerLongitude(0);
-                        setPartnerTimezone('');
-                        setShowCompatibility(false);
-                        setShowLocationSuggestions(false);
-                        setCompatibilityData(null);
-                      }}
-                    >
-                      Clear
-                    </Button>
-                    <Button
-                      onClick={calculateCompatibility}
-                      disabled={!partnerName || !partnerGender || !partnerDate || !partnerTime || !partnerPlace || partnerLatitude === 0 || isCalculatingCompatibility}
-                    >
-                      {isCalculatingCompatibility ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Calculating...
-                        </>
-                      ) : (
-                        'Calculate Compatibility'
-                      )}
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Compatibility Score Overview */}
-              {showCompatibility && compatibilityData && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-foreground">Ashtakoot Guna Milan Score</CardTitle>
-                    <CardDescription className="text-muted-foreground">
-                      Traditional 36-point compatibility system based on Moon positions
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    {/* Both Partners Summary */}
-                    <div className="mb-6 p-4 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 rounded-lg border border-purple-200 dark:border-purple-800">
-                      <h4 className="font-semibold text-foreground mb-3">Compatibility Analysis Between:</h4>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <p className="font-semibold text-sm text-purple-600 dark:text-purple-400">Person 1:</p>
-                          <div className="text-sm space-y-1">
-                            <p className="text-foreground"><span className="text-muted-foreground">Name:</span> {compatibilityData.person1.name}</p>
-                            <p className="text-foreground"><span className="text-muted-foreground">Moon Sign:</span> {compatibilityData.person1.moon_sign}</p>
-                            <p className="text-foreground"><span className="text-muted-foreground">Nakshatra:</span> {compatibilityData.person1.nakshatra} (Pada {compatibilityData.person1.nakshatra_pada})</p>
-                          </div>
-                        </div>
-                        <div className="space-y-2">
-                          <p className="font-semibold text-sm text-pink-600 dark:text-pink-400">Person 2:</p>
-                          <div className="text-sm space-y-1">
-                            <p className="text-foreground"><span className="text-muted-foreground">Name:</span> {compatibilityData.person2.name}</p>
-                            <p className="text-foreground"><span className="text-muted-foreground">Moon Sign:</span> {compatibilityData.person2.moon_sign}</p>
-                            <p className="text-foreground"><span className="text-muted-foreground">Nakshatra:</span> {compatibilityData.person2.nakshatra} (Pada {compatibilityData.person2.nakshatra_pada})</p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="text-center py-8">
-                      <div className="inline-block relative">
-                        <div className={`w-32 h-32 rounded-full border-8 flex items-center justify-center ${
-                          compatibilityData.compatibility.total_score >= 28
-                            ? 'border-green-500/30 bg-green-50 dark:bg-green-950/30'
-                            : compatibilityData.compatibility.total_score >= 20
-                            ? 'border-blue-500/30 bg-blue-50 dark:bg-blue-950/30'
-                            : compatibilityData.compatibility.total_score >= 13
-                            ? 'border-amber-500/30 bg-amber-50 dark:bg-amber-950/30'
-                            : 'border-red-500/30 bg-red-50 dark:bg-red-950/30'
-                        }`}>
-                          <div className="text-center">
-                            <div className={`text-4xl font-bold ${
-                              compatibilityData.compatibility.total_score >= 28
-                                ? 'text-green-600 dark:text-green-400'
-                                : compatibilityData.compatibility.total_score >= 20
-                                ? 'text-blue-600 dark:text-blue-400'
-                                : compatibilityData.compatibility.total_score >= 13
-                                ? 'text-amber-600 dark:text-amber-400'
-                                : 'text-red-600 dark:text-red-400'
-                            }`}>{compatibilityData.compatibility.total_score}</div>
-                            <div className="text-xs text-muted-foreground">out of 36</div>
-                          </div>
-                        </div>
-                      </div>
-                      <p className={`mt-4 text-sm font-semibold ${
-                        compatibilityData.compatibility.total_score >= 28
-                          ? 'text-green-600 dark:text-green-400'
-                          : compatibilityData.compatibility.total_score >= 20
-                          ? 'text-blue-600 dark:text-blue-400'
-                          : compatibilityData.compatibility.total_score >= 13
-                          ? 'text-amber-600 dark:text-amber-400'
-                          : 'text-red-600 dark:text-red-400'
-                      }`}>
-                        {compatibilityData.compatibility.interpretation}
-                      </p>
-                      <p className="mt-2 text-sm text-muted-foreground">
-                        Compatibility percentage: {compatibilityData.compatibility.percentage}%
-                      </p>
-                    </div>
-
-                    {/* Guna Breakdown */}
-                    <div className="mt-6 space-y-3">
-                      <h4 className="font-semibold text-sm mb-4 text-foreground">Eight Gunas Breakdown:</h4>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        {Object.entries(compatibilityData.compatibility.koots).map(([kootName, kootData]: [string, any]) => {
-                          const percentage = (kootData.points / kootData.max) * 100;
-                          return (
-                            <div key={kootName} className="p-3 bg-muted/50 rounded-lg border border-border">
-                              <div className="flex justify-between items-start">
-                                <div className="flex-1">
-                                  <span className="font-medium text-foreground capitalize">{kootName}</span>
-                                  <p className="text-xs text-muted-foreground">{kootData.description}</p>
-                                  {kootData.detail && (
-                                    <p className="text-xs text-muted-foreground mt-1 italic">{kootData.detail}</p>
-                                  )}
-                                </div>
-                                <span className={`text-sm font-semibold ml-2 ${
-                                  percentage >= 75 ? 'text-green-600 dark:text-green-400' :
-                                  percentage >= 50 ? 'text-blue-600 dark:text-blue-400' :
-                                  percentage >= 25 ? 'text-amber-600 dark:text-amber-400' :
-                                  'text-red-600 dark:text-red-400'
-                                }`}>
-                                  {kootData.points} / {kootData.max}
-                                </span>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-
-                    {/* Score Interpretation */}
-                    <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-950/30 rounded-lg border border-blue-200 dark:border-blue-800">
-                      <h4 className="font-semibold text-sm mb-2 text-foreground">Score Interpretation Guide:</h4>
-                      <div className="space-y-1 text-sm text-foreground">
-                        <p><span className="font-medium text-green-600 dark:text-green-400">28-36 points:</span> Excellent match - highly compatible</p>
-                        <p><span className="font-medium text-blue-600 dark:text-blue-400">20-27 points:</span> Good match - compatible with minor adjustments</p>
-                        <p><span className="font-medium text-amber-600 dark:text-amber-400">13-19 points:</span> Average match - requires effort and understanding</p>
-                        <p><span className="font-medium text-red-600 dark:text-red-400">Below 13:</span> Poor match - significant challenges expected</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-
-              {/* Additional Compatibility Factors */}
-              {showCompatibility && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-foreground">Advanced Compatibility Analysis</CardTitle>
-                    <CardDescription className="text-muted-foreground">
-                      Beyond Ashtakoot - Additional factors for marriage compatibility
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="p-4 border border-border rounded-lg bg-card">
-                        <h4 className="font-semibold mb-2 text-foreground">Mangal Dosha Check</h4>
-                        <p className="text-sm text-muted-foreground mb-3">
-                          Analysis of Mars placement for marriage compatibility
-                        </p>
-                        <div className="space-y-2 text-sm">
-                          <div className="flex justify-between text-foreground">
-                            <span>Your Mangal Dosha:</span>
-                            <span className="font-medium text-green-600 dark:text-green-400">None</span>
-                          </div>
-                          <div className="flex justify-between text-foreground">
-                            <span>Partner's Mangal Dosha:</span>
-                            <span className="font-medium text-green-600 dark:text-green-400">None</span>
-                          </div>
-                          <div className="flex justify-between text-foreground">
-                            <span>Cancellation:</span>
-                            <span className="font-medium text-green-600 dark:text-green-400">Not Required</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="p-4 border border-border rounded-lg bg-card">
-                        <h4 className="font-semibold mb-2 text-foreground">7th House Analysis</h4>
-                        <p className="text-sm text-muted-foreground mb-3">
-                          Marriage house compatibility and strength
-                        </p>
-                        <div className="space-y-2 text-sm">
-                          <div className="flex justify-between text-foreground">
-                            <span>Your 7th Lord:</span>
-                            <span className="font-medium text-primary">Venus</span>
-                          </div>
-                          <div className="flex justify-between text-foreground">
-                            <span>Partner's 7th Lord:</span>
-                            <span className="font-medium text-primary">Jupiter</span>
-                          </div>
-                          <div className="flex justify-between text-foreground">
-                            <span>Compatibility:</span>
-                            <span className="font-medium text-green-600 dark:text-green-400">Favorable</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="p-4 border border-border rounded-lg bg-card">
-                        <h4 className="font-semibold mb-2 text-foreground">Venus-Mars Harmony</h4>
-                        <p className="text-sm text-muted-foreground mb-3">
-                          Love and passion compatibility analysis
-                        </p>
-                        <div className="space-y-2 text-sm">
-                          <div className="flex justify-between text-foreground">
-                            <span>Romantic Compatibility:</span>
-                            <span className="font-medium text-green-600 dark:text-green-400">High</span>
-                          </div>
-                          <div className="flex justify-between text-foreground">
-                            <span>Physical Compatibility:</span>
-                            <span className="font-medium text-green-600 dark:text-green-400">Strong</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="p-4 border border-border rounded-lg bg-card">
-                        <h4 className="font-semibold mb-2 text-foreground">Longevity & Children</h4>
-                        <p className="text-sm text-muted-foreground mb-3">
-                          Analysis of marriage longevity and progeny
-                        </p>
-                        <div className="space-y-2 text-sm">
-                          <div className="flex justify-between text-foreground">
-                            <span>Marriage Longevity:</span>
-                            <span className="font-medium text-green-600 dark:text-green-400">Excellent</span>
-                          </div>
-                          <div className="flex justify-between text-foreground">
-                            <span>Children Prospects:</span>
-                            <span className="font-medium text-green-600 dark:text-green-400">Favorable</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-
-              {/* Recommendations */}
-              {showCompatibility && compatibilityData && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-foreground">Compatibility Recommendations</CardTitle>
-                    <CardDescription className="text-muted-foreground">
-                      Remedies and suggestions for improving marital harmony
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      {compatibilityData.compatibility.recommendations.strengths && compatibilityData.compatibility.recommendations.strengths.length > 0 && (
-                        <div className="p-4 bg-green-50 dark:bg-green-950/30 rounded-lg border border-green-200 dark:border-green-800">
-                          <h4 className="font-semibold text-foreground mb-2">✅ Strengths of This Match</h4>
-                          <ul className="space-y-1 text-sm text-foreground list-disc list-inside">
-                            {compatibilityData.compatibility.recommendations.strengths.map((strength: string, index: number) => (
-                              <li key={index}>{strength}</li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-
-                      {compatibilityData.compatibility.recommendations.areas_to_work_on && compatibilityData.compatibility.recommendations.areas_to_work_on.length > 0 && (
-                        <div className="p-4 bg-amber-50 dark:bg-amber-950/30 rounded-lg border border-amber-200 dark:border-amber-800">
-                          <h4 className="font-semibold text-foreground mb-2">⚠️ Areas to Work On</h4>
-                          <ul className="space-y-1 text-sm text-foreground list-disc list-inside">
-                            {compatibilityData.compatibility.recommendations.areas_to_work_on.map((area: string, index: number) => (
-                              <li key={index}>{area}</li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-
-                      {compatibilityData.compatibility.recommendations.general_advice && compatibilityData.compatibility.recommendations.general_advice.length > 0 && (
-                        <div className="p-4 bg-blue-50 dark:bg-blue-950/30 rounded-lg border border-blue-200 dark:border-blue-800">
-                          <h4 className="font-semibold text-foreground mb-2">💡 General Recommendations</h4>
-                          <ul className="space-y-1 text-sm text-foreground list-disc list-inside">
-                            {compatibilityData.compatibility.recommendations.general_advice.map((advice: string, index: number) => (
-                              <li key={index}>{advice}</li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-
-                      <div className="mt-4 p-4 bg-purple-50 dark:bg-purple-950/30 rounded-lg border border-purple-200 dark:border-purple-800">
-                        <p className="text-xs text-muted-foreground italic">
-                          Calculation Method: {compatibilityData.calculation_metadata.method} using {compatibilityData.calculation_metadata.ayanamsa} Ayanamsa.
-                          Calculated at: {new Date(compatibilityData.calculation_metadata.calculated_at).toLocaleString()}.
-                          For personalized guidance and remedial measures, consult a qualified Vedic astrologer.
-                        </p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-            </TabsContent>
           </Tabs>
         )}
       </div>

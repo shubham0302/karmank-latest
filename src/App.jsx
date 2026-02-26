@@ -1,10 +1,11 @@
-import React, { lazy, Suspense } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import React, { lazy, Suspense, useEffect, useMemo, useRef } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'sonner';
 import { AuthProvider } from './contexts/AuthContext';
 import ErrorBoundary from './components/ErrorBoundary';
 import ProtectedRoute from './components/auth/ProtectedRoute';
+import { AnimatePresence, motion } from 'framer-motion';
 
 // ─── Lazy-load ALL pages ───────────────────────────────────────────────────────
 // Only the shell (AuthProvider, ErrorBoundary, ProtectedRoute) loads upfront.
@@ -56,6 +57,177 @@ const PageLoader = () => (
     </div>
 );
 
+// ─── World-class route transitions (directional) ───────────────────────────────
+const getRouteDepth = (pathname) => {
+    if (!pathname || pathname === '/') return 0;
+    return pathname.split('/').filter(Boolean).length;
+};
+
+const PageTransition = ({ children, direction = 1 }) => {
+    const variants = {
+        initial: (dir) => ({
+            opacity: 0,
+            x: dir > 0 ? 28 : -28,
+            filter: 'blur(10px)',
+        }),
+        animate: {
+            opacity: 1,
+            x: 0,
+            filter: 'blur(0px)',
+        },
+        exit: (dir) => ({
+            opacity: 0,
+            x: dir > 0 ? -18 : 18,
+            filter: 'blur(10px)',
+        }),
+    };
+
+    return (
+        <motion.div
+            className="min-h-screen"
+            custom={direction}
+            variants={variants}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+        >
+            {children}
+        </motion.div>
+    );
+};
+
+const AnimatedRoutes = () => {
+    const location = useLocation();
+    const prevPathRef = useRef(location.pathname);
+
+    const direction = useMemo(() => {
+        const prevPath = prevPathRef.current;
+        const prevDepth = getRouteDepth(prevPath);
+        const nextDepth = getRouteDepth(location.pathname);
+        return nextDepth >= prevDepth ? 1 : -1;
+    }, [location.pathname]);
+
+    useEffect(() => {
+        window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+    }, [location.pathname]);
+
+    useEffect(() => {
+        prevPathRef.current = location.pathname;
+    }, [location.pathname]);
+
+    return (
+        <AnimatePresence mode="wait" initial={false}>
+            <Routes location={location} key={location.pathname}>
+                {/* ── Public Routes ── */}
+                <Route path="/login" element={<PageTransition direction={direction}><LoginPage /></PageTransition>} />
+                <Route path="/about" element={<PageTransition direction={direction}><AboutPage /></PageTransition>} />
+                <Route path="/feedback" element={<PageTransition direction={direction}><FeedbackPage /></PageTransition>} />
+                <Route path="/terms" element={<PageTransition direction={direction}><TermsPage /></PageTransition>} />
+                <Route path="/privacy" element={<PageTransition direction={direction}><PrivacyPage /></PageTransition>} />
+                <Route path="/refund" element={<PageTransition direction={direction}><RefundPage /></PageTransition>} />
+                <Route path="/disclaimer" element={<PageTransition direction={direction}><DisclaimerPage /></PageTransition>} />
+
+                {/* ── Protected Routes ── */}
+                <Route
+                    path="/onboarding"
+                    element={<PageTransition direction={direction}><ProtectedRoute><OnboardingPage /></ProtectedRoute></PageTransition>}
+                />
+                <Route
+                    path="/"
+                    element={<PageTransition direction={direction}><ProtectedRoute><HomePage /></ProtectedRoute></PageTransition>}
+                />
+                <Route
+                    path="/profile"
+                    element={<PageTransition direction={direction}><ProtectedRoute><ProfilePage /></ProtectedRoute></PageTransition>}
+                />
+                <Route
+                    path="/family-members"
+                    element={<PageTransition direction={direction}><ProtectedRoute><FamilyMembersPage /></ProtectedRoute></PageTransition>}
+                />
+
+                {/* ── Feature Routes ── */}
+                <Route
+                    path="/numerology"
+                    element={<PageTransition direction={direction}><ProtectedRoute><KarmAnkApp /></ProtectedRoute></PageTransition>}
+                />
+                <Route
+                    path="/name-analysis"
+                    element={<PageTransition direction={direction}><ProtectedRoute><NameAnalysisPage /></ProtectedRoute></PageTransition>}
+                />
+                <Route
+                    path="/compatibility"
+                    element={<PageTransition direction={direction}><ProtectedRoute><CosmicCompatibilityPage /></ProtectedRoute></PageTransition>}
+                />
+                <Route
+                    path="/gita-gyan"
+                    element={<PageTransition direction={direction}><ProtectedRoute><GitaGyanPage /></ProtectedRoute></PageTransition>}
+                />
+                <Route
+                    path="/asset-vibration"
+                    element={<PageTransition direction={direction}><ProtectedRoute><AssetVibrationPage /></ProtectedRoute></PageTransition>}
+                />
+                <Route
+                    path="/career-path"
+                    element={<PageTransition direction={direction}><ProtectedRoute><CareerPathPage /></ProtectedRoute></PageTransition>}
+                />
+                <Route
+                    path="/palmistry"
+                    element={<PageTransition direction={direction}><ProtectedRoute><PalmistryPage /></ProtectedRoute></PageTransition>}
+                />
+                <Route
+                    path="/mantra-jaap"
+                    element={<PageTransition direction={direction}><ProtectedRoute><MantraJaapPage /></ProtectedRoute></PageTransition>}
+                />
+                <Route
+                    path="/panchang"
+                    element={<PageTransition direction={direction}><ProtectedRoute><PanchangPage /></ProtectedRoute></PageTransition>}
+                />
+                <Route
+                    path="/festivals"
+                    element={<PageTransition direction={direction}><ProtectedRoute><FestivalsPage /></ProtectedRoute></PageTransition>}
+                />
+                <Route
+                    path="/cosmic-daily"
+                    element={<PageTransition direction={direction}><ProtectedRoute><CosmicDailyPage /></ProtectedRoute></PageTransition>}
+                />
+                <Route
+                    path="/astrology/muhurta"
+                    element={<PageTransition direction={direction}><ProtectedRoute><MuhurtaPage /></ProtectedRoute></PageTransition>}
+                />
+                <Route
+                    path="/astrology/varshaphala"
+                    element={<PageTransition direction={direction}><ProtectedRoute><VarshaphalaPage /></ProtectedRoute></PageTransition>}
+                />
+
+                {/* ── Astrology Suite ── */}
+                <Route
+                    path="/astrology"
+                    element={<PageTransition direction={direction}><ProtectedRoute><AstrologyPage /></ProtectedRoute></PageTransition>}
+                />
+                <Route
+                    path="/astrology/yoga-lab"
+                    element={<PageTransition direction={direction}><ProtectedRoute><AstrologyYogaLab /></ProtectedRoute></PageTransition>}
+                />
+                <Route
+                    path="/astrology/remedies"
+                    element={<PageTransition direction={direction}><ProtectedRoute><AstrologyRemedies /></ProtectedRoute></PageTransition>}
+                />
+                <Route
+                    path="/astrology/stotras"
+                    element={<PageTransition direction={direction}><ProtectedRoute><AstrologyStotras /></ProtectedRoute></PageTransition>}
+                />
+                <Route
+                    path="/astrology/astrologer"
+                    element={<PageTransition direction={direction}><ProtectedRoute><AstrologyAstrologer /></ProtectedRoute></PageTransition>}
+                />
+
+                <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+        </AnimatePresence>
+    );
+};
+
 // ─── React Query client ────────────────────────────────────────────────────────
 const queryClient = new QueryClient({
     defaultOptions: {
@@ -74,49 +246,10 @@ const App = () => (
         <Toaster position="top-right" richColors />
         <ErrorBoundary>
             <AuthProvider>
-                <BrowserRouter>
+                <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
                     {/* Single Suspense boundary — spinner shown during any page chunk download */}
                     <Suspense fallback={<PageLoader />}>
-                        <Routes>
-                            {/* ── Public Routes ── */}
-                            <Route path="/login"      element={<LoginPage />} />
-                            <Route path="/about"      element={<AboutPage />} />
-                            <Route path="/feedback"   element={<FeedbackPage />} />
-                            <Route path="/terms"      element={<TermsPage />} />
-                            <Route path="/privacy"    element={<PrivacyPage />} />
-                            <Route path="/refund"     element={<RefundPage />} />
-                            <Route path="/disclaimer" element={<DisclaimerPage />} />
-
-                            {/* ── Protected Routes ── */}
-                            <Route path="/onboarding" element={<ProtectedRoute><OnboardingPage /></ProtectedRoute>} />
-                            <Route path="/"           element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
-                            <Route path="/profile"    element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
-                            <Route path="/family-members" element={<ProtectedRoute><FamilyMembersPage /></ProtectedRoute>} />
-
-                            {/* ── Feature Routes ── */}
-                            <Route path="/numerology"       element={<ProtectedRoute><KarmAnkApp /></ProtectedRoute>} />
-                            <Route path="/name-analysis"    element={<ProtectedRoute><NameAnalysisPage /></ProtectedRoute>} />
-                            <Route path="/compatibility"    element={<ProtectedRoute><CosmicCompatibilityPage /></ProtectedRoute>} />
-                            <Route path="/gita-gyan"        element={<ProtectedRoute><GitaGyanPage /></ProtectedRoute>} />
-                            <Route path="/asset-vibration"  element={<ProtectedRoute><AssetVibrationPage /></ProtectedRoute>} />
-                            <Route path="/career-path"      element={<ProtectedRoute><CareerPathPage /></ProtectedRoute>} />
-                            <Route path="/palmistry"        element={<ProtectedRoute><PalmistryPage /></ProtectedRoute>} />
-                            <Route path="/mantra-jaap"      element={<ProtectedRoute><MantraJaapPage /></ProtectedRoute>} />
-                            <Route path="/panchang"         element={<ProtectedRoute><PanchangPage /></ProtectedRoute>} />
-                            <Route path="/festivals"        element={<ProtectedRoute><FestivalsPage /></ProtectedRoute>} />
-                            <Route path="/cosmic-daily"     element={<ProtectedRoute><CosmicDailyPage /></ProtectedRoute>} />
-                            <Route path="/astrology/muhurta"      element={<ProtectedRoute><MuhurtaPage /></ProtectedRoute>} />
-                            <Route path="/astrology/varshaphala"  element={<ProtectedRoute><VarshaphalaPage /></ProtectedRoute>} />
-
-                            {/* ── Astrology Suite ── */}
-                            <Route path="/astrology"              element={<ProtectedRoute><AstrologyPage /></ProtectedRoute>} />
-                            <Route path="/astrology/yoga-lab"     element={<ProtectedRoute><AstrologyYogaLab /></ProtectedRoute>} />
-                            <Route path="/astrology/remedies"     element={<ProtectedRoute><AstrologyRemedies /></ProtectedRoute>} />
-                            <Route path="/astrology/stotras"      element={<ProtectedRoute><AstrologyStotras /></ProtectedRoute>} />
-                            <Route path="/astrology/astrologer"   element={<ProtectedRoute><AstrologyAstrologer /></ProtectedRoute>} />
-
-                            <Route path="*" element={<Navigate to="/" replace />} />
-                        </Routes>
+                        <AnimatedRoutes />
                     </Suspense>
                 </BrowserRouter>
             </AuthProvider>
