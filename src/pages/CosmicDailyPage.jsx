@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, Zap, RefreshCw, ExternalLink, Music, Calendar } from "lucide-react";
 import CosmicBackground from "../components/CosmicBackground";
-import { useProfileBirthData } from "../hooks/useProfileBirthData";
+import FamilyMemberSelector from "../components/FamilyMemberSelector";
+import { useFamilyMembers } from "../hooks/useFamilyMembers";
 import { localCache } from "../hooks/useLocalCache";
 import {
   calculateCosmicReport,
@@ -20,9 +21,9 @@ function ScoreRing({ score }) {
 
   const color =
     score >= 7.5 ? "#22d3ee"   // cyan  — excellent
-    : score >= 6  ? "#a78bfa"   // violet — good
-    : score >= 4.5 ? "#fbbf24"  // amber  — moderate
-    : "#f87171";                // red    — challenging
+      : score >= 6 ? "#a78bfa"   // violet — good
+        : score >= 4.5 ? "#fbbf24"  // amber  — moderate
+          : "#f87171";                // red    — challenging
 
   return (
     <svg width="140" height="140" className="drop-shadow-[0_0_18px_rgba(34,211,238,0.4)]">
@@ -75,12 +76,12 @@ function WaveformBar({ score, color }) {
 
 // ─── Domain Card ──────────────────────────────────────────────────────────────
 const DOMAIN_COLORS = {
-  amber:   { bar: "#f59e0b", glow: "rgba(245,158,11,0.25)",  badge: "bg-amber-500/20 text-amber-300 border-amber-500/30" },
-  rose:    { bar: "#f43f5e", glow: "rgba(244,63,94,0.25)",   badge: "bg-rose-500/20 text-rose-300 border-rose-500/30"    },
-  emerald: { bar: "#10b981", glow: "rgba(16,185,129,0.25)",  badge: "bg-emerald-500/20 text-emerald-300 border-emerald-500/30" },
-  yellow:  { bar: "#eab308", glow: "rgba(234,179,8,0.25)",   badge: "bg-yellow-500/20 text-yellow-300 border-yellow-500/30"   },
-  violet:  { bar: "#8b5cf6", glow: "rgba(139,92,246,0.25)",  badge: "bg-violet-500/20 text-violet-300 border-violet-500/30"   },
-  cyan:    { bar: "#06b6d4", glow: "rgba(6,182,212,0.25)",   badge: "bg-cyan-500/20 text-cyan-300 border-cyan-500/30"         },
+  amber: { bar: "#f59e0b", glow: "rgba(245,158,11,0.25)", badge: "bg-amber-500/20 text-amber-300 border-amber-500/30" },
+  rose: { bar: "#f43f5e", glow: "rgba(244,63,94,0.25)", badge: "bg-rose-500/20 text-rose-300 border-rose-500/30" },
+  emerald: { bar: "#10b981", glow: "rgba(16,185,129,0.25)", badge: "bg-emerald-500/20 text-emerald-300 border-emerald-500/30" },
+  yellow: { bar: "#eab308", glow: "rgba(234,179,8,0.25)", badge: "bg-yellow-500/20 text-yellow-300 border-yellow-500/30" },
+  violet: { bar: "#8b5cf6", glow: "rgba(139,92,246,0.25)", badge: "bg-violet-500/20 text-violet-300 border-violet-500/30" },
+  cyan: { bar: "#06b6d4", glow: "rgba(6,182,212,0.25)", badge: "bg-cyan-500/20 text-cyan-300 border-cyan-500/30" },
 };
 
 function DomainCard({ domain, index }) {
@@ -138,9 +139,9 @@ function DomainCard({ domain, index }) {
 
 // ─── Quality pill colours ────────────────────────────────────────────────────
 const QUALITY_STYLES = {
-  excellent:   "bg-cyan-500/20 text-cyan-300 border-cyan-400/40 shadow-[0_0_14px_rgba(34,211,238,0.3)]",
-  good:        "bg-violet-500/20 text-violet-300 border-violet-400/40 shadow-[0_0_14px_rgba(139,92,246,0.3)]",
-  moderate:    "bg-amber-500/20 text-amber-300 border-amber-400/40 shadow-[0_0_14px_rgba(251,191,36,0.3)]",
+  excellent: "bg-cyan-500/20 text-cyan-300 border-cyan-400/40 shadow-[0_0_14px_rgba(34,211,238,0.3)]",
+  good: "bg-violet-500/20 text-violet-300 border-violet-400/40 shadow-[0_0_14px_rgba(139,92,246,0.3)]",
+  moderate: "bg-amber-500/20 text-amber-300 border-amber-400/40 shadow-[0_0_14px_rgba(251,191,36,0.3)]",
   challenging: "bg-red-500/20 text-red-300 border-red-400/40 shadow-[0_0_14px_rgba(248,113,113,0.3)]",
 };
 
@@ -154,7 +155,11 @@ const QUALITY_LABELS = {
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export default function CosmicDailyPage() {
   const navigate = useNavigate();
-  const { birthDataFormValue, isAstrologyReady } = useProfileBirthData();
+  const { members, getFamilyMembersData } = useFamilyMembers();
+
+  const [selectedMemberId, setSelectedMemberId] = useState(null);
+  const [memberDetails, setMemberDetails] = useState(null);
+
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(true);
   const [backendTried, setBackendTried] = useState(false);
@@ -164,9 +169,48 @@ export default function CosmicDailyPage() {
     weekday: "long", day: "numeric", month: "long", year: "numeric",
   });
 
+  useEffect(() => {
+    const loadMembers = async () => {
+      const result = await getFamilyMembersData();
+      if (result.members && result.members.length > 0) {
+        const selfMember = result.members.find(m => m.relationship === 'self') || result.members[0];
+        setSelectedMemberId(selfMember.id);
+        setMemberDetails({
+          name: selfMember.name,
+          gender: selfMember.gender,
+          dob: selfMember.date_of_birth,
+          birthPlace: selfMember.birth_place,
+          birthTime: selfMember.birth_time,
+          relationship: selfMember.relationship,
+          memberId: selfMember.id,
+          latitude: selfMember.latitude,
+          longitude: selfMember.longitude,
+          timezone: selfMember.timezone,
+        });
+      } else {
+        setLoading(false);
+      }
+    };
+    loadMembers();
+  }, []);
+
+  const isAstrologyReady = !!(memberDetails?.latitude && memberDetails?.longitude && memberDetails?.timezone && memberDetails?.birthTime);
+  const birthDataFormValue = isAstrologyReady ? {
+    name: memberDetails.name,
+    birthDate: new Date(memberDetails.dob + 'T00:00:00'),
+    birthTime: memberDetails.birthTime,
+    birthLocation: memberDetails.birthPlace,
+    latitude: memberDetails.latitude,
+    longitude: memberDetails.longitude,
+    timezone: memberDetails.timezone,
+  } : null;
+
   // ── Calculate immediately (client-side), then try to enhance via backend ──
   useEffect(() => {
-    const base = calculateCosmicReport(today);
+    if (!memberDetails) return;
+
+    const userName = memberDetails.name?.split(" ")[0] || "Cosmic Explorer";
+    const base = calculateCosmicReport(today, null, userName);
     setReport(base);
     setLoading(false);
 
@@ -183,18 +227,19 @@ export default function CosmicDailyPage() {
     const cacheKey = localCache.cosmicDailyKey(dob, todayStr);
     const cachedTransit = localCache.get(cacheKey);
     if (cachedTransit) {
-      setReport(calculateCosmicReport(today, cachedTransit));
+      setReport(calculateCosmicReport(today, cachedTransit, userName));
       return;
     }
 
     setBackendTried(true);
+    // Backend expects `birth_datetime` (ISO combined) + lat/lon/timezone
+    const birthTime = birthDataFormValue.birthTime || "12:00:00";
     const payload = {
-      birth_date:     dob,
-      birth_time:     birthDataFormValue.birthTime,
-      birth_location: birthDataFormValue.birthLocation,
-      latitude:       birthDataFormValue.latitude,
-      longitude:      birthDataFormValue.longitude,
-      timezone:       birthDataFormValue.timezone,
+      birth_datetime: `${dob}T${birthTime}`,
+      latitude: birthDataFormValue.latitude,
+      longitude: birthDataFormValue.longitude,
+      timezone: birthDataFormValue.timezone || "Asia/Kolkata",
+      ayanamsa: "LAHIRI",
     };
 
     fetch(`${apiUrl}/api/transits/current`, {
@@ -207,15 +252,15 @@ export default function CosmicDailyPage() {
         if (data) {
           // Cache for 1 day — transits are specific to today's date
           localCache.set(cacheKey, data, 24 * 60 * 60 * 1000);
-          setReport(calculateCosmicReport(today, data));
+          setReport(calculateCosmicReport(today, data, userName));
         }
       })
-      .catch(() => {});
-  }, [isAstrologyReady]);
+      .catch(() => { });
+  }, [isAstrologyReady, memberDetails]);
 
   const moonFrac = getMoonPhaseFraction(today);
   const moonInfo = getMoonPhaseLabel(moonFrac);
-  const moonPct  = Math.round(
+  const moonPct = Math.round(
     moonFrac < 0.5 ? moonFrac * 200 : (1 - moonFrac) * 200
   );
 
@@ -234,15 +279,34 @@ export default function CosmicDailyPage() {
       <div className="min-h-screen text-white relative z-10 px-4 md:px-6 py-6">
         <div className="max-w-5xl mx-auto space-y-6">
 
-          {/* Back button */}
-          <motion.button
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            onClick={() => navigate(-1)}
-            className="flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/20 px-4 py-2 rounded-xl text-sm font-medium transition"
-          >
-            <ArrowLeft className="h-4 w-4" /> Back
-          </motion.button>
+          {/* Top Bar: Back & Selector */}
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <motion.button
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              onClick={() => navigate(-1)}
+              className="flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/20 px-4 py-2 rounded-xl text-sm font-medium transition"
+            >
+              <ArrowLeft className="h-4 w-4" /> Back
+            </motion.button>
+
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+            >
+              <FamilyMemberSelector
+                selectedMemberId={selectedMemberId}
+                onMemberSelect={(id) => {
+                  setSelectedMemberId(id);
+                  setLoading(true); // show loading state while switching
+                }}
+                onDetailsChange={(details) => {
+                  setMemberDetails(details);
+                }}
+                label="Select Profile"
+              />
+            </motion.div>
+          </div>
 
           {/* ── Header ── */}
           <motion.div
@@ -256,7 +320,9 @@ export default function CosmicDailyPage() {
             </p>
             <h1 className="text-3xl md:text-5xl font-serif font-bold">
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-blue-400 to-purple-400">
-                Your Cosmic Weather
+                {memberDetails?.name
+                  ? `${memberDetails.name.split(" ")[0]}'s Cosmic Weather`
+                  : "Your Cosmic Weather"}
               </span>
             </h1>
             <p className="text-white/50 text-sm">
@@ -382,10 +448,10 @@ export default function CosmicDailyPage() {
             className="grid grid-cols-2 md:grid-cols-4 gap-3"
           >
             {[
-              { label: "Yoga Lab",    icon: <Zap className="h-4 w-4" />,      route: "/astrology/yoga-lab",  color: "cyan"   },
-              { label: "Panchang",    icon: <Calendar className="h-4 w-4" />, route: "/panchang",            color: "amber"  },
-              { label: "Mantra Jaap", icon: <Music className="h-4 w-4" />,    route: "/mantra-jaap",         color: "violet" },
-              { label: "Remedies",    icon: <ExternalLink className="h-4 w-4" />, route: "/astrology/remedies", color: "emerald" },
+              { label: "Yoga Lab", icon: <Zap className="h-4 w-4" />, route: "/astrology/yoga-lab", color: "cyan" },
+              { label: "Panchang", icon: <Calendar className="h-4 w-4" />, route: "/panchang", color: "amber" },
+              { label: "Mantra Jaap", icon: <Music className="h-4 w-4" />, route: "/mantra-jaap", color: "violet" },
+              { label: "Remedies", icon: <ExternalLink className="h-4 w-4" />, route: "/astrology/remedies", color: "emerald" },
             ].map(({ label, icon, route, color }) => (
               <button
                 key={route}

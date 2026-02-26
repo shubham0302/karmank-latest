@@ -758,17 +758,10 @@ const ASTROLOGY_DIRECT_BASE = (import.meta.env.VITE_ASTROLOGY_API_URL || '').rep
 const BACKEND_API_BASE = (import.meta.env.VITE_BACKEND_URL || '').replace(/\/+$/, '');
 
 function getAstrologyChartEndpoints() {
+  // Only use the Swiss Ephemeris backend (Render.com) — NOT the Lambda/palmistry backend
   const endpoints = [];
-  if (BACKEND_API_BASE) {
-    endpoints.push(`${BACKEND_API_BASE}/api/astrology/chart/calculate`);
-  } else {
-    // Default Vercel adapter route when VITE_BACKEND_URL is missing
-    endpoints.push('/api/api/astrology/chart/calculate');
-  }
-  // Alternative route shape used in some deployments
-  endpoints.push('/api/astrology/chart/calculate');
   if (ASTROLOGY_DIRECT_BASE) endpoints.push(`${ASTROLOGY_DIRECT_BASE}/api/chart/calculate`);
-  if (endpoints.length === 0) endpoints.push('http://localhost:8000/api/chart/calculate');
+  endpoints.push('http://localhost:8000/api/chart/calculate');
   return Array.from(new Set(endpoints));
 }
 
@@ -934,7 +927,9 @@ async function fetchPanchangFromBackend(date, lat, lon, tz = 5.5) {
 
 function fmt(date) {
   if (!date) return "--";
-  return date.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", hour12: true });
+  const d = (date instanceof Date) ? date : new Date(date);
+  if (isNaN(d.getTime())) return "--";
+  return d.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", hour12: true });
 }
 
 function isNow(start, end) {
