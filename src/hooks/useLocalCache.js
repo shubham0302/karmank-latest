@@ -73,9 +73,9 @@ function varshaphalaKey(birthDatetime, lat, lng, year) {
   return `varshaphala:${birthDatetime}|${lat}|${lng}|${year}`;
 }
 
-/** Muhurta windows — fixed forever for a given birth + date range + event type */
+/** Muhurta windows — v2 includes personalized Tarabala+Chandra Bala scoring */
 function muhurtaKey(birthDatetime, lat, lng, eventType, startDate, endDate) {
-  return `muhurta:${birthDatetime}|${lat}|${lng}|${eventType}|${startDate}|${endDate}`;
+  return `muhurta_v2:${birthDatetime}|${lat}|${lng}|${eventType}|${startDate}|${endDate}`;
 }
 
 /** Birth chart — fixed forever for a given birth moment */
