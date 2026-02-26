@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
@@ -6,7 +6,8 @@ import {
   CheckCircle2, Clock, RefreshCw, Sun, User, MapPin, ExternalLink
 } from "lucide-react";
 import CosmicBackground from "../components/CosmicBackground";
-import { useProfileBirthData } from "../hooks/useProfileBirthData";
+import { useAuth } from "../contexts/AuthContext";
+import { useFamilyMembers } from "../hooks/useFamilyMembers";
 import { localCache } from "../hooks/useLocalCache";
 
 const API_BASE = import.meta.env.VITE_ASTROLOGY_API_URL || "http://localhost:8000";
@@ -29,6 +30,51 @@ const QUALITY_CONFIG = {
   moderate:  { color: "amber",   label: "Moderate",  bar: "bg-amber-400",   bg: "bg-amber-500/10 border-amber-400/30",  text: "text-amber-300" },
   avoid:     { color: "red",     label: "Avoid",     bar: "bg-red-400",     bg: "bg-red-500/10 border-red-400/30",      text: "text-red-300" },
 };
+
+function toFiniteNumber(value) {
+  if (value === null || value === undefined || value === "") return null;
+  const num = typeof value === "number" ? value : Number(value);
+  return Number.isFinite(num) ? num : null;
+}
+
+function toLocalDateISO(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function mapMemberToBirthData(member) {
+  if (!member?.date_of_birth || !member?.birth_time || !member?.timezone) return null;
+  const latitude = toFiniteNumber(member.latitude);
+  const longitude = toFiniteNumber(member.longitude);
+  if (latitude === null || longitude === null) return null;
+
+  const birthDate = new Date(`${member.date_of_birth}T00:00:00`);
+  if (Number.isNaN(birthDate.getTime())) return null;
+
+  return {
+    name: member.name || "",
+    birthDate,
+    birthTime: member.birth_time,
+    birthLocation: member.birth_place || "",
+    latitude,
+    longitude,
+    timezone: member.timezone,
+  };
+}
+
+function getMissingAstrologyFields(member) {
+  if (!member) return [];
+  const missing = [];
+  if (!member.date_of_birth) missing.push("date of birth");
+  if (!member.birth_time) missing.push("birth time");
+  if (toFiniteNumber(member.latitude) === null || toFiniteNumber(member.longitude) === null) {
+    missing.push("birth coordinates");
+  }
+  if (!member.timezone) missing.push("timezone");
+  return missing;
+}
 
 // ─── Sub-components ──────────────────────────────────────────────────────────
 
@@ -139,7 +185,7 @@ function DayCard({ day, rank }) {
 
 // ─── Profile Card ─────────────────────────────────────────────────────────────
 
-function ProfileCard({ member, birthDataFormValue, isAstrologyReady, onGoToProfile }) {
+function ProfileCard({ member, birthDataFormValue, isAstrologyReady, missingFields, onGoToProfile }) {
   if (!member) {
     return (
       <div className="rounded-xl border border-amber-400/20 bg-amber-500/5 p-3.5 flex items-center gap-3">
@@ -174,16 +220,30 @@ function ProfileCard({ member, birthDataFormValue, isAstrologyReady, onGoToProfi
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
           <span className="text-xs font-semibold text-white">{member.name}</span>
-          {isAstrologyReady && <CheckCircle2 className="h-3 w-3 text-emerald-400 shrink-0" />}
+          {isAstrologyReady ? (
+            <CheckCircle2 className="h-3 w-3 text-emerald-400 shrink-0" />
+          ) : (
+            <span className="text-[10px] bg-amber-500/15 border border-amber-400/30 text-amber-300 px-1.5 py-0.5 rounded">
+              Incomplete
+            </span>
+          )}
         </div>
         <div className="flex flex-wrap gap-x-3 mt-0.5">
           {dob && <span className="text-[11px] text-white/40 flex items-center gap-1"><Sun className="h-2.5 w-2.5" />{dob}</span>}
+          {birthDataFormValue?.birthTime && (
+            <span className="text-[11px] text-white/40 flex items-center gap-1"><Clock className="h-2.5 w-2.5" />{birthDataFormValue.birthTime}</span>
+          )}
           {birthDataFormValue?.birthLocation && (
             <span className="text-[11px] text-white/40 flex items-center gap-1 truncate max-w-[140px]">
               <MapPin className="h-2.5 w-2.5 shrink-0" />{birthDataFormValue.birthLocation}
             </span>
           )}
         </div>
+        {!isAstrologyReady && missingFields?.length > 0 && (
+          <div className="text-[10px] text-amber-300/80 mt-1">
+            Missing: {missingFields.join(", ")}
+          </div>
+        )}
       </div>
       <button onClick={onGoToProfile} className="shrink-0 text-[11px] text-white/30 hover:text-white/60 transition">Edit</button>
     </div>
@@ -194,10 +254,65 @@ function ProfileCard({ member, birthDataFormValue, isAstrologyReady, onGoToProfi
 
 export default function MuhurtaPage() {
   const navigate = useNavigate();
-  const { member, birthDataFormValue, isAstrologyReady, loading: profileLoading } = useProfileBirthData();
+  const { user } = useAuth();
+  const { members, loading: membersLoading, getFamilyMembersData } = useFamilyMembers();
+  const [selectedMemberId, setSelectedMemberId] = useState(null);
 
-  const today = new Date().toISOString().split("T")[0];
-  const inThreeMonths = new Date(Date.now() + 88 * 86400_000).toISOString().split("T")[0];
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadMembers() {
+      const result = await getFamilyMembersData();
+      if (cancelled) return;
+
+      const all = result?.members || [];
+      if (all.length === 0) {
+        setSelectedMemberId(null);
+        return;
+      }
+
+      const lastId = user?.id ? localCache.get(localCache.lastMemberKey(user.id)) : null;
+      const preferred =
+        (lastId && all.find(m => m.id === lastId)) ||
+        all.find(m => m.relationship === "self") ||
+        all[0];
+
+      if (preferred?.id) {
+        setSelectedMemberId(prev => prev || preferred.id);
+      }
+    }
+
+    loadMembers();
+    return () => { cancelled = true; };
+  }, [getFamilyMembersData, user?.id]);
+
+  useEffect(() => {
+    if (!members.length) return;
+    if (selectedMemberId && members.some(m => m.id === selectedMemberId)) return;
+    const fallback = members.find(m => m.relationship === "self") || members[0] || null;
+    setSelectedMemberId(fallback?.id || null);
+  }, [members, selectedMemberId]);
+
+  useEffect(() => {
+    if (user?.id && selectedMemberId) {
+      localCache.set(localCache.lastMemberKey(user.id), selectedMemberId);
+    }
+  }, [selectedMemberId, user?.id]);
+
+  const member = useMemo(
+    () => members.find(m => m.id === selectedMemberId) || null,
+    [members, selectedMemberId]
+  );
+  const birthDataFormValue = useMemo(() => mapMemberToBirthData(member), [member]);
+  const missingAstroFields = useMemo(() => getMissingAstrologyFields(member), [member]);
+  const isAstrologyReady = birthDataFormValue !== null;
+  const profileLoading = membersLoading && members.length === 0;
+
+  // Use LOCAL date (not UTC) so the default range starts from today in the user's timezone
+  const _now = new Date();
+  const today = `${_now.getFullYear()}-${String(_now.getMonth() + 1).padStart(2, "0")}-${String(_now.getDate()).padStart(2, "0")}`;
+  const _end = new Date(_now.getTime() + 88 * 86400_000);
+  const inThreeMonths = `${_end.getFullYear()}-${String(_end.getMonth() + 1).padStart(2, "0")}-${String(_end.getDate()).padStart(2, "0")}`;
 
   const [eventType, setEventType] = useState("general");
   const [startDate, setStartDate] = useState(today);
@@ -209,15 +324,24 @@ export default function MuhurtaPage() {
   const selectedEvent = EVENT_TYPES.find(e => e.id === eventType) || EVENT_TYPES[0];
 
   async function handleFetch() {
-    if (!birthDataFormValue) {
-      setError("Please complete your birth profile first (Profile → Edit).");
+    if (!member) {
+      setError("No profile found. Add your birth details first.");
       return;
     }
 
-    const birthDt = birthDataFormValue.birthDate.toISOString().split("T")[0]
-      + "T" + (birthDataFormValue.birthTime || "12:00") + ":00";
-    const lat = birthDataFormValue.latitude  || 28.6139;
-    const lng = birthDataFormValue.longitude || 77.209;
+    if (!birthDataFormValue) {
+      const missingLabel = missingAstroFields.length
+        ? `Missing ${missingAstroFields.join(", ")}.`
+        : "Please complete your birth profile details.";
+      setError(`${missingLabel} Update from Profile -> Edit.`);
+      return;
+    }
+
+    const birthDate = toLocalDateISO(birthDataFormValue.birthDate);
+    const birthTime = String(birthDataFormValue.birthTime || "12:00").slice(0, 5);
+    const birthDt = `${birthDate}T${birthTime}:00`;
+    const lat = birthDataFormValue.latitude;
+    const lng = birthDataFormValue.longitude;
 
     // Check cache — muhurta windows for a date range never change
     const cacheKey = localCache.muhurtaKey(birthDt, lat, lng, eventType, startDate, endDate);
@@ -236,13 +360,15 @@ export default function MuhurtaPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           birth_datetime: birthDt,
-          latitude:   lat,
-          longitude:  lng,
+          latitude: lat,
+          longitude: lng,
           event_type: eventType,
           start_date: startDate,
-          end_date:   endDate,
-          timezone:   birthDataFormValue.timezone || "Asia/Kolkata",
-          top_n:      15,
+          end_date: endDate,
+          timezone: birthDataFormValue.timezone,
+          top_n: 15,
+          profile_member_id: member.id,
+          profile_member_name: member.name,
         }),
       });
       if (!res.ok) {
@@ -321,10 +447,33 @@ export default function MuhurtaPage() {
                   member={member}
                   birthDataFormValue={birthDataFormValue}
                   isAstrologyReady={isAstrologyReady}
+                  missingFields={missingAstroFields}
                   onGoToProfile={() => navigate("/profile")}
                 />
               )}
             </div>
+
+            {members.length > 1 && (
+              <div className="mb-5">
+                <label className="text-xs text-white/50 uppercase tracking-widest mb-3 block">Profile Member</label>
+                <div className="flex gap-2 overflow-x-auto pb-1">
+                  {members.map(m => (
+                    <button
+                      key={m.id}
+                      onClick={() => setSelectedMemberId(m.id)}
+                      className={`shrink-0 px-3 py-1.5 rounded-full border text-xs transition ${
+                        m.id === selectedMemberId
+                          ? "bg-cyan-500/20 border-cyan-400/50 text-cyan-300"
+                          : "bg-white/5 border-white/10 text-white/60 hover:text-white/80 hover:bg-white/10"
+                      }`}
+                    >
+                      {m.name}
+                      {m.relationship && m.relationship !== "self" ? ` · ${m.relationship}` : ""}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Event Type Grid */}
             <div className="mb-5">
@@ -383,7 +532,7 @@ export default function MuhurtaPage() {
 
             <button
               onClick={handleFetch}
-              disabled={loading}
+              disabled={loading || profileLoading}
               className="w-full py-3 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-700 hover:from-cyan-500 hover:to-blue-600 text-white font-semibold text-sm transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? (
@@ -454,3 +603,4 @@ export default function MuhurtaPage() {
     </CosmicBackground>
   );
 }
+

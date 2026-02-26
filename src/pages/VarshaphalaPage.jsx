@@ -6,7 +6,8 @@ import {
   MapPin, Clock, CheckCircle2, ExternalLink, ChevronDown, ChevronUp
 } from "lucide-react";
 import CosmicBackground from "../components/CosmicBackground";
-import { useProfileBirthData } from "../hooks/useProfileBirthData";
+import { useFamilyMembers } from "../hooks/useFamilyMembers";
+import FamilyMemberSelector from "../components/FamilyMemberSelector";
 import { localCache } from "../hooks/useLocalCache";
 
 const API_BASE = import.meta.env.VITE_ASTROLOGY_API_URL || "http://localhost:8000";
@@ -261,13 +262,52 @@ function HouseWheel({ planets }) {
 
 export default function VarshaphalaPage() {
   const navigate = useNavigate();
-  const { member, birthDataFormValue, isAstrologyReady, loading: profileLoading } = useProfileBirthData();
+  const { members, getFamilyMembersData } = useFamilyMembers();
+
+  const [selectedMemberId, setSelectedMemberId] = useState(null);
+  const [memberDetails, setMemberDetails]       = useState(null);
 
   const currentYear = new Date().getFullYear();
   const [targetYear, setTargetYear] = useState(currentYear);
   const [result, setResult]         = useState(null);
   const [loading, setLoading]       = useState(false);
   const [error, setError]           = useState(null);
+
+  // Auto-load 'self' member on mount
+  useEffect(() => {
+    getFamilyMembersData().then(res => {
+      const all = res?.members || [];
+      if (!all.length) return;
+      const self = all.find(m => m.relationship === "self") || all[0];
+      setSelectedMemberId(self.id);
+      setMemberDetails({
+        name: self.name,
+        dob: self.date_of_birth,
+        birthPlace: self.birth_place,
+        birthTime: self.birth_time,
+        latitude: self.latitude,
+        longitude: self.longitude,
+        timezone: self.timezone,
+      });
+    });
+  }, []);
+
+  // Derived values (same shape as useProfileBirthData output)
+  const isAstrologyReady = !!(
+    memberDetails?.dob && memberDetails?.birthTime &&
+    memberDetails?.latitude && memberDetails?.longitude && memberDetails?.timezone
+  );
+  const birthDataFormValue = isAstrologyReady ? {
+    name: memberDetails.name,
+    birthDate: new Date(memberDetails.dob + "T00:00:00"),
+    birthTime: memberDetails.birthTime,
+    birthLocation: memberDetails.birthPlace || "",
+    latitude: memberDetails.latitude,
+    longitude: memberDetails.longitude,
+    timezone: memberDetails.timezone,
+  } : null;
+  const member        = members.find(m => m.id === selectedMemberId) || null;
+  const profileLoading = !memberDetails && members.length === 0;
 
   // Auto-calculate for current year once profile is ready
   useEffect(() => {
@@ -289,8 +329,12 @@ export default function VarshaphalaPage() {
       return;
     }
 
-    const lat = birthDataFormValue?.latitude  || 28.6139;
-    const lng = birthDataFormValue?.longitude || 77.209;
+    const lat = birthDataFormValue?.latitude;
+    const lng = birthDataFormValue?.longitude;
+    if (!lat || !lng) {
+      setError("Birth coordinates missing. Please update your profile with a birth city.");
+      return;
+    }
 
     // Check cache first — solar return for a given birth + year never changes
     const cacheKey = localCache.varshaphalaKey(birthDt, lat, lng, targetYear);
@@ -379,7 +423,31 @@ export default function VarshaphalaPage() {
           >
             {/* Profile selection */}
             <div>
-              <label className="text-xs text-white/40 uppercase tracking-widest mb-2 block">Calculating for</label>
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-xs text-white/40 uppercase tracking-widest">Calculating for</label>
+                <FamilyMemberSelector
+                  selectedMemberId={selectedMemberId}
+                  onMemberSelect={(id) => {
+                    setSelectedMemberId(id);
+                    setResult(null);
+                    setError(null);
+                  }}
+                  onDetailsChange={(details) => {
+                    setMemberDetails({
+                      name: details.name,
+                      dob: details.dob,
+                      birthPlace: details.birthPlace,
+                      birthTime: details.birthTime,
+                      latitude: details.latitude,
+                      longitude: details.longitude,
+                      timezone: details.timezone,
+                    });
+                    setResult(null);
+                    setError(null);
+                  }}
+                  label="Switch Profile"
+                />
+              </div>
               {profileLoading ? (
                 <div className="rounded-xl border border-white/10 bg-white/5 p-4 flex items-center gap-3 animate-pulse">
                   <div className="w-9 h-9 rounded-full bg-white/10" />
