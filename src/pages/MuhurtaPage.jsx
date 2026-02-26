@@ -321,6 +321,13 @@ export default function MuhurtaPage() {
   const [loading, setLoading]     = useState(false);
   const [error, setError]         = useState(null);
 
+  // Clear stale results whenever the selected member changes so the UI never
+  // shows one person's muhurta while another person's profile is displayed.
+  useEffect(() => {
+    setResults(null);
+    setError(null);
+  }, [selectedMemberId]);
+
   const selectedEvent = EVENT_TYPES.find(e => e.id === eventType) || EVENT_TYPES[0];
 
   async function handleFetch() {
@@ -553,6 +560,12 @@ export default function MuhurtaPage() {
             >
               {/* Summary strip */}
               <div className="flex flex-wrap gap-3 text-xs text-white/40 px-1">
+                {member?.name && (
+                  <>
+                    <span className="text-cyan-300/80 font-medium">{member.name}</span>
+                    <span>·</span>
+                  </>
+                )}
                 <span>{results.total_days_scanned} days scanned</span>
                 <span>·</span>
                 <span>{goodDays.length} auspicious windows found</span>
