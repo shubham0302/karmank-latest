@@ -14,6 +14,7 @@ import { useFamilyMembers } from '@/hooks/useFamilyMembers'
  * @param {boolean} props.allowMultiple - Allow selecting multiple family members (for compatibility)
  * @param {string} props.excludeMemberId - ID of member to exclude from dropdown
  * @param {Array} props.selectedMembers - Array of already selected member IDs (for multi-select)
+ * @param {boolean} props.autoSelectFirst - Auto-select self (or first) member when none selected
  */
 export default function FamilyMemberSelector({
   selectedMemberId,
@@ -22,7 +23,8 @@ export default function FamilyMemberSelector({
   label = 'Select Family Member',
   allowMultiple = false,
   excludeMemberId = null,
-  selectedMembers = []
+  selectedMembers = [],
+  autoSelectFirst = false,
 }) {
   const { members, loading, error, getFamilyMembersData } = useFamilyMembers()
   const [isOpen, setIsOpen] = useState(false)
@@ -31,6 +33,15 @@ export default function FamilyMemberSelector({
   useEffect(() => {
     getFamilyMembersData()
   }, [])
+
+  // Auto-select self/first member when the parent hasn't set a selection yet
+  useEffect(() => {
+    if (!autoSelectFirst) return
+    if (selectedMemberId) return        // already selected — don't override
+    if (!members.length) return         // members not loaded yet
+    const self = members.find(m => m.relationship === 'self') || members[0]
+    if (self?.id) onMemberSelect(self.id)
+  }, [autoSelectFirst, members, selectedMemberId])
 
   // Extract member details when a member is selected
   // Note: onDetailsChange intentionally excluded from deps to prevent infinite re-render loop

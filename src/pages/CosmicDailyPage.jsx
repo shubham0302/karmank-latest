@@ -164,6 +164,12 @@ export default function CosmicDailyPage() {
     timezone: memberDetails.timezone,
   } : null;
 
+  // ── Safety valve — if no profile exists, stop the spinner after 5 s ─────────
+  useEffect(() => {
+    const t = setTimeout(() => setInitialLoading(false), 5000);
+    return () => clearTimeout(t);
+  }, []);
+
   // ── Recalculate whenever member changes ─────────────────────────────────────
   // Uses an AbortController so stale backend fetches don't overwrite newer data.
   const abortRef = useRef(null);
@@ -255,12 +261,13 @@ export default function CosmicDailyPage() {
             </motion.button>
 
             <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
-              {/* FamilyMemberSelector is the ONLY source of member data — no duplicate useFamilyMembers */}
+              {/* autoSelectFirst picks the 'self' member automatically on first load */}
               <FamilyMemberSelector
                 selectedMemberId={selectedMemberId}
                 onMemberSelect={(id) => setSelectedMemberId(id)}
                 onDetailsChange={(details) => setMemberDetails(details)}
                 label="Select Profile"
+                autoSelectFirst
               />
             </motion.div>
           </div>
